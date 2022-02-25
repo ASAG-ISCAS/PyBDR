@@ -20,6 +20,10 @@ TODO
 
 TODO
 
+### Tips for Developer
+
+[dev tips](doc/dev_tips.md)
+
 ### Citation
 
 TODO
