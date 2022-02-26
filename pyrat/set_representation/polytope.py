@@ -1,4 +1,4 @@
-class TaylorModel:
+class Polytope:
     def __init__(self):
         # TODO
         pass
