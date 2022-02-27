@@ -10,7 +10,7 @@ class Zonotope:
         assert z.ndim == 2
         self.__z = z
 
-    # ============================================================================== properties
+    # =============================== properties
     @property
     def dimension(self) -> int:
         if self.is_empty:
@@ -41,12 +41,17 @@ class Zonotope:
             return False
         return self.dimension == self.rank
 
-    # ============================================================================== static methods
+    # =============================== static methods
     @staticmethod
     def random_fix_dim(dimension: int) -> Zonotope:
         assert dimension > 0
         gen_nums = np.random.randint(0, 10)
         return Zonotope(np.random.rand(dimension, gen_nums))
+
+    # =============================== functional methods
+    def remove_empty_gen(self) -> Zonotope:
+        ng = self.generator[:, abs(self.generator).sum(axis=0) > 0]
+        return Zonotope(np.concatenate([self.center, ng], axis=1))
 
     # =============================== conversion
     def cvt_as(self, target: str):

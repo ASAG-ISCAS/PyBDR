@@ -1,6 +1,5 @@
 import numpy as np
-
-from pyrat.set_representation.zonotope import Zonotope
+from pyrat.geometric.zonotope import Zonotope
 
 
 def test_construction():
@@ -11,12 +10,13 @@ def test_construction():
 
 
 def test_numeric_operations():
-    z = Zonotope(np.array([[3, 2, -4, -6, 3, 5],
-                           [3, 1, -7, 3, -5, 2],
-                           [-2, 0, 4, -7, 3, 2]], dtype=float))
+    z = Zonotope(np.array([[3, 2, -4, -6, 3, 5, 0],
+                           [3, 1, -7, 3, -5, 2, 0],
+                           [-2, 0, 4, -7, 3, 2, 0]], dtype=float))
     abs_z = abs(z)
     assert np.allclose(abs(z.center), abs_z.center)
     assert np.allclose(abs(z.generator), abs_z.generator)
+    nz = z.remove_empty_gen()
     z0 = z + 1.2
     z0 += 2.5
     z1 = z + z0
