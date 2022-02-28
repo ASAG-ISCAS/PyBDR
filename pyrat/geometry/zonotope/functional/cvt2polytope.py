@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pyrat.geometry.zonotope import Zonotope
-    from pyrat.geometry.polytope import Polytope
+    from pyrat.geometry.polyhedron import Polyhedron
 
 from itertools import combinations
 from pyrat.util.functional.aux import *
@@ -15,7 +15,7 @@ This function convert input zonotope to polytope representation
 """
 
 
-def cvt2polytope(z: Zonotope) -> (Polytope, np.ndarray, bool):
+def cvt2polytope(z: Zonotope) -> (Polyhedron, np.ndarray, bool):
     nz = z.remove_empty_gen()
     c, g = nz.center, nz.generator
     dim, gen_num = g.shape
