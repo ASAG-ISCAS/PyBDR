@@ -1,5 +1,5 @@
 import numpy as np
-from pyrat.geometric.zonotope import Zonotope
+from pyrat.geometry.zonotope import Zonotope
 
 
 def test_construction():

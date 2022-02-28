@@ -8,6 +8,10 @@
   the caller. rationale being that
     + they slow down computation for the common (non-degenerate) case
     + it's not clear what it means to `catch` these degeneracies
++ We prefer using API with explicit calling but shorthand without messy too much, for the reason
+    + the code is easy to understand
+    + can avoid potential bugs introduced by unnecessary typo
+        + i.e. we would like to call `power()` explicitly rather than its shorthand `**`
 
 ## commonly used abbreviations for coding conventions
 

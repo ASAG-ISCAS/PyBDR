@@ -3,6 +3,7 @@ from __future__ import annotations
 import numbers
 import numpy as np
 from .functional import *
+from pyrat.util.functional.aux import *
 
 
 class Zonotope:
@@ -27,9 +28,7 @@ class Zonotope:
 
     @property
     def is_empty(self) -> bool:
-        if self.__z.shape[1] <= 1:
-            return True
-        return False
+        return is_empty(self.__z)
 
     @property
     def rank(self) -> int:
