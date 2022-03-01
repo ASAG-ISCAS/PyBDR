@@ -15,7 +15,7 @@ This function convert input zonotope to polytope representation
 """
 
 
-def cvt2polytope(z: Zonotope) -> (Polyhedron, np.ndarray, bool):
+def cvt2polyhedron(z: Zonotope) -> (Polyhedron, np.ndarray, bool):
     nz = z.remove_empty_gen()
     c, g = nz.center, nz.generator
     dim, gen_num = g.shape
@@ -60,7 +60,7 @@ def cvt2polytope(z: Zonotope) -> (Polyhedron, np.ndarray, bool):
             if not is_empty(zo_idxes):
                 is_full_dimensional = False
                 # compute polytope in transformed space
-                poly = cvt2polytope(Zonotope(z_[nzo_idxes, :]))
+                poly = cvt2polyhedron(Zonotope(z_[nzo_idxes, :]))
                 # TODO
                 pass
 

@@ -13,11 +13,9 @@ class Zonotope:
 
     # =============================== properties
     @property
-    def dimension(self) -> int:
-        if self.is_empty:
-            return 0
-        return self.__z.shape[0]
-
+    def dim(self) -> int:
+        return 0 if self.is_empty else self.__z.shape[0]
+        
     @property
     def center(self) -> np.ndarray:
         return self.__z[:, :1]
@@ -35,10 +33,8 @@ class Zonotope:
         return np.linalg.matrix_rank(self.generator)
 
     @property
-    def is_full_dimensional(self) -> bool:
-        if self.is_empty:
-            return False
-        return self.dimension == self.rank
+    def is_full_dim(self) -> bool:
+        return False if self.is_empty else self.dim == self.rank
 
     # =============================== static methods
     @staticmethod
@@ -54,8 +50,8 @@ class Zonotope:
 
     # =============================== conversion
     def cvt_as(self, target: str):
-        if target == 'polytope':
-            return cvt2polytope(self)
+        if target == 'polyhedron':
+            return cvt2polyhedron(self)
         else:
             raise Exception("Unsupported target type")
 

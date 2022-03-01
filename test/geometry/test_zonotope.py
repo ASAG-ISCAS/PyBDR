@@ -2,11 +2,18 @@ import numpy as np
 from pyrat.geometry.zonotope import Zonotope
 
 
+def test_np_function():
+    v = np.random.rand(10)
+    v[[1, 3, 4]] = np.inf
+    m = np.random.rand(7, 5)
+    a = {'a': [], 'b': 1}
+
+
 def test_construction():
     z = Zonotope.random_fix_dim(2)
     print(z)
-    print(z.dimension)
-    assert z.dimension == 2
+    print(z.dim)
+    assert z.dim == 2
 
 
 def test_numeric_operations():
@@ -27,7 +34,7 @@ def test_numeric_operations():
 def test_auxiliary_functions():
     z = Zonotope.random_fix_dim(2)
     print(z)
-    print(z.dimension)
+    print(z.dim)
     print(z.center, z.center.shape)
     print(z.generator, z.generator.shape)
 
