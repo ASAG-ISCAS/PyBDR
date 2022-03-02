@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np
+
 if TYPE_CHECKING:
     from pyrat.geometry.zonotope import Zonotope
     from pyrat.geometry.polyhedron import Polyhedron
@@ -19,8 +21,8 @@ def cvt2polyhedron(z: Zonotope) -> (Polyhedron, np.ndarray, bool):
     nz = z.remove_empty_gen()
     c, g = nz.center, nz.generator
     dim, gen_num = g.shape
-    is_full_dimensional = True
-    cst_m, cst_v = None, None  # constraint matrix and vector define a polytope
+    is_full_dim = False
+    d, comb = None, None
     if np.linalg.matrix_rank(g) >= dim:
         if dim > 1:
             comb = np.array(list(combinations(np.arange(gen_num), dim - 1)))
@@ -43,29 +45,69 @@ def cvt2polyhedron(z: Zonotope) -> (Polyhedron, np.ndarray, bool):
         cst_m = np.concatenate([cst_m, -cst_m], axis=0)
         cst_v = np.concatenate([pos_d, neg_d], axis=0)
         # catch the case where the zonotope is not full-dimensional
-        temp = np.min([abs(cst_m - cst_m[0, :]).sum(axis=1), abs(cst_m - cst_m[0, :]).sum(axis=1)], axis=1)
+        temp = np.min(
+            [
+                abs(cst_m - cst_m[0, :]).sum(axis=1),
+                abs(cst_m - cst_m[0, :]).sum(axis=1),
+            ],
+            axis=1,
+        )
         if dim > 1 and (
-                is_empty(temp)
-                or np.all(np.isnan(cst_m))
-                or np.all(temp < 1e-12)
-                or np.any(abs(cst_m).max(axis=0) < 1e-12)
+            is_empty(temp)
+            or np.all(np.isnan(cst_m))
+            or np.all(temp < 1e-12)
+            or np.any(abs(cst_m).max(axis=0) < 1e-12)
         ):
             # singular value decomposition
             u, s, vh = np.linalg.svd(g)
             # state space transformation
-            z_ = u.transpose() @ np.concatenate([c, g], axis=1)
+            z_ = u.T @ np.concatenate([c, g], axis=1)
             # remove dimensions with all zeros
             zo_idxes = np.where(s <= 1e-12)[0]
             nzo_idxes = np.setdiff1d(np.arange(s.shape[0]), zo_idxes)
             if not is_empty(zo_idxes):
-                is_full_dimensional = False
+                is_full_dim = True
                 # compute polytope in transformed space
-                poly = cvt2polyhedron(Zonotope(z_[nzo_idxes, :]))
-                # TODO
-                pass
-
-            exit(False)
-
-        exit(False)
-
-    raise Exception("not supported yet")
+                poly, _, _ = cvt2polyhedron(Zonotope(z_[nzo_idxes, :]))
+                # transform back to original space
+                a = (
+                    np.concatenate(
+                        [poly.eqa, np.zeros((poly.eqa.shape[0], zo_idxes.shape[0]))],
+                        axis=1,
+                    )
+                    @ u.T
+                )
+                b = poly.eqb
+                # add equality constraint restricting polytope tot null-space
+                c = np.concatenate([a, u[:, zo_idxes].T, -u[:, zo_idxes].T], axis=1)
+                d = np.concatenate([b, u[:, zo_idxes].T @ c, -u[:, zo_idxes].T @ c])
+    elif gen_num == 0:
+        e = np.eye(dim, dtype=float)
+        d_ = e @ c
+        c = np.concatenate([e, -e], axis=1)
+        d = np.concatenate([d_, -d_], axis=1)
+    else:
+        is_full_dim = True
+        # singular value decomposition
+        u, s, vh = np.linalg.svd(g)
+        s = np.concatenate([s, np.zeros((dim, dim - gen_num), dtype=float)], axis=0)
+        # state space transformation
+        z_ = u.T @ np.concatenate([c, g], axis=1)
+        # remove dimensions with all zeros
+        zo = np.where(s <= 1e-12)[0]
+        nzo = np.setdiff1d(np.arange(s.shape[0]), zo)
+        if not is_empty(zo):
+            # compute polytope in transformed space
+            poly, _, _ = cvt2polyhedron(Zonotope(z_[zo, :]))
+            # transform back to original space
+            a = (
+                np.concatenate(
+                    [poly.eqa, np.zeros((poly.eqa.shape[0], zo.shape[0]))], axis=1
+                )
+                @ u.T
+            )
+            b = poly.eqb
+            # add equality constraint restricting polytope tot null-space
+            c = np.concatenate([a, u[:, zo].T, -u[:, zo].T], axis=1)
+            d = np.concatenate([b, u[:, zo].T @ c, -u[:, zo].T @ c])
+    return Polyhedron(np.concatenate([c, d], axis=1)), comb, is_full_dim
