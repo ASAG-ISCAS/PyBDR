@@ -6,6 +6,6 @@ if TYPE_CHECKING:
     from pyrat.geometry import Polyhedron
 
 
-def _compute_min_hrep(self: Polyhedron):
+def _mink_add(lhs: Polyhedron, rhs: Polyhedron):
     # TODO
     pass

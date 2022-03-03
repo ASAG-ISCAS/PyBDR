@@ -12,6 +12,10 @@
     + the code is easy to understand
     + can avoid potential bugs introduced by unnecessary typo
         + i.e. we would like to call `power()` explicitly rather than its shorthand `**`
++ The structure of this toolbox is mainly function-based, because there are some algorithms cited
+  from published papers may design quite complicated algorithm to realize some kind of `simple` API
+    + do minkowski addition/subtraction for some specific geometry objects is quite detailed and
+      complicated
 
 ## commonly used abbreviations for coding conventions
 

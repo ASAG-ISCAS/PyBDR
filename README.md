@@ -24,7 +24,6 @@ TODO
 
 ---
 
-~~~~
 ### Contributing
 
 + [Guideline for contributing](doc/dev_guideline.md)

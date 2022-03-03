@@ -51,7 +51,7 @@ class Zonotope:
         gen_nums = np.random.randint(0, 10)
         return Zonotope(np.random.rand(dimension, gen_nums))
 
-    # =============================== functional methods
+    # =============================== _functional methods
     def remove_empty_gen(self) -> Zonotope:
         ng = self.generator[:, abs(self.generator).sum(axis=0) > 0]
         return Zonotope(np.concatenate([self.center, ng], axis=1))

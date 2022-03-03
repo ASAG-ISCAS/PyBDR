@@ -7,5 +7,5 @@ if TYPE_CHECKING:
 
 
 def demo_func(self: TaylorModel):
-    # TODO
-    pass
+    print(self._name)
+    self._index = 2
