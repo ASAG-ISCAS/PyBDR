@@ -6,8 +6,9 @@ import numpy as np
 
 if TYPE_CHECKING:
     from pyrat.geometry.zonotope import Zonotope
+    from pyrat.geometry.polyhedron import Polyhedron
 from .cvt2polyhedron import cvt2polyhedron
-from pyrat.geometry.polyhedron import Polyhedron
+
 
 """
 Refs:

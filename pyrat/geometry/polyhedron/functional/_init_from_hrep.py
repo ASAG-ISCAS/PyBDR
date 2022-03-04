@@ -14,7 +14,7 @@ def _init_from_hrep(self: Polyhedron, hrep: np.ndarray):
     :param arr: linear inequalities hrep=[m,v] indicates m@x<=v
     :return:
     """
-    assert hrep.shape[0] == hrep.shape[1] - 1
+    # assert hrep.shape[0] == hrep.shape[1] - 1
     # replace c'@x<=+/-inf by 0'@x<=+/-1
     inf_rows = np.isinf(hrep[:, -1])
     if any(inf_rows):

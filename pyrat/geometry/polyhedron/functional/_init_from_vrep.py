@@ -34,4 +34,4 @@ def _init_from_vrep(self: Polyhedron, vrep: np.ndarray):
             self._init_from_hrep(h)
             self._irr_hrep = True  # full space representation
         else:
-            self._eqh = self.min_affine_rep(self._eqh)
+            self._eqh = min_affine(self._eqh)

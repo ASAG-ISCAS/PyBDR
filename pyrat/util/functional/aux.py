@@ -23,3 +23,19 @@ def cross_ndim(m: np.ndarray) -> np.ndarray:
     mask[idx, idx, :] = False
     v = np.reshape(v[mask], (m.shape[0], v.shape[2], v.shape[2]))
     return np.power(-1, idx + 1) * np.linalg.det(v)
+
+
+def min_affine(arr: np.ndarray) -> np.ndarray:
+    """
+    compute a minimum representation for the given affine set as column vectors
+    :param arr:
+    :return:
+    """
+    if arr.shape[0] == 0:
+        return arr
+    r = np.linalg.matrix_rank(arr)
+    if r == arr.shape[0]:
+        return arr
+    # choose r linearly independent rows of the given array
+    eig_v, _ = np.linalg.eig(arr)
+    return arr[:, eig_v == 0]

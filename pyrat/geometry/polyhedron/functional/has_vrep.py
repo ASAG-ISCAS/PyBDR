@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import numpy as np
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pyrat.geometry import Polyhedron
 
 
-def _compute_min_vrep(self: Polyhedron):
-    # TODO
-    pass
+def has_vrep(self: Polyhedron) -> bool:
+    return self._has_vrep
