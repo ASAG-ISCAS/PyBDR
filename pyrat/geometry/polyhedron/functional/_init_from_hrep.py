@@ -11,7 +11,7 @@ def _init_from_hrep(self: Polyhedron, hrep: np.ndarray):
     """
     init polyhedron from hrep as linear inequalities
     :param self: calling polyhedron
-    :param arr: linear inequalities hrep=[m,v] indicates m@x<=v
+    :param hrep: linear inequalities hrep=[m,v] indicates m@x<=v
     :return:
     """
     # assert hrep.shape[0] == hrep.shape[1] - 1
