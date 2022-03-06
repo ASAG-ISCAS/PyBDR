@@ -1,5 +1,5 @@
 from __future__ import annotations
-from pyrat.util.functional.aux import *
+from pyrat.util.functional.aux_numpy import *
 import numpy as np
 from typing import TYPE_CHECKING
 

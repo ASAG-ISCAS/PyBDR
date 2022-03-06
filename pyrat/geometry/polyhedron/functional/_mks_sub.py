@@ -4,10 +4,12 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pyrat.geometry import Polyhedron
 import numpy as np
+from pyrat.util.functional.aux_python import *
 
 
-def _mks_sub(lhs: Polyhedron, rhs: Polyhedron) -> Polyhedron:
+@reg_classmethod
+def _mks_sub(cls: Polyhedron, lhs: Polyhedron, rhs: Polyhedron) -> Polyhedron:
     # TODO
     print("calling minkowski subtraction")
     h = np.zeros((3, 4), dtype=float)
-    return Polyhedron(h)
+    return cls._new(h, "h")

@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from pyrat.geometry.polyhedron import Polyhedron
 
 from itertools import combinations
-from pyrat.util.functional.aux import *
+from pyrat.util.functional.aux_numpy import *
 
 """
 This function convert input zonotope to polytope representation

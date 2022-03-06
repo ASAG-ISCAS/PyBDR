@@ -4,9 +4,12 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pyrat.geometry import Polyhedron
-from pyrat.util.functional.aux import *
+from pyrat.util.functional.aux_python import *
+import pyrat.util.functional.aux_numpy as an
+import numpy as np
 
 
+@reg_property
 def is_empty(self: Polyhedron) -> bool:
     """
     check if this polyhedron is empty or not
@@ -17,17 +20,17 @@ def is_empty(self: Polyhedron) -> bool:
     """
     # compute interior point only if P(i). _int_empty property has not been set
     if self.dim == 0 or (
-        is_empty(self._ieqh)
-        and is_empty(self._eqh)
-        and is_empty(self._v)
-        and is_empty(self._r)
+        an.is_empty(self._ieqh)
+        and an.is_empty(self._eqh)
+        and an.is_empty(self._v)
+        and an.is_empty(self._r)
     ):
         self._int_empty = True
     elif self._int_empty is None:
         # note that low-dimensional polyhedra have radius=0
         # we need to check hwo far is the interior point from the inequalities
         ip = self._int_inner_pt
-        if not is_empty(self._r) and 2 * self._int_inner_pt.r < self._region_tol:
+        if not an.is_empty(self._r) and 2 * self._int_inner_pt.r < self._region_tol:
             if self._int_inner_pt.is_strict:
                 self._int_empty = True
             else:
@@ -50,5 +53,5 @@ def is_empty(self: Polyhedron) -> bool:
             # NaN in interior point means empty polyhedron
             self._int_empty = True
         else:
-            self._int_empty = is_empty(ip.x)
+            self._int_empty = an.is_empty(ip.x)
     return self._int_empty

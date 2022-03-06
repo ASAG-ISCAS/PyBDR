@@ -3,7 +3,7 @@ from __future__ import annotations
 import numbers
 import numpy as np
 from .functional import *
-from pyrat.util.functional.aux import *
+from pyrat.util.functional.aux_numpy import *
 
 
 class Zonotope:

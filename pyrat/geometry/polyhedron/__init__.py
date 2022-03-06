@@ -1,9 +1,5 @@
 from __future__ import annotations
-
 import numpy as np
-
-from .functional._mks_sub import _mks_sub
-from .functional._mks_add import _mks_add
 
 
 class Polyhedron:
@@ -27,22 +23,17 @@ class Polyhedron:
         v,
         irr_vrep,
         irr_hrep,
+        _mks_add,
+        _mks_sub,
+        empty,
+        fullspace,
+        __add__,
+        __iadd__,
+        __sub__,
+        __isub__,
+        is_empty,
+        is_fullspace,
     )
-
-    # set properties
-    dim = property(dim)
-    has_hrep = property(has_hrep)
-    has_vrep = property(has_vrep)
-    eqa = property(eqa)
-    eqb = property(eqb)
-    eqh = property(eqh)
-    ieqh = property(ieqh)
-    ieqa = property(ieqa)
-    ieqb = property(ieqb)
-    r = property(r)
-    v = property(v)
-    irr_hrep = property(irr_hrep)
-    irr_vrep = property(irr_vrep)
 
     def __init__(self, arr: np.ndarray, opt: str = "h"):
         self.__pre_init()
@@ -56,6 +47,10 @@ class Polyhedron:
             self.__post_init()
         else:
             raise Exception("Unsupported initialization")
+
+    @classmethod
+    def _new(cls, arr: np.ndarray, opt: str) -> Polyhedron:
+        return Polyhedron(arr, opt)
 
     def __pre_init(self):
         """
@@ -87,50 +82,3 @@ class Polyhedron:
     def __post_init(self):
         # TODO
         pass
-
-    # ------------------------------- numeric operators
-    def __add__(self, other):
-        return _mks_add(self, other)
-
-    def __iadd__(self, other):
-        return self.__add__(other)
-
-    def __sub__(self, other):
-        return _mks_sub(self, other)
-
-    def __isub__(self, other):
-        return self.__sub__(other)
-
-    # ------------------------------- static methods
-    @staticmethod
-    def empty(dim: int) -> Polyhedron:
-        """
-        construct an empty set in R^n
-        :param dim: dimension of the target space
-        :return: An empty polyhedron in target dimensional space
-        """
-        p = Polyhedron(np.zeros((0, dim + 1), dtype=float))
-        p._int_empty = True
-        p._int_fullspace = False
-        p._int_lb = np.full((1, dim), np.inf, dtype=float)
-        p._int_ub = np.full((dim, 1), -np.inf, dtype=float)
-        return p
-
-    @staticmethod
-    def fullspace(dim: int) -> Polyhedron:
-        """
-        construct the H-representation of R^n
-        :param dim: dimension of the target space
-        :return: A full-dimensional polyhedron
-        """
-        # R^n is represented by 0@x<=1
-        h = np.zeros((1, dim + 1), dtype=float)
-        h[:, -1] = 1
-        p = Polyhedron(h)
-        p._irr_hrep = True
-        p._int_empty = dim == 0  # R^0 is an empty set
-        p._int_fullspace = dim > 0  # R^0 is not fully dimensional
-        p._int_bounded = dim == 0  # R^0 is bounded
-        p._int_lb = np.full((dim, 1), -np.inf, dtype=float)
-        p._int_ub = np.full((dim, 1), np.inf, dtype=float)
-        return p

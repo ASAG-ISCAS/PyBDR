@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from pyrat.util.functional.aux import *
+from pyrat.util.functional.aux_numpy import *
 
 if TYPE_CHECKING:
     from pyrat.geometry import Polyhedron

@@ -7,6 +7,10 @@ if TYPE_CHECKING:
     from pyrat.geometry import Polyhedron
 
 
+from pyrat.util.functional.aux_python import *
+
+
+@reg_property
 def eqh(self: Polyhedron) -> np.numarray:
     if not self.has_hrep and self.has_vrep:
         self.compute_hrep()

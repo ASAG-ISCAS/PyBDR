@@ -18,6 +18,10 @@ def test_basic():
     print(p.eqa)
     print(p.ieqh)
     print(p.ieqa)
+    print(p.irr_hrep)
+    print(p.irr_vrep)
     c = b + f
+    e += b
     g = b - f
     print(c)
+    print(c.is_fullspace)

@@ -3,10 +3,12 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pyrat.geometry import Polyhedron
-from pyrat.util.functional.aux import *
+from pyrat.util.functional.aux_numpy import *
+from pyrat.util.functional.aux_python import *
 import cvxpy as cp
 
 
+@reg_property
 def is_fullspace(self: Polyhedron) -> bool:
     """
     check if this polyhedron represents R^n
