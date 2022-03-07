@@ -26,6 +26,9 @@ from ._add import __add__, __iadd__
 from ._sub import __sub__, __isub__
 from .is_empty import is_empty
 from .is_fullspace import is_fullspace
+from .is_fulldim import is_fulldim
+from .is_bounded import is_bounded
+from .contains import contains
 
 __all__ = [
     "_mks_add",
@@ -58,4 +61,7 @@ __all__ = [
     "__isub__",
     "is_empty",
     "is_fullspace",
+    "is_fulldim",
+    "is_bounded",
+    "contains",
 ]

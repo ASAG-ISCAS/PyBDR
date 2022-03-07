@@ -1,10 +1,15 @@
 import numpy as np
 
 from pyrat.geometry import Polyhedron
+from scipy.spatial import ConvexHull
 
 
 def test_basic():
-    arr = np.random.rand(3, 4)
+    arr = np.random.rand(100, 4)
+    hull = ConvexHull(arr)
+    print(hull.vertices)
+    print(hull)
+    exit(False)
     p = Polyhedron(arr)
     b = p
     e = Polyhedron.empty(2)

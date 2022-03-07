@@ -6,10 +6,8 @@ if TYPE_CHECKING:
 
 
 def __add__(self: Polyhedron, other: Polyhedron) -> Polyhedron:
-    print("calling __add__")
     return self.__class__._mks_add(self, other)
 
 
 def __iadd__(self: Polyhedron, other: Polyhedron):
-    print("calling __iadd__")
     return self.__add__(other)

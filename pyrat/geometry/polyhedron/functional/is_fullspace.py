@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from pyrat.geometry import Polyhedron
 from pyrat.util.functional.aux_numpy import *
 from pyrat.util.functional.aux_python import *
-import cvxpy as cp
+from pyrat.util.functional.aux_solver import *
 
 
 @reg_property
@@ -38,12 +38,21 @@ def is_fullspace(self: Polyhedron) -> bool:
         e = np.concatenate(e, -e, axis=0)
         r = self.r
         r_num = self.r.shape[1]
-
-        # TODO
-        pass
-
-        # TODO
-        pass
-
-    # TODO
-    pass
+        # define linear programming
+        c = np.zeros((r_num, 1), dtype=float)
+        ieqa = -np.eye(r_num, dtype=float)
+        ieqb = np.zeros((r_num, 1), dtype=float)
+        eqa = r
+        eqb = None
+        lb = np.zeros((r_num, 1), dtype=float)
+        ub = np.zeros((r_num, 1), dtype=float)
+        for j in range(e.shape[1]):
+            # solve the feasibility linear programming
+            eqb = e[:, j]
+            x, _ = lp(c, ieqa, ieqb, eqa, eqb, lb, ub)
+            if x is None:
+                # if infeasible, the conic combinations of rays
+                # failed to provide a basis vector
+                is_full = False
+                break
+    return is_full

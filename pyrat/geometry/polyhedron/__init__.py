@@ -33,6 +33,9 @@ class Polyhedron:
         __isub__,
         is_empty,
         is_fullspace,
+        is_fulldim,
+        is_bounded,
+        contains,
     )
 
     def __init__(self, arr: np.ndarray, opt: str = "h"):
@@ -63,7 +66,7 @@ class Polyhedron:
         # internal variables for specific property checking
         self._int_empty = None
         self._int_bounded = None
-        self._int_fullspace = None
+        self._int_fulldim = None
         self._int_inner_pt = None
         self._int_cheby_data = None
         self._int_lb = None

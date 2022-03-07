@@ -21,7 +21,7 @@ def fullspace(cls: Polyhedron, dim: int) -> Polyhedron:
     p = cls._new(h, "h")
     p._irr_hrep = True
     p._int_empty = dim == 0  # R^0 is an empty set
-    p._int_fullspace = dim > 0  # R^0 is not fully dimensional
+    p._int_fulldim = dim > 0  # R^0 is not fully dimensional
     p._int_bounded = dim == 0  # R^0 is bounded
     p._int_lb = np.full((dim, 1), -np.inf, dtype=float)
     p._int_ub = np.full((dim, 1), np.inf, dtype=float)

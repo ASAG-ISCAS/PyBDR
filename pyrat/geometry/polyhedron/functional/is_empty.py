@@ -39,12 +39,12 @@ def is_empty(self: Polyhedron) -> bool:
                     # calculate the maximum distance to vertices
                     hn = self._v - np.tile(ip.x, (2, 1))
                     d = np.sqrt(np.sum(hn**2, axis=1))
-                    dmax = np.max(d)
+                    d_max = np.max(d)
                 else:
                     # calculate teh maximum violation of inequalities
                     hn = self.ieqh @ np.concatenate([ip.x, -1], axis=1)
-                    dmax = np.max(hn)
-                if dmax > self._abs_tol:
+                    d_max = np.max(hn)
+                if d_max > self._abs_tol:
                     # maximum allowable tolerance is violated, region is empty
                     self._int_empty = True
                 else:
