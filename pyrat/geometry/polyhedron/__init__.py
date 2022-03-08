@@ -36,6 +36,7 @@ class Polyhedron:
         is_fulldim,
         is_bounded,
         contains,
+        lrs,
     )
 
     def __init__(self, arr: np.ndarray, opt: str = "h"):

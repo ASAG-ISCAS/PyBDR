@@ -5,11 +5,7 @@ from scipy.spatial import ConvexHull
 
 
 def test_basic():
-    arr = np.random.rand(100, 4)
-    hull = ConvexHull(arr)
-    print(hull.vertices)
-    print(hull)
-    exit(False)
+    arr = np.random.rand(10, 4)
     p = Polyhedron(arr)
     b = p
     e = Polyhedron.empty(2)

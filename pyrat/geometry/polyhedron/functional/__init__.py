@@ -29,6 +29,7 @@ from .is_fullspace import is_fullspace
 from .is_fulldim import is_fulldim
 from .is_bounded import is_bounded
 from .contains import contains
+from .lrs import lrs
 
 __all__ = [
     "_mks_add",
@@ -64,4 +65,5 @@ __all__ = [
     "is_fulldim",
     "is_bounded",
     "contains",
+    "lrs",
 ]

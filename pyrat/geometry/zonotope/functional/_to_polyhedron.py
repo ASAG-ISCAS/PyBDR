@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 from itertools import combinations
 from pyrat.util.functional.aux_numpy import *
+from pyrat.util.functional.aux_python import *
 
 """
 This function convert input zonotope to polytope representation
@@ -17,8 +18,8 @@ This function convert input zonotope to polytope representation
 """
 
 
-def cvt2polyhedron(z: Zonotope) -> (Polyhedron, np.ndarray, bool):
-    nz = z.remove_empty_gen()
+def _to_polyhedron(self: Zonotope) -> (Polyhedron, np.ndarray, bool):
+    nz = self.remove_empty_gen()
     c, g = nz.center, nz.generator
     dim, gen_num = g.shape
     is_full_dim = False
@@ -68,7 +69,7 @@ def cvt2polyhedron(z: Zonotope) -> (Polyhedron, np.ndarray, bool):
             if not is_empty(zo_idxes):
                 is_full_dim = True
                 # compute polytope in transformed space
-                poly, _, _ = cvt2polyhedron(Zonotope(z_[nzo_idxes, :]))
+                poly, _, _ = Zonotope(z_[nzo_idxes, :]).to("polyhedron")
                 # transform back to original space
                 a = (
                     np.concatenate(
@@ -98,7 +99,7 @@ def cvt2polyhedron(z: Zonotope) -> (Polyhedron, np.ndarray, bool):
         nzo = np.setdiff1d(np.arange(s.shape[0]), zo)
         if not is_empty(zo):
             # compute polytope in transformed space
-            poly, _, _ = cvt2polyhedron(Zonotope(z_[zo, :]))
+            poly, _, _ = Zonotope(z_[zo, :]).to("polyhedron")
             # transform back to original space
             a = (
                 np.concatenate(

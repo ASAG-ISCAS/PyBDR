@@ -7,7 +7,8 @@ import numpy as np
 if TYPE_CHECKING:
     from pyrat.geometry.zonotope import Zonotope
     from pyrat.geometry.polyhedron import Polyhedron
-from .cvt2polyhedron import cvt2polyhedron
+
+from pyrat.util.functional.aux_python import *
 
 
 """
@@ -16,8 +17,9 @@ Refs:
 """
 
 
-def approx_mink_diff_althoff(lhs: Zonotope, rhs: Zonotope) -> Zonotope:
-    p, comb, _ = cvt2polyhedron(lhs)
+@reg_classmethod
+def _approx_mink_diff_althoff(cls: Zonotope, lhs: Zonotope, rhs: Zonotope) -> Zonotope:
+    p, comb, _ = lhs.to("polyhedron")
     h, k = p.ieqa, p.ieqb
     h_ori = h[: 0.5 * h.shape[0]]
     # number of rhs generators

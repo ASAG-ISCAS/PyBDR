@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 
 def __sub__(self: Polyhedron, other: Polyhedron) -> Polyhedron:
-    return self.__class__._mks_sub(self, other)
+    return self._mks_sub(self, other)
 
 
 def __isub__(self: Polyhedron, other: Polyhedron) -> Polyhedron:
