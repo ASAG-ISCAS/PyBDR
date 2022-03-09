@@ -15,15 +15,14 @@ def __sub__(
         z = self._z.copy()
         z[:, :1] -= other
         return self._new(self.__class__, z)
-    elif isinstance(other, Zonotope):
+    try:
         if method == "althoff":
             return self._approx_mink_diff_althoff(self, other)
         elif method == "cons_zono":
             return self._approx_mink_diff_cons_zono(self, other)
         else:
             raise Exception("Unsupported method")
-
-    else:
+    except:
         raise Exception("Invalid operand to do Minkowski difference")
 
 

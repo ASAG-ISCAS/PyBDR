@@ -6,4 +6,4 @@ if TYPE_CHECKING:
 
 
 def __abs__(self: Zonotope) -> Zonotope:
-    return self._new(self.__class__, abs(self._z))
+    return self._new(abs(self._z))

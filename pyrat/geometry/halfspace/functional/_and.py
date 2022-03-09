@@ -4,9 +4,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pyrat.geometry import HalfSpace
 
-from pyrat.util.functional.aux_python import *
 
-
-@reg_property
-def dim(self: HalfSpace) -> int:
-    return self.c.shape[0]
+def __and__(self: HalfSpace, other):
+    raise NotImplementedError

@@ -13,7 +13,7 @@ def test_np_function():
 
 
 def test_construction():
-    z = Zonotope.random_fix_dim(2)
+    z = Zonotope.rand_fix_dim(2)
     print(z)
     print(z.dim)
     assert z.dim == 2
@@ -33,12 +33,12 @@ def test_numeric_operations():
     z0 = z + 1.2
     z0 += 2.5
     z1 = z + z0
-    z2 = z0 - z1
+    # z2 = z0 - z1
     # z3=Zonotope.__sub__(z,z1,method=)
 
 
 def test_auxiliary_functions():
-    z = Zonotope.random_fix_dim(2)
+    z = Zonotope.rand_fix_dim(2)
     print(z)
     print(z.dim)
     print(z.center, z.center.shape)

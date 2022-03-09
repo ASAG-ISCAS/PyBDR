@@ -5,9 +5,9 @@ if TYPE_CHECKING:
     from pyrat.geometry import Zonotope
 
 from pyrat.util.functional.aux_python import *
-from pyrat.util.functional.aux_numpy import *
+import pyrat.util.functional.aux_numpy as an
 
 
 @reg_property
 def is_empty(self: Zonotope) -> bool:
-    return is_empty(self._z)
+    return an.is_empty(self._z)
