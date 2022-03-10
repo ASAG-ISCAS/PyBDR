@@ -25,6 +25,10 @@ class Zonotope:
         _to_polyhedron,
         _approx_mink_diff_althoff,
         _approx_mink_diff_cons_zono,
+        _to_interval,
+        empty,
+        is_interval,
+        cart_prod,
     )
 
     def __init__(self, z: np.ndarray):

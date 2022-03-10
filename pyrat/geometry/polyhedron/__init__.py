@@ -37,6 +37,7 @@ class Polyhedron:
         is_bounded,
         contains,
         lrs,
+        removed_halfspaces,
     )
 
     def __init__(self, arr: np.ndarray, opt: str = "h"):

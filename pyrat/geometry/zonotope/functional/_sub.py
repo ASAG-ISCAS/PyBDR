@@ -30,3 +30,10 @@ def __isub__(
     self: Zonotope, other: Zonotope | numbers.Real, method: str = "althoff"
 ) -> Zonotope:
     return self.__sub__(other, method)
+
+
+def __rsub__(
+    self: Zonotope, other: Zonotope | numbers.Real, method: str = "althoff"
+) -> Zonotope:
+    raise NotImplementedError
+    # TODO

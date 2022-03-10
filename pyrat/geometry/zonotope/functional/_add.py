@@ -24,3 +24,7 @@ def __add__(self: Zonotope, other: Zonotope | numbers.Real) -> Zonotope:
 
 def __iadd__(self: Zonotope, other: Zonotope | numbers.Real) -> Zonotope:
     return self + other
+
+
+def __radd__(self: Zonotope, other: Zonotope | numbers.Real) -> Zonotope:
+    return self + other
