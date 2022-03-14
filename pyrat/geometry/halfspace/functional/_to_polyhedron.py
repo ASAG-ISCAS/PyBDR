@@ -6,7 +6,7 @@ import numpy as np
 
 if TYPE_CHECKING:
     from pyrat.geometry import HalfSpace
-from pyrat.geometry import Polyhedron
+    from pyrat.geometry import Polyhedron
 
 
 def _to_polyhedron(self: HalfSpace) -> Polyhedron:

@@ -6,8 +6,7 @@ import numpy as np
 
 if TYPE_CHECKING:
     from pyrat.geometry import Interval
-
-from pyrat.geometry import Zonotope
+    from pyrat.geometry import Zonotope
 
 
 def _to_zonotope(self: Interval) -> Zonotope:
