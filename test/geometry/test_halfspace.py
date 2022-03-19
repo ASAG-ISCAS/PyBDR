@@ -12,6 +12,6 @@ def test_python():
 def test_basic():
     c = np.random.rand(6)
     d = random.random()
-    h = HalfSpace(c, d)
+    h = HalfSpace()
     print(h)
     pass

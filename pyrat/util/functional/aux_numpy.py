@@ -8,7 +8,7 @@ def is_empty(arr: np.ndarray) -> bool:
     :return: returns True if X is an empty array and 0 otherwise.
     An empty array has no elements, that is prod(size(X))==0.
     """
-    return np.prod(arr.shape) == 0
+    return False if arr is None else np.prod(arr.shape) == 0
 
 
 def cross_ndim(m: np.ndarray) -> np.ndarray:

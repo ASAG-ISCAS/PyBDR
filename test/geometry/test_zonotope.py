@@ -14,6 +14,8 @@ def test_np_function():
 
 def test_construction():
     z = Zonotope.rand_fix_dim(2)
+    p = z.to("polyhedron")
+    print(p)
     print(z)
     print(z.dim)
     assert z.dim == 2
