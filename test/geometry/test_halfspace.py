@@ -4,7 +4,10 @@ from pyrat.geometry import HalfSpace
 
 
 def test_python():
-    print(np.finfo(np.float).eps)
+    a = np.random.rand(2)
+    b = np.random.rand(10, 2)
+    c = np.matmul(a[None, None], b[:, :, None]).squeeze()
+    print(c.shape)
     pass
 
 
@@ -23,5 +26,5 @@ def test_operators():
     print(0.1 + h)
 
 
-if __name__ == "__main__":
-    test_python()
+# if __name__ == "__main__":
+#     test_python()

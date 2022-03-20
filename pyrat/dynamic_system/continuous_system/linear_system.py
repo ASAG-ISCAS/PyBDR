@@ -9,7 +9,7 @@ import numpy as np
 class Options:
     time_step: float = None
     max_zono_order: int = None
-    algo: str = "std"
+    algo: str = "standard"
     reduction_tec: str = None
     taylor_terms: int = None
     partition: np.ndarray = None

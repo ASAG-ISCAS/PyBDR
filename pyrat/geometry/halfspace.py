@@ -11,11 +11,11 @@ class HalfSpace:
     def __init__(self, c: np.ndarray = None, d: float = None):
         """
         define Halfspace by c@x<=d, where c is column vector and d is float number
-        :param c: 1-dimensional vector as numpy array
-        :param d: float number
+        :param c: 1-dimensional vector as numpy array, indicates normal direction
+        :param d: float number indicates offset to the origin
         """
         if c is not None:
-            assert c.ndim == 1
+            assert c.ndim == 1 and np.sum(abs(c)) > 0
         self._c = c
         self._d = d
 
@@ -57,21 +57,18 @@ class HalfSpace:
     # =============================================== operator
     def __add__(self, other):
         """
-        override "+" for Minkowski addition with a vector or a halfspace
+        override "+" for Minkowski addition with a vector, equals to shift the boundary
         :param other: another halfspace instance
         :return:
         """
         if self.is_empty:
             raise Exception("Empty set")
-        if isinstance(other, numbers.Real):
-            # one-dimensional halfspace adding a number
-            return HalfSpace(self.c, self.d + self.c[0] * other)
-        elif isinstance(other, np.ndarray):
+        if isinstance(other, np.ndarray):
             # adding a vector
             assert self.dim == other.shape[0] and other.ndim == 1
             return HalfSpace(self.c, self.d + self.c @ other)
-        # default return an empty set, no valid addition
-        return self.empty()
+        else:
+            raise Exception("Unsupported addition")
 
     def __iadd__(self, other):
         """
@@ -82,7 +79,26 @@ class HalfSpace:
         return self + other
 
     def __radd__(self, other):
-        return self + other
+        raise NotImplementedError(
+            "For more details, please check https://stackoverflow.com/a/58120561/10450361"
+        )
+
+    def __sub__(self, other):
+        return self + (-other)
+
+    def __isub__(self, other):
+        return self - other
+
+    def __rsub__(self, other):
+        raise NotImplementedError(
+            "For more details, please check https://stackoverflow.com/a/58120561/10450361"
+        )
+
+    def __pos__(self):
+        return self
+
+    def __neg__(self):
+        return HalfSpace(-self.c, -self.d)
 
     def __len__(self):
         """
@@ -123,8 +139,7 @@ class HalfSpace:
         return other & self
 
     def __mul__(self, other):
-        raise NotImplementedError
-        # TODO
+        raise NotImplementedError("For matrix multiplication, using @ instead")
 
     def __matmul__(self, other):
         """
@@ -132,8 +147,15 @@ class HalfSpace:
         :param other: matrix as numpy array
         :return:
         """
-        raise NotImplementedError
-        # TODO
+        try:
+            c = np.linalg.inv(other).T @ self.c
+            return HalfSpace(c, self.d)
+        except:
+            if self.is_empty:
+                raise Exception("Empty set")
+            elif abs(np.linalg.det(other)) < np.finfo(np.float).eps:
+                raise Exception("Linear transformation with near-singular matrix")
+        raise Exception("Matrix multiplication failed")
 
     def __rmatmul__(self, other):
         return self @ other
@@ -172,8 +194,12 @@ class HalfSpace:
         :param other: another given geometry instance
         :return:
         """
-        # TODO
-        raise NotImplementedError
+        if isinstance(other, np.ndarray):
+            # if given N checking points as matrix in shape (N,dim)
+            assert other.ndim == 2 and other.shape[0] > 0
+            return (self.c[None, None, :] @ other[:, :, None]).squeeze() <= self.d
+        else:
+            raise NotImplementedError
 
     def is_intersecting(self, other) -> bool:
         """
@@ -207,3 +233,12 @@ class HalfSpace:
     def proj(self, d: int, dims: np.ndarray):
         raise NotImplementedError
         # TODO
+
+    def dist2bd(self, other: np.ndarray):
+        """
+        get distances to this halfspace boundary, negative distance for inside point
+        :param other: N points in shape (N,dim)
+        :return:
+        """
+        assert other.ndim == 2
+        return np.matmul(self.c[None, None], other[:, :, None]).squeeze() - self.d
