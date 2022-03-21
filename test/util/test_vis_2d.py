@@ -1,7 +1,7 @@
 import numpy as np
 
 from pyrat.geometry import HalfSpace
-from pyrat.util.visulization import vis2d
+from pyrat.util.visualization import vis2d
 
 
 def test_vis_rand_halfspace():
@@ -18,8 +18,9 @@ def test_vis_halfspace():
     temp = h @ m
     print(temp)
     vh = HalfSpace(np.array([-1, 0]), 10)
-    hh = HalfSpace(np.array([0, 1]), 1)
-    vis2d([hh, vh])
+    hh = HalfSpace(np.array([0, -1]), 5)
+    pt = vh.intersection_pt(hh).reshape((1, -1))
+    vis2d([vh, hh, h, pt, np.random.rand(5, 2) * 100], eq_axis=True)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import numbers
-
 import numpy as np
 
 import pyrat.util.functional.aux_numpy as an
@@ -43,6 +41,14 @@ class HalfSpace:
         :return:
         """
         return self._d
+
+    @property
+    def h(self) -> np.ndarray:
+        """
+        get c and d as one column vector, d as the final element
+        :return:
+        """
+        return np.append(self.c, self.d)
 
     @property
     def is_empty(self) -> bool:
@@ -210,14 +216,31 @@ class HalfSpace:
         # TODO
         raise NotImplementedError
 
-    def common_pt(self, other) -> np.ndarray:
+    def is_fullspace(self, d: int) -> bool:
         """
-        get random common point of two halfspaces as numpy array
-        :param other: another halfspace instance
+        check if this halfspace capture specified full space
+        :param d: specified dimension, default is 0
         :return:
         """
-        raise NotImplementedError
-        # TODO
+        return abs(self._c[d]) <= np.finfo(np.float).eps
+
+    def common_pt(self, other) -> np.ndarray:
+        pt = self.intersection_pt(other)
+        c = np.vstack([self.c, other.c]).astype(dtype=float).T
+        norm = np.linalg.norm(c, axis=1)
+        c /= norm[:, None]
+        factors = np.random.rand(2)
+        return pt - c @ factors
+
+    def intersection_pt(self, other):
+        """
+        get the intersection of two halfspace boundaries
+        :param other: other halfspace instance
+        :return:
+        """
+        assert not (self.is_empty or other.is_empty)
+        mv = np.vstack([self.h, other.h])
+        return np.linalg.lstsq(mv[:, :-1], mv[:, -1])[0].reshape((1, -1))
 
     def rotate(self, d: np.ndarray, rot_pt: np.ndarray):
         """
