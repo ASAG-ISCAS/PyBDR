@@ -234,10 +234,11 @@ class HalfSpace:
 
     def intersection_pt(self, other):
         """
-        get the intersection of two halfspace boundaries
+        get the intersection of two halfspace boundaries, only work for 2d test
         :param other: other halfspace instance
         :return:
         """
+        assert self.dim == 2 and other.dim == 2
         assert not (self.is_empty or other.is_empty)
         mv = np.vstack([self.h, other.h])
         return np.linalg.lstsq(mv[:, :-1], mv[:, -1])[0].reshape((1, -1))
@@ -264,4 +265,6 @@ class HalfSpace:
         :return:
         """
         assert other.ndim == 2
-        return np.matmul(self.c[None, None], other[:, :, None]).squeeze() - self.d
+        return np.matmul(
+            self.c[None, None], other[:, :, None]
+        ).squeeze() - self.d / np.linalg.norm(self.c)

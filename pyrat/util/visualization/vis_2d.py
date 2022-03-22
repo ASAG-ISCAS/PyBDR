@@ -40,6 +40,11 @@ def _min_max(objs):
         if obj.__class__.__name__ == "HalfSpace":
             assert obj.dim == 2
             hs.append(obj)
+        elif obj.__class__.__name__ == "VectorZonotope":
+            assert obj.dim == 2
+            pts = obj.polygon()
+            r_min = min(pts.min(), r_min)
+            r_max = max(pts.max(), r_max)
         elif isinstance(obj, np.ndarray):
             assert obj.ndim == 2 and obj.shape[1] == 2
             r_min = min(np.min(obj), r_min)
@@ -132,6 +137,14 @@ def _vis_halfspace_old(h, ax, r_min, r_max):
         ax.fill_between(x, y1=y, y2=r_max, alpha=0.3)
 
 
+def _vis_vector_zonotope(z, ax, r_min, r_max):
+    pts = z.polygon()
+    print(pts.shape)
+    exit(False)
+    # TODO
+    pass
+
+
 def _vis_pts(pts, ax, pt_size=3):
     ax.scatter(
         pts[:, 0],
@@ -158,6 +171,8 @@ def vis2d(objs, width=800, height=800, eq_axis=True):
     for obj in objs:
         if obj.__class__.__name__ == "HalfSpace":
             _vis_halfspace(obj, ax, r_min, r_max)
+        elif obj.__class__.__name__ == "VectorZonotope":
+            _vis_vector_zonotope(obj, ax, r_min, r_max)
         elif isinstance(obj, np.ndarray):
             _vis_pts(obj, ax)
         else:

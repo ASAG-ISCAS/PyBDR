@@ -1,3 +1,3 @@
-from .linear_system import LinearSystem
+from .linear_system import LinearSystem, LSOptions
 
-__all__ = ["LinearSystem"]
+__all__ = ["LinearSystem", "LSOptions"]

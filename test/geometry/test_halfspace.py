@@ -42,5 +42,13 @@ def test_common_pt():
     vis2d([h0, h1, pt, int_pt])
 
 
+def test_distance_to_boundary():
+    h = HalfSpace(np.array([1, 2]), 1)
+    p = np.zeros((1, 2))
+    d = h.dist2bd(p)
+    print(d**2)
+    vis2d([h, p])
+
+
 # if __name__ == "__main__":
 #     test_python()

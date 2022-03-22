@@ -1,18 +1,15 @@
 import numpy as np
 
-from pyrat.dynamic_system import LinearSystem
-
-from pyrat.dynamic_system.continuous_system.linear_system.functional import Options
+from pyrat.dynamic_system import LinearSystem, LSOptions
 
 
 def test_reach():
     xa = np.random.rand(2, 2)
     xb = np.random.rand(2, 2)
-    l = LinearSystem(xa, xb, 0, xa, xb, 0)
-    p = Options
-    p.algo = "std"
-    l.over_reach(p)
-    pass
+    sys = LinearSystem(xa, xb, 0, xa, xb, 0)
+    p = LSOptions()
+    p.algo = "standard"
+    sys.over_reach(p)
 
 
 def test_mpmath():
