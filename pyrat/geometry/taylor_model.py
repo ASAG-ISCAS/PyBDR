@@ -1,7 +1,7 @@
 from __future__ import annotations
-import numpy as np
+from typing import Callable
 
 
 class TaylorModel:
-    def __init__(self):
+    def __init__(self, f: Callable):
         raise NotImplementedError

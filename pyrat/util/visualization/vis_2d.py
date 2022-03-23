@@ -42,7 +42,7 @@ def _min_max(objs):
             hs.append(obj)
         elif obj.__class__.__name__ == "VectorZonotope":
             assert obj.dim == 2
-            pts = obj.polygon()
+            pts = obj.vertices()
             r_min = min(pts.min(), r_min)
             r_max = max(pts.max(), r_max)
         elif isinstance(obj, np.ndarray):
@@ -138,11 +138,8 @@ def _vis_halfspace_old(h, ax, r_min, r_max):
 
 
 def _vis_vector_zonotope(z, ax, r_min, r_max):
-    pts = z.polygon()
-    print(pts.shape)
-    exit(False)
-    # TODO
-    pass
+    p = plt.Polygon(z.polygon(), closed=True, alpha=0.3)
+    ax.add_patch(p)
 
 
 def _vis_pts(pts, ax, pt_size=3):

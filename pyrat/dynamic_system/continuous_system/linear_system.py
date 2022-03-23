@@ -23,7 +23,7 @@ class LSOptions:
     factors: np.ndarray = None
     u_track_vec: np.ndarray = None
     u = None
-    isrv = None
+    is_rv = None
 
 
 class LinearSystem:

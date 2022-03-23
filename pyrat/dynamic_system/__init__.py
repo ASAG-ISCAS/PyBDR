@@ -1,3 +1,3 @@
 from .continuous_system import *
 
-__all__ = ["LinearSystem", "LSOptions"]
+__all__ = ["LinearSystem", "LSOptions", "NonLinearSystem"]

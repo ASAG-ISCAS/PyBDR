@@ -10,10 +10,3 @@ def test_reach():
     p = LSOptions()
     p.algo = "standard"
     sys.over_reach(p)
-
-
-def test_mpmath():
-    import mpmath as mp
-
-    # test interval vector
-    pass
