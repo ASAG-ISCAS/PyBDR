@@ -1,14 +1,27 @@
 import numpy as np
+from inspect import signature
 
 
 def test_sympy():
     import sympy as sy
 
     x, t, z, nu = sy.symbols("x t z nu")
-    expr = sy.diff(sy.sin(x) * sy.exp(x), x, 100)
+    x = sy.symbols("x:3")
+    print(x)
+    dxdt = sy.symbols(("dxdt:5"))
+    print(dxdt)
+    expr = sy.sin(x[0]) * sy.exp(x[0]) + 1
     print(expr)
     f = sy.lambdify(x, expr, "numpy")
-    print(f(np.ones(3)))
+    ivf = sy.lambdify(x, expr, "mpmath")
+    print(signature(f))
+    print(signature(ivf))
+    print(f(*np.ones(3)))
+    import mpmath as mm
+
+    x = mm.iv.matrix(3, 1)
+    print(x)
+    print(ivf(*x))
 
     # TODO
     pass
@@ -18,8 +31,10 @@ def test_interval_matrix():
     import mpmath as mm
 
     a = np.array((2, 2), dtype=object)
+    v = mm.iv.mpf(1)
+    print(v.a)
     a = mm.iv.zeros(2, 2)
-    a[0, 0].pm = -1000
+    a[0, 0] = mm.iv.mpf([])
     print(a[0, 0])
     print(mm.expm(a))
     print(a)
