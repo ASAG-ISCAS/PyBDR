@@ -60,7 +60,7 @@ def test_case_2():
 
 def test_case_3():
     def f(_x, _u, _g, _k0, _k1):
-        system = []
+        system = [None] * 6
         expr0 = -sqrt(2) * sqrt(_g) * _k0 * sqrt(_x[0]) + _k1 * (4 - _x[5]) + _u + 0.1
         expr1 = sqrt(2) * sqrt(g) * k0 * (sqrt(_x[0]) - sqrt(_x[1]))
         system.append([expr0, expr1])

@@ -148,7 +148,8 @@ class VectorZonotope:
         # TODO
 
     def __str__(self):
-        return str(self.center) + "\n" + str(self.generator)
+        sep = "\n ====================================================== \n"
+        return sep + str(self.center) + "\n" + str(self.generator) + sep
 
     def __abs__(self):
         return VectorZonotope(abs(self._z))

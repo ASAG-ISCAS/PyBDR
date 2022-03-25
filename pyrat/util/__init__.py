@@ -1,1 +1,1 @@
-__all__ = ["functional", "visualization"]
+__all__ = ["functional", "visualization", "result_manager"]

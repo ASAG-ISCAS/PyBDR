@@ -61,7 +61,7 @@ class LinearSystem:
         # ========= properties for inner algorithm
         self._taylor = {"taylor": None, "F": None}
         self._krylov = {}
-        self._over_reach_algo = {
+        self._ro_algo = {
             "standard": self._over_reach_standard,
             "adaptive": self._over_reach_adaptive,
             "wrapping_free": self._over_reach_wrapping_free,
@@ -211,9 +211,9 @@ class LinearSystem:
         # TODO
 
     # =============================================== public method
-    def over_reach(self, op: LSOptions):
-        return self._over_reach_algo[op.algo](op)
+    def reach_over(self, op: LSOptions):
+        return self._ro_algo[op.algo](op)
 
-    def under_reach(self, op: LSOptions):
+    def reach_under(self, op: LSOptions):
         raise NotImplementedError
         # TODO
