@@ -7,10 +7,13 @@ import mpmath as mm
 
 def test_case_0():
     x = symbols("x:3", seq=True)
-    eq = x[2] ** 2
+    eq = Matrix([x[2] ** 2 + sin(x[1]), tan(x[0])])
     print(x)
-    print(hessian(eq, x))
+    print(hessian(eq[1], x))
+    temp = eq.jacobian(x)
+    print(temp.rows, temp.cols)
     print(eq.jacobian(x))
+    print(series(eq[1], x[0]).removeO())
     # f = lambdify(eq)
 
 
@@ -29,13 +32,15 @@ def test_case_1():
     print(f)
     xv = np.ones(6)
     uv = np.ones(1) * 2
-    print(f(xv, uv))
     print(signature(f))
     jac = system.jacobian(x)
     print(jac.rows, jac.cols)
+    print(jac)
+
     for i in range(jac.rows):
-        for j in range(jac.cols):
-            print(jac[i, j])
+        print(hessian(system[i], x))
+        print("+++++++++++")
+        print(series(system, x))
         print("--------------------------")
 
 
@@ -60,25 +65,23 @@ def test_case_2():
 
 def test_case_3():
     def f(_x, _u, _g, _k0, _k1):
-        system = [None] * 6
         expr0 = -sqrt(2) * sqrt(_g) * _k0 * sqrt(_x[0]) + _k1 * (4 - _x[5]) + _u + 0.1
         expr1 = sqrt(2) * sqrt(g) * k0 * (sqrt(_x[0]) - sqrt(_x[1]))
-        system.append([expr0, expr1])
 
-        return Matrix(system)
+        return Matrix([expr0, expr1])
 
     x, (u, g, k0, k1) = symbols(("x:6", "u,g,k0,k1"))
     s = f(x, u, g, k0, k1)
     sv = lambdify([x, u, g, k0, k1], s, "numpy")
     siv = lambdify([x, u, g, k0, k1], s, "mpmath")
 
-    x = mm.iv.matrix(6, 1)
-    x[0] = mm.iv.mpf([-1, 1])
-    x[1] = mm.iv.mpf(2)
-    print(x)
-    u, g, k0, k1 = mm.iv.mpf(1), mm.iv.mpf(2), mm.iv.mpf(3), mm.iv.mpf(4)
-    v1 = siv(x, u, g, k0, k1)
-    print(v1)
+    # x = mm.iv.matrix(6, 1)
+    # x[0] = mm.iv.mpf([-1, 1])
+    # x[1] = mm.iv.mpf(2)
+    # print(x)
+    # u, g, k0, k1 = mm.iv.mpf(1), mm.iv.mpf(2), mm.iv.mpf(3), mm.iv.mpf(4)
+    # v1 = siv(x, u, g, k0, k1)
+    # print(v1)
 
     x = np.ones(6)
     u, g, k0, k1 = 1, 2, 3, 4

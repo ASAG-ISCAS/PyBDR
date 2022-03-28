@@ -1,9 +1,17 @@
 from __future__ import annotations
+
+import copy
+
 import numpy as np
 from dataclasses import dataclass
+import sympy as sy
 
 import scipy.special
-from pyrat.util.result_manager import ReachableResult, SimulationResult
+from pyrat.util.result_manager import (
+    ReachableResult,
+    ReachableElement,
+    SimulationResult,
+)
 
 
 class NonLinearSystem:
@@ -19,6 +27,7 @@ class NonLinearSystem:
     @dataclass
     class Options:
         time_step: float = None
+        t_start: float = None
         taylor_terms: int = 1
         zonotope_order: int = 50
         algo: str = "lin"
@@ -52,7 +61,84 @@ class NonLinearSystem:
             # TODO
 
         # =============================================== private method
-        def _init_reach_over(self, r0, opt: NonLinearSystem.Options):
+        def jacobian(self):
+            # TODO
+            raise NotImplementedError
+
+        def evaluation(self, x, u, mode: str = "numpy"):
+            f = sy.lambdify(self._model.variables, self._model.f, mode)
+            return f(x, u)
+
+        def linearize(self, opt: NonLinearSystem.Options, r):
+            """
+            linearize the nonlinear system, linearization error is n;ot included yet
+            :param opt: options for the linearization
+            :param r: actual reachable set
+            :return:
+            """
+            # linearization point p.u of the input is the center of the input set
+            p = {"u": opt.u_trans}
+            # obtain linearization point
+            if hasattr(opt, "lin_pt"):
+                p["x"] = opt.lin_pt
+            elif hasattr(opt, "ref_pts"):
+                cur_step = int(np.ceil((opt.t - opt.t_start) / opt.time_step))
+                p["x"] = 1 / 2 * np.sum(opt.ref_pts[:, cur_step : cur_step + 1], axis=1)
+            else:
+                # linearization point p.x of the state is the center of the last
+                # reachable set R translated by 0.5*delta_t*f0
+                f0_prev = self.evaluation(r.center, p["u"])
+                try:  # if time step not yet created
+                    p["x"] = r.center + f0_prev * 0.5 * opt.time_step
+                except:
+                    print("time step does NOT created yet")
+                    p["x"] = r.center
+            # substitute p into the system equation to obtain the constraint input
+            f0 = self.evaluation(p["x"], p["u"])
+            # substitute p into the Jacobin with respect to x and u to obtain the
+            # system matrix A and teh input matrix B
+            # TODO
+            raise NotImplementedError
+
+        def _init_reach_over_lin_rem(
+            self, r0, opt: NonLinearSystem.Options
+        ) -> (ReachableResult, NonLinearSystem.Options):
+            # compute the reachable set using the options.algo='lin' algorithm to obtain
+            # a first rough over-approximation of the reachable set
+            # TODO
+            raise NotImplementedError
+
+        def _linear_reach(self, opt: NonLinearSystem.Options, r: ReachableElement):
+            """
+            compute the reachable set after linearize the system
+            :param opt: options for the computation
+            :param r: given initial reachable set
+            :return:
+
+            Refs:
+            [1] M. Althoff et al. "Reachability analysis of nonlinear systems with
+                uncertain parameters using conservative linearization"
+            [2] M. Althoff et al. "Reachability analysis of nonlinear systems using
+                conservative polynomialization and non-convex sets"
+            """
+            # extract initial set and abstraction error
+            r0, err = r.set, r.error
+            # necessary to update part of abstraction that is dependent on x0 when
+            # linearization remainder is not computed
+            if hasattr(opt, "update_init_func"):
+                raise NotImplementedError
+            # linearize the nonlinear system
+
+            raise NotImplementedError
+
+        def _init_reach_over(
+            self, r_init, opt: NonLinearSystem.Options
+        ) -> (ReachableResult, NonLinearSystem.Options):
+            # loop over all parallel initial sets
+            idx, r_tp, r_ti, r0 = 0, {}, {}, {}
+            for i in range(len(r_init)):
+                pass
+
             raise NotImplementedError
             # TODO
 
