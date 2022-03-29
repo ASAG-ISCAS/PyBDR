@@ -33,15 +33,11 @@ def test_case_1():
     xv = np.ones(6)
     uv = np.ones(1) * 2
     print(signature(f))
-    jac = system.jacobian(x)
-    print(jac.rows, jac.cols)
-    print(jac)
+    jac_x = system.jacobian(x)
+    jac_u = system.jacobian(u)
 
-    for i in range(jac.rows):
-        print(hessian(system[i], x))
-        print("+++++++++++")
-        print(series(system, x))
-        print("--------------------------")
+    print(jac_x)
+    print(jac_u)
 
 
 def test_case_2():

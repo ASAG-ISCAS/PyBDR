@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import numpy as np
 
-import pyrat.util.functional.aux_numpy as an
+
+import pyrat.util.functional.auxiliary as aux
 
 
 class HalfSpace:
@@ -58,7 +59,7 @@ class HalfSpace:
         """
         if self.c is None or self.d is None:
             return True
-        return an.is_empty(self.c) and self.d == 0
+        return aux.is_empty(self.c) and self.d == 0
 
     # =============================================== operator
     def __add__(self, other):

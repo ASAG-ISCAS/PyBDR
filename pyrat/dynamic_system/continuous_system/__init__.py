@@ -1,4 +1,6 @@
-from .linear_system import LinearSystem, LSOptions
-from .nonlinear_system import NonLinearSystem
+from .continuous_system import ContSys
+from .linear_system import LinSys
+from .nonlinear_system import NonLinSys
 
-__all__ = ["LinearSystem", "LSOptions", "NonLinearSystem"]
+
+__all__ = ["ContSys", "LinSys", "NonLinSys"]

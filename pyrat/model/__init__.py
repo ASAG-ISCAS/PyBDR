@@ -1,4 +1,5 @@
-from .tank6Eq import tank6Eq
+from .model import Model
+from .tank6Eq import Tank6Eq
 
 
-__all__ = ["tank6Eq"]
+__all__ = ["Model", "Tank6Eq"]

@@ -6,7 +6,7 @@ from itertools import product
 import numpy as np
 from scipy.spatial import ConvexHull
 
-import pyrat.util.functional.aux_numpy as an
+import pyrat.util.functional.auxiliary as aux
 
 
 class VectorZonotope:
@@ -47,7 +47,7 @@ class VectorZonotope:
 
     @property
     def is_empty(self) -> bool:
-        return an.is_empty(self._z)
+        return aux.is_empty(self._z)
 
     @property
     def is_fulldim(self) -> bool:

@@ -3,9 +3,9 @@ from inspect import signature
 import numpy as np
 import scipy.special
 
-from pyrat.dynamic_system import NonLinearSystem as nls
+from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import VectorZonotope
-from pyrat.model import tank6Eq
+from pyrat.model import Tank6Eq
 
 
 def test_case_0():
@@ -17,38 +17,38 @@ def test_case_0():
     """
     init nonlinear system --------------------------------------------------------------
     """
-    system = nls.System(tank6Eq())
+    system = NonLinSys.Sys(Tank6Eq())
 
     """
     init parameters for reachability analysis problem definition -----------------------
     """
-    params = nls.Parameters()
-    params.time_end = 400
-    params.set_r0 = VectorZonotope(
-        np.vstack([np.array([2, 4, 4, 2, 10, 4]), 0.2 * np.eye(6)]).T
-    )
-    params.set_ru = VectorZonotope(np.array([0, 0.005]).reshape((1, -1)))
+    # params = NonLinSys.Parameters()
+    # params.time_end = 400
+    # params.set_r0 = VectorZonotope(
+    #     np.vstack([np.array([2, 4, 4, 2, 10, 4]), 0.2 * np.eye(6)]).T
+    # )
+    # params.set_ru = VectorZonotope(np.array([0, 0.005]).reshape((1, -1)))
 
     """
     init options for the computation ---------------------------------------------------
     """
-    options = nls.Options()
-    options.time_step = 0.1
-    options.taylor_terms = 4
-    options.zonotope_order = 50
-    options.algo = "standard"
-    options.tensor_order = 2
-    options.lagrange_rem["simplify"] = "simplify"
+    option = NonLinSys.Option()
+    option.time_step = 0.1
+    option.taylor_terms = 4
+    option.zonotope_order = 50
+    option.algo = "standard"
+    option.tensor_order = 2
+    option.lagrange_rem["simplify"] = "simplify"
 
     """
     over approximating reachability analysis -------------------------------------------
     """
-    reachable_results = system.reach_over(params, options)
+    reachable_results = system.reach(option)
 
     """
     simulation -------------------------------------------------------------------------
     """
-    simulate_results = system.simulate_rand(params, options)
+    simulate_results = system.simulate_rand(option)
 
     """
     results visualization --------------------------------------------------------------

@@ -1,0 +1,45 @@
+from __future__ import annotations
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from pyrat.geometry import Geometry
+from pyrat.misc import Reachable, Simulation, Specification
+
+
+@dataclass
+class Option(ABC):
+    time_step: float = 0
+    r_init: [Geometry] = None
+    r_unsafe: [Geometry] = None
+    algo: str = None
+    mod: str = "over"  # otherwise "under"
+    specs: [Specification] = None
+
+    @abstractmethod
+    def validate(self) -> bool:
+        raise NotImplementedError
+
+
+class ContSys(ABC):
+    @abstractmethod
+    def __init__(self):
+        raise NotImplementedError
+
+    # =============================================== operator
+    @abstractmethod
+    def __str__(self):
+        raise NotImplementedError
+
+    # =============================================== property
+    @property
+    @abstractmethod
+    def dim(self) -> int:
+        raise NotImplementedError
+
+    # =============================================== public method
+    @abstractmethod
+    def reach(self, op):
+        raise NotImplementedError
+
+    @abstractmethod
+    def simulate(self, op):
+        raise NotImplementedError

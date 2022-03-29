@@ -1,5 +1,5 @@
 from sympy import *
-from dataclasses import dataclass
+from .model import Model
 
 
 def _f(_x, _u):
@@ -16,18 +16,12 @@ def _f(_x, _u):
     return Matrix(dxdt)
 
 
-@dataclass
-class tank6Eq:
+class Tank6Eq(Model):
     """
     system dynamics for the tank benchmark (see Sec. VII in [1])
     :return:
     """
 
-    variables = symbols(("x:6", "u"))
-    f = _f(*variables)
-    name = "tank6Eq"
-
-    def __str__(self):
-        print("MODEL PRINT")
-        raise NotImplementedError
-        # TODO
+    vars = symbols(("x:6", "u"))
+    f = _f(*vars)
+    name = "Tank6Eq"
