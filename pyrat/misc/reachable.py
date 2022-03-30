@@ -8,7 +8,7 @@ from pyrat.geometry import Geometry
 class Reachable:
     @dataclass
     class Element:
-        sets: [Geometry] = None
+        set: Geometry = None
         err: np.ndarray = None
 
     @dataclass
@@ -17,3 +17,8 @@ class Reachable:
         tp: [Reachable.Element] = None
         loc: int = -1
         pre: int = -1
+
+        def init(self, num_ti: int, num_tp: int):
+            assert num_ti >= 0 and num_tp >= 0
+            self.ti = [Reachable.Element] * num_ti
+            self.tp = [Reachable.Element] * num_tp

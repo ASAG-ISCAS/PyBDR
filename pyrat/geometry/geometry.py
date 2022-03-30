@@ -43,6 +43,10 @@ class Geometry(ABC):
     def __str__(self):
         raise NotImplementedError
 
+    @abstractmethod
+    def __add__(self, other):
+        raise NotImplementedError
+
     # =============================================== static method
     @staticmethod
     @abstractmethod

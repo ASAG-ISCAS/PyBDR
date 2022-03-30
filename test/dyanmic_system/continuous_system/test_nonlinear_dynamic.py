@@ -5,6 +5,7 @@ import scipy.special
 
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import VectorZonotope
+from pyrat.misc import Reachable
 from pyrat.model import Tank6Eq
 
 
@@ -33,12 +34,20 @@ def test_case_0():
     init options for the computation ---------------------------------------------------
     """
     option = NonLinSys.Option()
-    option.time_step = 0.1
+    option.t_end = 400
+    option.t_step = 1
     option.taylor_terms = 4
     option.zonotope_order = 50
-    option.algo = "standard"
+    option.algo = "lin"
     option.tensor_order = 2
     option.lagrange_rem["simplify"] = "simplify"
+    option.r_init = [Reachable.Element()]
+    option.r_init[0].set = VectorZonotope(
+        np.vstack([np.array([2, 4, 4, 2, 10, 4]), 0.2 * np.eye(6)]).T
+    )
+    option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
+    option.u = VectorZonotope(np.array([0, 0.005]).reshape((1, -1)))
+    option.u_trans = np.zeros(1)
 
     """
     over approximating reachability analysis -------------------------------------------
@@ -48,7 +57,7 @@ def test_case_0():
     """
     simulation -------------------------------------------------------------------------
     """
-    simulate_results = system.simulate_rand(option)
+    simulation_results = system.simulate(option)
 
     """
     results visualization --------------------------------------------------------------

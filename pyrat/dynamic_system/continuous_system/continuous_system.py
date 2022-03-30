@@ -3,13 +3,19 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pyrat.geometry import Geometry
 from pyrat.misc import Reachable, Simulation, Specification
+import numpy as np
 
 
 @dataclass
 class Option(ABC):
-    time_step: float = 0
-    r_init: [Geometry] = None
+    t_start: float = 0
+    t_end: float = 0
+    t_step: float = 0
+    steps: int = 10
+    r_init: [Reachable.Element] = None
     r_unsafe: [Geometry] = None
+    u: Geometry = None
+    u_trans: np.ndarray = None
     algo: str = None
     mod: str = "over"  # otherwise "under"
     specs: [Specification] = None
@@ -17,6 +23,13 @@ class Option(ABC):
     @abstractmethod
     def validate(self) -> bool:
         raise NotImplementedError
+
+
+@dataclass
+class RunTime(ABC):
+    cur_t: float = 0
+    lin_err_f0: np.ndarray = None
+    lin_err_p: dict = None
 
 
 class ContSys(ABC):
@@ -37,9 +50,9 @@ class ContSys(ABC):
 
     # =============================================== public method
     @abstractmethod
-    def reach(self, op):
+    def reach(self, op) -> Reachable.Result:
         raise NotImplementedError
 
     @abstractmethod
-    def simulate(self, op):
+    def simulate(self, op) -> Simulation.Result:
         raise NotImplementedError

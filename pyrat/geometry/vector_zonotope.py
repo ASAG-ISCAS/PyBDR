@@ -188,6 +188,8 @@ class VectorZonotope:
         return True if np.all(abs(g0 - g1) <= tol) else False
 
     def remove_zero_gen(self):
+        if self.gen_num <= 1:
+            return  # if only one generator, do nothing??? # TODO
         ng = self.generator[:, abs(self.generator).sum(axis=0) > 0]
         self._z = np.hstack([self.center.reshape((-1, 1)), ng])
 
