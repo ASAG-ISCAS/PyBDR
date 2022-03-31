@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.linalg import expm
 
-from pyrat.geometry import Geometry, MatrixInterval
+from pyrat.geometry import Geometry, Interval
 from pyrat.misc import Reachable, Simulation
 from .continuous_system import ContSys, Option
 
@@ -17,6 +17,7 @@ class LinSys:
         origin_contained: bool = False
         taylor_terms = 0
         factors: np.ndarray = None
+        is_rv: bool = False
 
         def validate(self) -> bool:
             raise NotImplementedError
@@ -64,7 +65,7 @@ class LinSys:
             w = expm(xa_abs * op.t_step) - m
             # compute absolute value of w for numerical stability
             w = abs(w)
-            e = MatrixInterval(np.stack([w, -w]))
+            e = Interval(np.stack([-w, w]))
             # write to object structure
             self._taylor["powers"] = xa_power
             self._taylor["err"] = e
@@ -93,7 +94,7 @@ class LinSys:
                 asum_pos += factor * aneg
                 asum_neg += factor * apos
             # instantiate interval matrix
-            asum = MatrixInterval(np.stack([asum_neg, asum_pos]))
+            asum = Interval(np.stack([asum_neg, asum_pos]))
             # write to object structure
             self._taylor["F"] = asum + self._taylor["err"]
 
@@ -103,7 +104,31 @@ class LinSys:
             :param op: options for the linear reachable computation
             :return:
             """
-            v = self._ub @ op.u
+            v = op.u if self._ub is None else self._ub @ op.u
+            # compute vTrans
+            op.is_rv = True
+            if np.all(v.center == 0) and v.z.shape[1] == 1:
+                op.is_rv = False
+            v_trans = op.u_trans if self._ub is None else self._ub @ op.u
+
+            input_solv = None
+            if op.is_rv:
+                # init v_sum
+                v_sum = op.t_step * v
+                a_sum = op.t_step * np.eye(self.dim)
+                # compute higher order terms
+                for i in range(op.taylor_terms):
+                    v_sum += self._taylor["powers"][i] @ (op.factors[i + 1] * v)
+                    a_sum += self._taylor["powers"][i] * op.factors[i + 1]
+
+                # compute overall solution
+                input_solv = v_sum + self._taylor["err"] * op.t_step * v
+            else:
+                # TODO
+                raise NotImplementedError
+
+            # TODO
+
             raise NotImplementedError
 
         def _reach_init_euclidean(self, r: Geometry, op: LinSys.Option):

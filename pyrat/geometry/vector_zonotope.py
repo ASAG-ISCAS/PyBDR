@@ -7,6 +7,7 @@ import numpy as np
 from scipy.spatial import ConvexHull
 
 import pyrat.util.functional.auxiliary as aux
+from pyrat.geometry import Interval
 
 
 class VectorZonotope:
@@ -130,6 +131,10 @@ class VectorZonotope:
         """
         if isinstance(other, numbers.Real):
             return VectorZonotope(self.z * other)
+        elif isinstance(other, Interval):
+            # get minimum and maximum
+            # TODO
+            raise NotImplementedError
         else:
             raise NotImplementedError
 

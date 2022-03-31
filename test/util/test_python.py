@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+import numpy as np
+
 
 def test_is_field():
     @dataclass
@@ -56,3 +58,20 @@ def test_abs():
     e = p + c
     print(d)
     print(e)
+
+
+def test_numpy_container():
+    class Interval:
+        def __init__(self, a, b):
+            self._a = a
+            self._b = b
+
+        def __str__(self):
+            return str(self._a) + " " + str(self._b)
+
+        def __add__(self, other):
+            return Interval(min(self._a, other._a), max(self._b, other._b))
+
+    a = np.array([Interval(0, 1), Interval(2, 3)], dtype=Interval)
+    b = np.array([Interval(4, 5), Interval(6, 7)], dtype=Interval)
+    c = a + b

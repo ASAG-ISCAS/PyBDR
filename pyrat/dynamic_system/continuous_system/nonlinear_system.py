@@ -91,7 +91,6 @@ class NonLinSys:
             lin_op.factors = op.factors
             lin_op.t_step = op.t_step
             # --------------------------------------- # TODO shall update this part
-
             lin_op.u = b @ (op.u + lin_op.u_trans - p["u"])
             lin_op.u -= lin_op.u.center
             lin_op.u_trans = VectorZonotope(

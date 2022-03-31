@@ -6,11 +6,13 @@ from .matrix_polytope import MatrixPolytope
 from .matrix_zonotope import MatrixZonotope
 from .halfspace import HalfSpace
 from .taylor_model import TaylorModel
+from .interval import Interval
 from .geometry import Geometry
 
 __all__ = [
     "Geometry",
     "HalfSpace",
+    "Interval",
     "VectorInterval",
     "VectorPolytope",
     "VectorZonotope",

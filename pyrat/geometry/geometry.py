@@ -26,12 +26,7 @@ class Geometry(ABC):
 
     @property
     @abstractmethod
-    def data(self):
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def vertices(self):
+    def vertices(self) -> np.ndarray:
         raise NotImplementedError
 
     # =============================================== operator
