@@ -84,8 +84,13 @@ class NonLinSys:
             lin_sys = LinSys.Sys(xa=a)
             # set up options for linearized system
             # lin_op = LinSys.Option(**dataclasses.asdict(op))
+            # ---------------------------------------
             lin_op = LinSys.Option()  # TODO update values inside this linear option
             lin_op.u_trans = op.u_trans
+            lin_op.taylor_terms = op.taylor_terms
+            lin_op.factors = op.factors
+            lin_op.t_step = op.t_step
+            # --------------------------------------- # TODO shall update this part
 
             lin_op.u = b @ (op.u + lin_op.u_trans - p["u"])
             lin_op.u -= lin_op.u.center
@@ -116,7 +121,7 @@ class NonLinSys:
 
         def _reach_over_standard(self, op: NonLinSys.Option) -> Reachable.Result:
             # obtain factors for initial state and input solution time step
-            i = np.arange(op.taylor_terms)
+            i = np.arange(1, op.taylor_terms + 2)
             op.factors = np.power(op.t_step, i) / factorial(i)
             # if a trajectory should be tracked
             self._run_time.cur_t = op.t_start

@@ -47,6 +47,14 @@ class Geometry(ABC):
     def __add__(self, other):
         raise NotImplementedError
 
+    @abstractmethod
+    def __matmul__(self, other):
+        raise NotImplementedError
+
+    @abstractmethod
+    def __mul__(self, other):
+        raise NotImplementedError
+
     # =============================================== static method
     @staticmethod
     @abstractmethod
