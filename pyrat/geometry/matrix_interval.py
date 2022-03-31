@@ -9,12 +9,15 @@ class MatrixInterval:
         self._bd = bound
 
     # =============================================== property
+    @property
     def bd(self) -> np.ndarray:
         return self._bd
 
+    @property
     def inf(self) -> np.ndarray:
         return self._bd[0]
 
+    @property
     def sup(self) -> np.ndarray:
         return self._bd[1]
 
