@@ -58,11 +58,23 @@ class Interval(Geometry):
             return Interval(self._bd + other)
         raise NotImplementedError
 
+    def __sub__(self, other):
+        return self + (-other)
+
+    def __pos__(self):
+        return self
+
+    def __neg__(self):
+        return self * -1
+
     def __str__(self):
         return str(self._bd.T)
 
     def __matmul__(self, other):
-        raise NotImplementedError
+        raise NotImplementedError(
+            "Unsupported operation for now,"
+            "For doing multiplication with real number, please use '*' instead."
+        )
 
     def __mul__(self, other):
         if isinstance(other, numbers.Real):

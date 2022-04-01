@@ -43,6 +43,18 @@ class Geometry(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def __sub__(self, other):
+        raise NotImplementedError
+
+    @abstractmethod
+    def __pos__(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def __neg__(self):
+        raise NotImplementedError
+
+    @abstractmethod
     def __matmul__(self, other):
         raise NotImplementedError
 

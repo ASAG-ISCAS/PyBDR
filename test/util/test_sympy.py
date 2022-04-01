@@ -1,8 +1,9 @@
+import inspect
+import numbers
 from inspect import signature
 
 import numpy as np
 from sympy import *
-import mpmath as mm
 
 
 def test_case_0():
@@ -82,3 +83,59 @@ def test_case_3():
     x = np.ones(6)
     u, g, k0, k1 = 1, 2, 3, 4
     print(sv(x, u, g, k0, k1))
+
+
+def test_sympy_using_custom_interval_arithmetic():
+    class Interval:
+        def __init__(self, a, b):
+            self._a = a
+            self._b = b
+
+        @classmethod
+        def op_dict(cls):
+            return {
+                "__add__": cls.__add__,
+                "__mul__": cls.__mul__,
+                "__rmul__": cls.__rmul__,
+            }
+
+        def __add__(self, other):
+            return Interval(min(self._a, other._a), max(self._b, other._b))
+
+        def __mul__(self, other):
+            if isinstance(other, Interval):
+                a = min(
+                    [
+                        self._a * other._a,
+                        self._a * other._b,
+                        self._b * other._a,
+                        self._b * other._b,
+                    ]
+                )
+                b = max(
+                    [
+                        self._a * other._a,
+                        self._a * other._b,
+                        self._b * other._a,
+                        self._b * other._b,
+                    ]
+                )
+                return Interval(a, b)
+            elif isinstance(other, numbers.Real):
+                return Interval(self._a * other, self._b * other)
+            else:
+                raise NotImplementedError
+
+        def __rmul__(self, other):
+            return self * other
+
+        def __str__(self):
+            return "[ " + str(self._a) + ", " + str(self._b) + " ]"
+
+    x, y = symbols(("x", "y"))
+    expr = x + x * y * 2
+    f = lambdify((x, y), expr, dict(inspect.getmembers(Interval)))
+
+    temp = f(Interval(-1, 1), Interval(2, 3))
+    # temp = Interval(-1, 1) * 2
+    print(temp)
