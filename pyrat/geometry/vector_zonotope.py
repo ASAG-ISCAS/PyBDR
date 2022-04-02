@@ -7,7 +7,7 @@ import numpy as np
 from scipy.spatial import ConvexHull
 
 import pyrat.util.functional.auxiliary as aux
-from pyrat.geometry import Interval
+from .interval import Interval
 
 
 class VectorZonotope:
@@ -133,8 +133,15 @@ class VectorZonotope:
             return VectorZonotope(self.z * other)
         elif isinstance(other, Interval):
             # get minimum and maximum
-            # TODO
-            raise NotImplementedError
+            inf, sup = other.inf, other.sup
+            # get center of interval matrix
+            c = other.center
+            # get symmetric interval matrix
+            s = 0.5 * (sup - inf)
+            z_as = np.sum(abs(self._z), axis=1)
+            # compute new zonotope
+            return VectorZonotope(np.hstack([c @ self._z, np.diag(s @ z_as)]))
+
         else:
             raise NotImplementedError
 

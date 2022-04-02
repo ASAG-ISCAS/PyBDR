@@ -132,6 +132,9 @@ def test_sympy_using_custom_interval_arithmetic():
         def __str__(self):
             return "[ " + str(self._a) + ", " + str(self._b) + " ]"
 
+        def __matmul__(self, other):
+            raise NotImplementedError
+
     x, y = symbols(("x", "y"))
     expr = x + x * y * 2
     f = lambdify((x, y), expr, dict(inspect.getmembers(Interval)))

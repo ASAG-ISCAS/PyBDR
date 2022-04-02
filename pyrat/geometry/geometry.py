@@ -4,6 +4,8 @@ import numpy as np
 
 
 class Geometry(ABC):
+    __array_ufunc__ = None
+
     @abstractmethod
     def __init__(self):
         raise NotImplementedError

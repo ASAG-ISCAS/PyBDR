@@ -41,7 +41,7 @@ class Interval(Geometry):
 
     @property
     def center(self) -> np.ndarray:
-        return self._bd.sum(axis=0) / 2
+        return self._bd.sum(axis=0) * 0.5
 
     # =============================================== operator
     def __contains__(self, item):
@@ -56,10 +56,24 @@ class Interval(Geometry):
             )
         elif isinstance(other, numbers.Real):
             return Interval(self._bd + other)
+        elif isinstance(other, np.ndarray):
+            return Interval(self._bd + other)
         raise NotImplementedError
+
+    def __radd__(self, other):
+        return self + other
+
+    def __iadd__(self, other):
+        return self + other
 
     def __sub__(self, other):
         return self + (-other)
+
+    def __isub__(self, other):
+        return self - other
+
+    def __rsub__(self, other):
+        return other - self
 
     def __pos__(self):
         return self
@@ -72,14 +86,24 @@ class Interval(Geometry):
 
     def __matmul__(self, other):
         raise NotImplementedError(
-            "Unsupported operation for now,"
+            "Unsupported operation for now"
             "For doing multiplication with real number, please use '*' instead."
         )
 
     def __mul__(self, other):
         if isinstance(other, numbers.Real):
             return Interval(self._bd * other)
-        raise NotImplementedError
+        elif isinstance(other, Interval):
+            aa = self._bd[0] * other._bd[0]
+            ab = self._bd[0] * other._bd[1]
+            ba = self._bd[1] * other._bd[0]
+            bb = self._bd[1] * other._bd[1]
+            print(aa.shape)
+            exit(False)
+
+            raise NotImplementedError  # TODO
+        return other * self
+        # raise NotImplementedError
 
     # =============================================== static method
     @staticmethod

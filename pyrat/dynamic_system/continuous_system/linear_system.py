@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.linalg import expm
 
-from pyrat.geometry import Geometry, Interval
+from pyrat.geometry import Geometry, Interval, VectorZonotope
 from pyrat.misc import Reachable, Simulation
 from .continuous_system import ContSys, Option
 
@@ -126,6 +126,10 @@ class LinSys:
             else:
                 # TODO
                 raise NotImplementedError
+            # compute solution due to constant input
+            ea_int = a_sum + self._taylor["err"] * op.t_step
+            input_solv_trans = ea_int * VectorZonotope(v_trans)
+            exit(False)
 
             # TODO
 
