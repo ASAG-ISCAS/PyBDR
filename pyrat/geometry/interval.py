@@ -105,6 +105,9 @@ class Interval(Geometry):
         return other * self
         # raise NotImplementedError
 
+    def __or__(self, other):
+        raise NotImplementedError
+
     # =============================================== static method
     @staticmethod
     def empty(dim: int):

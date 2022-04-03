@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import numbers
 from itertools import product
 
@@ -21,13 +22,38 @@ class VectorZonotope:
     https://numpy.org/doc/stable/reference/arrays.classes.html#numpy.class.__array_ufunc__
     """
 
-    def __init__(self, z: np.ndarray):
-        assert z.ndim == 2
-        self._z = z
+    def __init__(self, data: np.ndarray):
+        self.__init(data)
+
+    def __init(self, data):
+        if isinstance(data, VectorZonotope):
+            self.__init_from_vector_zonotope(data)
+            return
+        elif isinstance(data, np.ndarray):
+            self.__init_from_numpy_array(data)
+            return
+        elif isinstance(data, Interval):
+            self.__init_from_interval(data)
+            return
+        raise NotImplementedError  # TODO
+
+    def __init_from_vector_zonotope(self, data: VectorZonotope):
+        self._z = data.z
+        self._rank = data.rank
+        self._vertices = data.vertices()
+        self._ix = data.ix()
+        self.remove_zero_gen()
+
+    def __init_from_numpy_array(self, data: np.ndarray):
+        assert data.ndim == 2
+        self._z = data
         self._rank = None
         self._vertices = None
         self._ix = None
         self.remove_zero_gen()  # remove zero generators
+
+    def __init_from_interval(self, interval: Interval):
+        raise NotImplementedError
 
     # =============================================== property
     @property
@@ -169,6 +195,34 @@ class VectorZonotope:
     def __eq__(self, other):
         return self.is_equal(other)
 
+    def __or__(self, other):
+        """
+        return a zonotope enclosing this instance and other zonotope
+        """
+        if isinstance(other, VectorZonotope):
+            # get generator numbers
+            lhs_num, rhs_num = self.gen_num, other.gen_num
+            # if first zonotope has more or equal generators
+            z_cut, z_add, z_eq = None, None, None
+            if rhs_num < lhs_num:
+                z_cut = self._z[:, : rhs_num + 1]
+                z_add = self._z[:, rhs_num:lhs_num]
+                z_eq = other._z
+            else:
+                z_cut = other._z[:, : lhs_num + 1]
+                z_add = other._z[:, lhs_num:rhs_num]
+                z_eq = self._z
+            return VectorZonotope(
+                np.concatenate(
+                    [(z_cut + z_eq) * 0.5, (z_cut - z_eq) * 0.5, z_add], axis=1
+                )
+            )
+        else:
+            raise NotImplementedError
+
+    def __ror__(self, other):
+        return self | other
+
     # =============================================== static method
     @staticmethod
     def empty(dim: int):
@@ -238,6 +292,15 @@ class VectorZonotope:
         if self._ix is None:
             self._ix = np.lexsort(self.generator[::-1, :])
         return self._ix
+
+    def enclose(self, other: VectorZonotope) -> VectorZonotope:
+        """
+        return a zonotope enclosing this zonotope and given other zonotope
+        :param other: another given zonotope
+        :return:
+        """
+        # TODO
+        raise NotImplementedError("Use '|' for enclosing computation instead")
 
     # =============================================== public method
     # =============================================== public method

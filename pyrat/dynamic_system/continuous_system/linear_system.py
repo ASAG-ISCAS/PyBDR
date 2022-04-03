@@ -98,6 +98,43 @@ class LinSys:
             # write to object structure
             self._taylor["F"] = asum + self._taylor["err"]
 
+        def _input_tie(self, op: LinSys.Option):
+            """
+            time interval error; computes the error done by the linear assumption of the
+            constant input solution
+            :param op: options for the computation
+            :return:
+            """
+
+            xa_power = self._taylor["powers"]
+            dim = self.dim
+            # initialize asum
+            asum_pos = np.zeros((dim, dim), dtype=float)
+            asum_neg = np.zeros((dim, dim), dtype=float)
+
+            for i in range(1, op.taylor_terms + 1):
+                # compute factor
+                exp1, exp2 = -(i + 1) / i, -1 / i
+                factor = ((i + 1) ** exp1 - (i + 1) ** exp2) * op.factors[i]
+                # init apos, aneg
+                apos = np.zeros((dim, dim), dtype=float)
+                aneg = np.zeros((dim, dim), dtype=float)
+                # obtain positive and negative parts
+                pos_ind = xa_power[i - 1] > 0
+                neg_ind = xa_power[i - 1] < 0
+                apos[pos_ind] = xa_power[i - 1][pos_ind]
+                aneg[neg_ind] = xa_power[i - 1][neg_ind]
+                # compute powers; factor is always negative
+                asum_pos += factor * aneg
+                asum_neg += factor * apos
+            # instantiate interval matrix
+            asum = Interval(np.stack([asum_neg, asum_pos]))
+            # compute error due to finite taylor series according to interval document
+            # "Input Error Bounds in Reachability Analysis"
+            e_input = self._taylor["err"] * op.t_step
+            # write to object structure
+            self._taylor["input_f"] = asum + e_input
+
         def _input_solution(self, op: LinSys.Option):
             """
             compute the bloating due to the input
@@ -111,7 +148,7 @@ class LinSys:
                 op.is_rv = False
             v_trans = op.u_trans if self._ub is None else self._ub @ op.u
 
-            input_solv = None
+            input_solv, input_corr = None, None
             if op.is_rv:
                 # init v_sum
                 v_sum = op.t_step * v
@@ -129,11 +166,28 @@ class LinSys:
             # compute solution due to constant input
             ea_int = a_sum + self._taylor["err"] * op.t_step
             input_solv_trans = ea_int * VectorZonotope(v_trans)
-            exit(False)
+            # compute additional uncertainty if origin is not contained in input set
+            if op.origin_contained:
+                raise NotImplementedError  # TODO
+            else:
+                # compute inputF
+                self._input_tie(op)
+                input_corr = self._taylor["input_f"] * VectorZonotope(v_trans)
 
-            # TODO
+            # write to object structure
+            self._taylor["v"] = v
+            if op.is_rv and np.any(input_solv.z):  # need refine ???
+                self._taylor["rv"] = input_solv
+            else:
+                raise NotImplementedError  # TODO
 
-            raise NotImplementedError
+            if np.any(input_solv_trans.z):
+                self._taylor["r_trans"] = input_solv_trans
+            else:
+                raise NotImplementedError  # TODO
+
+            self._taylor["input_corr"] = input_corr
+            self._taylor["ea_int"] = ea_int
 
         def _reach_init_euclidean(self, r: Geometry, op: LinSys.Option):
             # compute exponential matrix
@@ -142,6 +196,19 @@ class LinSys:
             self._computer_time_interval_err(op)
             # compute reachable set due to input
             self._input_solution(op)
+
+            # compute reachable set of first time interval
+            self._taylor["ea_t"] = expm(self._xa * op.t_step)
+
+            r_trans = self._taylor["r_trans"]
+
+            # first time step homogeneous solution
+            rhom_tp = self._taylor["ea_t"] @ r + r_trans
+            rhom = r | rhom_tp + self._taylor["F"] * r + self._taylor["input_corr"]
+
+            # reduce zonotope
+            # TODO
+
             # TODO
             raise NotImplementedError
 

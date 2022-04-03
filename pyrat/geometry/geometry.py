@@ -64,6 +64,10 @@ class Geometry(ABC):
     def __mul__(self, other):
         raise NotImplementedError
 
+    @abstractmethod
+    def __or__(self, other):
+        raise NotImplementedError
+
     # =============================================== static method
     @staticmethod
     @abstractmethod
