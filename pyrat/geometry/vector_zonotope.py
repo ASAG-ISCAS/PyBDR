@@ -206,11 +206,11 @@ class VectorZonotope:
             z_cut, z_add, z_eq = None, None, None
             if rhs_num < lhs_num:
                 z_cut = self._z[:, : rhs_num + 1]
-                z_add = self._z[:, rhs_num:lhs_num]
+                z_add = self._z[:, rhs_num + 1 : lhs_num]
                 z_eq = other._z
             else:
                 z_cut = other._z[:, : lhs_num + 1]
-                z_add = other._z[:, lhs_num:rhs_num]
+                z_add = other._z[:, lhs_num + 1 : rhs_num]
                 z_eq = self._z
             return VectorZonotope(
                 np.concatenate(
@@ -235,6 +235,33 @@ class VectorZonotope:
         return VectorZonotope(np.random.rand(dim, gen_num))
 
     # =============================================== private method
+    def _picked_generators(self, order) -> (np.ndarray, np.ndarray):
+        gur, gu = np.empty((self.dim, 0), dtype=float), np.empty(
+            (self.dim, 0), dtype=float
+        )
+
+        if not aux.is_empty(self.generator):
+            # delete zero-length generators
+            self.remove_zero_gen()
+            dim, gen_num = self.dim, self.gen_num
+            # only reduce if zonotope order is greater than the desired order
+            if gen_num > dim * order:
+                # compute metric of generators
+                raise NotImplementedError
+            else:
+                gur = self.generator
+
+        return gur, gu
+
+    def _reduce_girard(self, order: int):
+        # pick generators to reduce
+        gur, gr = self._picked_generators(order)
+        # box remaining generators
+        d = np.sum(abs(gr), axis=1)
+        gb = np.diag(d)
+        # build reduced zonotope
+        return VectorZonotope(np.hstack([self.center.reshape((-1, 1)), gur, gb]))
+
     # =============================================== public method
     def is_contain(self, other) -> bool:
         raise NotImplementedError
@@ -257,6 +284,8 @@ class VectorZonotope:
         if self.gen_num <= 1:
             return  # if only one generator, do nothing??? # TODO
         ng = self.generator[:, abs(self.generator).sum(axis=0) > 0]
+        if aux.is_empty(ng):
+            ng = self.generator[:, 0:1]  # at least one generator even all zeros inside
         self._z = np.hstack([self.center.reshape((-1, 1)), ng])
 
     def vertices(self):
@@ -301,6 +330,12 @@ class VectorZonotope:
         """
         # TODO
         raise NotImplementedError("Use '|' for enclosing computation instead")
+
+    def reduce(self, method: str, order: int):
+        if method == "girard":
+            return self._reduce_girard(order)
+        else:
+            raise NotImplementedError
 
     # =============================================== public method
     # =============================================== public method

@@ -6,7 +6,7 @@ import numpy as np
 from scipy.special import factorial
 from sympy import lambdify
 
-from pyrat.geometry import Geometry, VectorZonotope
+from pyrat.geometry import Geometry, VectorZonotope, Interval
 from pyrat.misc import Reachable, Simulation
 from pyrat.model import Model
 from .continuous_system import ContSys, Option, RunTime
@@ -21,6 +21,8 @@ class NonLinSys:
         lagrange_rem = {}
         factors: np.ndarray = None
         u_trans: np.ndarray = None
+        zonotope_order: int = 50
+        reduction_method: str = "girard"
 
         def validate(self) -> bool:
             #  TODO
@@ -90,6 +92,7 @@ class NonLinSys:
             lin_op.taylor_terms = op.taylor_terms
             lin_op.factors = op.factors
             lin_op.t_step = op.t_step
+            lin_op.zonotope_order = op.zonotope_order
             # --------------------------------------- # TODO shall update this part
             lin_op.u = b @ (op.u + lin_op.u_trans - p["u"])
             lin_op.u -= lin_op.u.center
@@ -107,15 +110,61 @@ class NonLinSys:
             self._run_time.lin_err_p = p
             return lin_sys, lin_op
 
-        def _lin_reach(self, r: Reachable.Element, op: NonLinSys.Option):
-            # linearize the nonlinear system
-            lin_sys, lin_op = self._linearize(op, r.set)
-            # translate r_init by linearization point
-            r_delta = r.set + (-self._run_time.lin_err_p["x"])
-            # compute reachable set of linearized  system
-            r = lin_sys.reach_init(r_delta, lin_op)
+        def _abst_err_lin(
+            self, op: NonLinSys.Option, r: Geometry
+        ) -> (Interval, VectorZonotope):
+            """
+            computes the abstraction error for linearization approach to enter
+            :param op:
+            :param r:
+            :return:
+            """
+            # compute interval of reachable set
+            ihx = Interval(r)
+            raise NotImplementedError
 
-            exit(False)
+        def _lin_reach(self, r_init: Reachable.Element, op: NonLinSys.Option):
+            # linearize the nonlinear system
+            lin_sys, lin_op = self._linearize(op, r_init.set)
+            # translate r_init by linearization point
+            r_delta = r_init.set + (-self._run_time.lin_err_p["x"])
+            # compute reachable set of linearized  system
+            r, _ = lin_sys.reach_init(r_delta, lin_op)
+
+            # compute reachable set of the abstracted system including the abstraction
+            # error using the selected algorithm
+
+            if op.algo == "lin_rem":
+                raise NotImplementedError
+            else:
+                # loop until the actual abstraction error is smaller than the estimated
+                # linearization error
+                r_tp, r_ti = r.tp, r.ti
+                perf_ind_cur, perf_ind = np.inf, 0
+
+                while perf_ind_cur > 1 and perf_ind <= 1:
+                    # estimate the abstraction error
+                    applied_error = 1.1 * r_init.err
+                    v_err = VectorZonotope(
+                        np.hstack(
+                            [0 * applied_error.reshape((-1, 1)), np.diag(applied_error)]
+                        )
+                    )
+                    r_all_err = lin_sys.error_solution(lin_op, v_err)
+
+                    # compute the abstraction error using the conservative linearization
+                    # approach described in [1]
+                    if op.algo == "lin":
+                        # compute overall reachable set including linearization error
+                        r_max = r_ti + r_all_err
+                        # compute linearization error
+                        true_err, v_err_dyn = self._abst_err_lin(op, r_max)
+
+                        raise NotImplementedError
+
+                    raise NotImplementedError
+                raise NotImplementedError
+
             raise NotImplementedError
 
         def _reach_over_standard(self, op: NonLinSys.Option) -> Reachable.Result:

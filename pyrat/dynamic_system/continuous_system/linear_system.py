@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass
 
 import numpy as np
@@ -18,6 +19,13 @@ class LinSys:
         taylor_terms = 0
         factors: np.ndarray = None
         is_rv: bool = False
+        reduction_method: str = "girard"
+        zonotope_order: int = 50
+        rhom: Geometry = None
+        rhom_tp: Geometry = None
+        rv: Geometry = None
+        r_par: Geometry = None
+        r_trans: Geometry = None
 
         def validate(self) -> bool:
             raise NotImplementedError
@@ -204,15 +212,56 @@ class LinSys:
 
             # first time step homogeneous solution
             rhom_tp = self._taylor["ea_t"] @ r + r_trans
-            rhom = r | rhom_tp + self._taylor["F"] * r + self._taylor["input_corr"]
+            rhom = (r | rhom_tp) + self._taylor["F"] * r + self._taylor["input_corr"]
 
             # reduce zonotope
-            # TODO
+            rhom = rhom.reduce(op.reduction_method, op.zonotope_order)
+            rhom_tp = rhom_tp.reduce(op.reduction_method, op.zonotope_order)
+            rv = self._taylor["rv"].reduce(op.reduction_method, op.zonotope_order)
 
-            # TODO
-            raise NotImplementedError
+            # save homogeneous and particulate solution
+            ret_op = copy.deepcopy(op)
+            ret_op.rhom = rhom
+            ret_op.rhom_tp = rhom_tp
+            ret_op.r_aux = rv
+            ret_op.r_par = rv
+            ret_op.r_trans = self._taylor["r_trans"]
+
+            # total solution
+            r_total = rhom + rv
+            r_total_tp = rhom_tp + rv
+
+            # write results to reachable set struct r_first
+            r = Reachable.Result()
+            r.init(1, 1)
+            r.ti[0] = r_total
+            r.tp[0] = r_total_tp
+            return r, ret_op
 
         # =============================================== public method
+        def error_solution(self, op: LinSys.Option, v_dyn, v_stat=None):
+            """
+            computes teh solution due to the linearization error
+            :param op: options for the computation
+            :param v_dyn: set of admissible errors (dynamic)
+            :return:
+            """
+            err_stat = (
+                0 if v_stat is None else self._taylor["ea_int"] * v_stat
+            )  # possible matrix multiplication
+            # init asum
+            asum = op.t_step * v_dyn
+
+            for i in range(op.taylor_terms):
+                # compute powers
+                asum += op.factors[i + 1] * self._taylor["powers"][i] @ v_dyn
+
+            # get error due to finite taylor series
+            f = self._taylor["err"] * v_dyn * op.t_step
+
+            # compute error solution (dyn + stat)
+            return asum + f + err_stat
+
         def reach_init(self, r_init: Geometry, op: LinSys.Option):
             if op.algo == "euclidean":
                 return self._reach_init_euclidean(r_init, op)

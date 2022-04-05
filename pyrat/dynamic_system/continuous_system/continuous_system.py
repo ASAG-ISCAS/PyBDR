@@ -20,6 +20,7 @@ class Option(ABC):
     mod: str = "over"  # otherwise "under"
     specs: [Specification] = None
 
+
     @abstractmethod
     def validate(self) -> bool:
         raise NotImplementedError

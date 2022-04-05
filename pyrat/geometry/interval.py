@@ -8,13 +8,24 @@ from .geometry import Geometry
 
 
 class Interval(Geometry):
-    def __init__(self, bd: np.ndarray):
-        assert bd.shape[0] == 2 and bd.ndim >= 2
-        assert np.all(bd[0] <= bd[1])
-        self._bd = bd
+    def __init__(self, data):
+        self.__init(data)
+
+    def __init(self, data):
+        if isinstance(data, np.ndarray):
+            return self.__init_from_numpy_array(data)
+        # elif isinstance(data, VectorZonotope):
+        #     print("DO SOMETHING")
+        #     raise NotImplementedError
+
+    def __init_from_numpy_array(self, data: np.ndarray):
+        assert data.shape[0] == 2 and data.ndim >= 2
+        assert np.all(data[0] <= data[1])
+        self._bd = data
         self._is_empty = False
 
-    # =============================================== property
+        # =============================================== property
+
     @property
     def bd(self) -> np.ndarray:
         return self._bd
@@ -82,7 +93,7 @@ class Interval(Geometry):
         return self * -1
 
     def __str__(self):
-        return str(self._bd.T)
+        return str(self._bd[0]) + " " + str(self._bd[1])
 
     def __matmul__(self, other):
         raise NotImplementedError(
