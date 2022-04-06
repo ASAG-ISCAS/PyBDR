@@ -8,6 +8,7 @@ from .halfspace import HalfSpace
 from .taylor_model import TaylorModel
 from .interval import Interval
 from .geometry import Geometry
+from .convert import cvt2
 
 __all__ = [
     "Geometry",
@@ -20,4 +21,5 @@ __all__ = [
     "MatrixPolytope",
     "MatrixZonotope",
     "TaylorModel",
+    "cvt2",
 ]
