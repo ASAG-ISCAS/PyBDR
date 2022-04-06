@@ -8,23 +8,13 @@ from .geometry import Geometry
 
 
 class Interval(Geometry):
-    def __init__(self, data):
-        self.__init(data)
-
-    def __init(self, data):
-        if isinstance(data, np.ndarray):
-            return self.__init_from_numpy_array(data)
-        # elif isinstance(data, VectorZonotope):
-        #     print("DO SOMETHING")
-        #     raise NotImplementedError
-
-    def __init_from_numpy_array(self, data: np.ndarray):
-        assert data.shape[0] == 2 and data.ndim >= 2
-        assert np.all(data[0] <= data[1])
-        self._bd = data
+    def __init__(self, bd: np.ndarray):
+        assert bd.shape[0] == 2 and bd.ndim >= 2
+        assert np.all(bd[0] <= bd[1])
+        self._bd = bd
         self._is_empty = False
 
-        # =============================================== property
+    # =============================================== property
 
     @property
     def bd(self) -> np.ndarray:
@@ -54,7 +44,49 @@ class Interval(Geometry):
     def center(self) -> np.ndarray:
         return self._bd.sum(axis=0) * 0.5
 
+    # =============================================== class method
+    @classmethod
+    def ops(cls):
+        return {
+            "__add__": cls.__add__,
+            "__radd__": cls.__radd__,
+            "__iadd__": cls.__iadd__,
+            "__sub__": cls.__sub__,
+            "__rsub__": cls.__rsub__,
+            "__isub__": cls.__isub__,
+            "__mul__": cls.__mul__,
+            "__matmul__": cls.__matmul__,
+            "__truediv__": cls.__truediv__,
+            "__rtruediv__": cls.__rtruediv__,
+            "__pow__": cls.__pow__,
+            "__getitem__": cls.__getitem__,
+        }
+
     # =============================================== operator
+    def __getitem__(self, item):
+        assert isinstance(item, int) and item >= 0
+        return self._bd[:, item]
+
+    def __truediv__(self, other):
+        if isinstance(other, numbers.Real):
+            return self * (1 / other)
+        else:
+            raise NotImplementedError
+
+    def __rtruediv__(self, other):
+        if isinstance(other, numbers.Real):
+            bd = other / self._bd
+            return Interval(np.flip(bd, axis=0))
+        else:
+            raise NotImplementedError
+
+    def __pow__(self, power, modulo=None):
+        if isinstance(power, numbers.Real):
+            print("==========================")
+            return Interval(self.bd**power)
+        else:
+            raise NotImplementedError
+
     def __contains__(self, item):
         raise NotImplementedError
 
@@ -93,7 +125,7 @@ class Interval(Geometry):
         return self * -1
 
     def __str__(self):
-        return str(self._bd[0]) + " " + str(self._bd[1])
+        return str(self._bd[0]) + " \n" + str(self._bd[1])
 
     def __matmul__(self, other):
         raise NotImplementedError(

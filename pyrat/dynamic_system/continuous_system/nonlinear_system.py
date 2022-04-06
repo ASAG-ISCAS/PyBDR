@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import inspect
 from dataclasses import dataclass
 
 import numpy as np
 from scipy.special import factorial
-from sympy import lambdify
+from sympy import lambdify, hessian
 
-from pyrat.geometry import Geometry, VectorZonotope, Interval
+from pyrat.geometry import Geometry, VectorZonotope, Interval, cvt2
 from pyrat.misc import Reachable, Simulation
 from pyrat.model import Model
 from .continuous_system import ContSys, Option, RunTime
@@ -23,6 +24,7 @@ class NonLinSys:
         u_trans: np.ndarray = None
         zonotope_order: int = 50
         reduction_method: str = "girard"
+        tensor_order = 2
 
         def validate(self) -> bool:
             #  TODO
@@ -58,6 +60,12 @@ class NonLinSys:
             if self._jx is None:
                 self._jx = self._model.f.jacobian(self._model.vars[0])
                 self._ju = self._model.f.jacobian(self._model.vars[1])
+                self._hx = [
+                    hessian(expr, self._model.vars[0]) for expr in self._model.f
+                ]
+                self._hu = [
+                    hessian(expr, self._model.vars[1]) for expr in self._model.f
+                ]
 
         def _evaluate(self, x, u, mod: str = "numpy"):
             f = lambdify(self._model.vars, self._model.f, mod)
@@ -67,6 +75,31 @@ class NonLinSys:
             fx = lambdify(self._model.vars, self._jx, "numpy")
             fu = lambdify(self._model.vars, self._ju, "numpy")
             return fx(x, u), fu(x, u)
+
+        def _hessian(self, x, u):
+            ops = Interval.ops()
+            fx = []
+            for hx in self._hx:
+                fxi = []
+                for hxi in hx:
+                    print(hxi)
+                    fxi.append(lambdify(self._model.vars, hxi, ops))
+                fx.append(fxi)
+
+            fu = []
+            for hu in self._hu:
+                fui = []
+                for hui in hu:
+                    fui.append(lambdify(self._model.vars, hui, ops))
+                fu.append(fui)
+
+            for fi in fx:
+                for f in fi:
+                    print(str(f))
+                    print(f(x, u))
+                    exit(False)
+
+            raise NotImplementedError
 
         def _linearize(
             self, op: NonLinSys.Option, r: Geometry
@@ -120,7 +153,28 @@ class NonLinSys:
             :return:
             """
             # compute interval of reachable set
-            ihx = Interval(r)
+            ihx = cvt2(r, "int")
+            # compute intervals of total reachable set
+            total_int_x = ihx + self._run_time.lin_err_p["x"]
+
+            # compute intervals of input
+            ihu = cvt2(op.u, "int")
+            # translate intervals by linearization point
+            total_int_u = ihu + self._run_time.lin_err_p["u"]
+
+            if op.tensor_order == 2:
+                # assign correct hessian (using interval arithmetic)
+                # TODO
+
+                # obtain maximum absolute values within ihx, ihu
+                dx = np.maximum(abs(ihx.inf), abs(ihx.sup))
+                du = np.maximum(abs(ihu.inf), abs(ihu.sup))
+
+                # evaluate the hessian matrix with the selected range-bounding technique
+                h = self._hessian(total_int_x, total_int_u)
+
+                raise NotImplementedError
+
             raise NotImplementedError
 
         def _lin_reach(self, r_init: Reachable.Element, op: NonLinSys.Option):
@@ -175,7 +229,7 @@ class NonLinSys:
             self._run_time.cur_t = op.t_start
             # init reachable result
             r = Reachable.Result()
-            r.init(op.steps, op.steps)
+            # r.init(op.steps, op.steps)
             # init reachable set computation
             r_next, op = self.reach_init(op.r_init, op)
             # TODO

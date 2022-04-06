@@ -135,10 +135,27 @@ def test_sympy_using_custom_interval_arithmetic():
         def __matmul__(self, other):
             raise NotImplementedError
 
+        def __pow__(self, power, modulo=None):
+            print("+++++++++++++++++++++")
+            raise NotImplementedError
+
     x, y = symbols(("x", "y"))
-    expr = x + x * y * 2
+    expr = x + y**2
     f = lambdify((x, y), expr, dict(inspect.getmembers(Interval)))
 
     temp = f(Interval(-1, 1), Interval(2, 3))
     # temp = Interval(-1, 1) * 2
     print(temp)
+
+
+def test_interval():
+    from pyrat.geometry import Interval
+
+    v = Interval(np.array([[1.79294, 0], [2.21276, 0]], dtype=float).reshape((2, -1)))
+    print(v)
+    print(v[0])
+    print(v[1])
+    x = symbols("x:2")
+    eqr = Matrix([0.0166104259427626 / x[0] ** (3 / 2), x[1]])
+    f = lambdify(x, eqr, Interval.ops())
+    print(f(v))

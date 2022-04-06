@@ -232,10 +232,7 @@ class LinSys:
             r_total_tp = rhom_tp + rv
 
             # write results to reachable set struct r_first
-            r = Reachable.Result()
-            r.init(1, 1)
-            r.ti[0] = r_total
-            r.tp[0] = r_total_tp
+            r = Reachable.Result(r_total, r_total_tp)
             return r, ret_op
 
         # =============================================== public method

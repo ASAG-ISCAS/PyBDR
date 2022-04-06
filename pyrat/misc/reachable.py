@@ -13,12 +13,7 @@ class Reachable:
 
     @dataclass
     class Result:
-        ti: [Reachable.Element] = None
-        tp: [Reachable.Element] = None
+        ti: Reachable.Element = None
+        tp: Reachable.Element = None
         loc: int = -1
         pre: int = -1
-
-        def init(self, num_ti: int, num_tp: int):
-            assert num_ti >= 0 and num_tp >= 0
-            self.ti = [Reachable.Element] * num_ti
-            self.tp = [Reachable.Element] * num_tp
