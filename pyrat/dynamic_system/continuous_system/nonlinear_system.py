@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import numbers
 from dataclasses import dataclass
 
 import numpy as np
@@ -48,6 +49,7 @@ class NonLinSys:
             raise NotImplementedError
 
         # =============================================== property
+        @property
         def dim(self) -> int:
             raise NotImplementedError
 
@@ -78,32 +80,28 @@ class NonLinSys:
 
         def _hessian(self, x, u):
             ops = Interval.ops()
-            fx = []
-            for hx in self._hx:
-                fxi = []
-                for hxi in hx:
-                    print(hxi)
-                    fxi.append(lambdify(self._model.vars, hxi, ops))
-                fx.append(fxi)
 
-            fu = []
-            for hu in self._hu:
-                fui = []
-                for hui in hu:
-                    fui.append(lambdify(self._model.vars, hui, ops))
-                fu.append(fui)
+            def _fill_hessian(expr_h, dim):
+                hs = []
+                for expr_idx in range(len(expr_h)):
+                    h = np.zeros((2, dim, dim), dtype=float)
+                    for idx in range(len(expr_h[expr_idx])):
+                        row, col = int(idx / x.dim[0]), int(idx % x.dim[0])
+                        if not expr_h[row][col].is_number:
+                            f = lambdify(self._model.vars, expr_h[row][col], ops)
+                            v = f(x, u)
+                            h[0, row, col] = v.inf
+                            h[1, row, col] = v.sup
+                    hs.append(Interval(h))
+                return hs
 
-            for fi in fx:
-                for f in fi:
-                    print(str(f))
-                    print(f(x, u))
-                    exit(False)
+            hx = _fill_hessian(self._hx, x.dim[0])
+            hu = _fill_hessian(self._hu, u.dim[0])
 
-            raise NotImplementedError
+            return hx, hu
 
         def _linearize(
-            self, op: NonLinSys.Option, r: Geometry
-        ) -> (LinSys.Sys, LinSys.Option):
+                self, op: NonLinSys.Option, r: Geometry) -> (LinSys.Sys, LinSys.Option):
             # linearization point p.u of the input is the center of the input set
             p = {"u": op.u_trans}
             # linearization point p.x of the state is the center of the last reachable
@@ -144,7 +142,7 @@ class NonLinSys:
             return lin_sys, lin_op
 
         def _abst_err_lin(
-            self, op: NonLinSys.Option, r: Geometry
+                self, op: NonLinSys.Option, r: Geometry
         ) -> (Interval, VectorZonotope):
             """
             computes the abstraction error for linearization approach to enter
@@ -171,7 +169,7 @@ class NonLinSys:
                 du = np.maximum(abs(ihu.inf), abs(ihu.sup))
 
                 # evaluate the hessian matrix with the selected range-bounding technique
-                h = self._hessian(total_int_x, total_int_u)
+                hx, hu = self._hessian(total_int_x, total_int_u)
 
                 raise NotImplementedError
 
@@ -201,7 +199,8 @@ class NonLinSys:
                     applied_error = 1.1 * r_init.err
                     v_err = VectorZonotope(
                         np.hstack(
-                            [0 * applied_error.reshape((-1, 1)), np.diag(applied_error)]
+                            [0 * applied_error.reshape((-1, 1)),
+                             np.diag(applied_error)]
                         )
                     )
                     r_all_err = lin_sys.error_solution(lin_op, v_err)
@@ -235,11 +234,12 @@ class NonLinSys:
             # TODO
             raise NotImplementedError
 
-        # TODO
+            # TODO
 
-        # =============================================== public method
+            # =============================================== public method
+
         def reach_init(
-            self, r_init: [Reachable.Element], op: NonLinSys.Option
+                self, r_init: [Reachable.Element], op: NonLinSys.Option
         ) -> (Reachable.Result, NonLinSys.Option):
             # loop over all parallel initial sets
             idx, r_tp, r_ti, r0 = 0, {}, {}, {}

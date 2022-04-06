@@ -91,7 +91,11 @@ def test_sympy():
 
 def test_interval_matrix():
     import mpmath as mm
-
+    v = mm.iv.matrix(2, 1)
+    v[0, 0] = mm.iv.mpf([-1, 1])
+    print(v+1)
+    print(v)
+    print(mm.asin(v))
     a = np.array((2, 2), dtype=object)
     v = mm.iv.mpf(1)
     print(v.a)

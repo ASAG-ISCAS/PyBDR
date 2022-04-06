@@ -65,7 +65,7 @@ class Interval(Geometry):
     # =============================================== operator
     def __getitem__(self, item):
         assert isinstance(item, int) and item >= 0
-        return self._bd[:, item]
+        return Interval(self._bd[:, item].reshape((-1, 1)))
 
     def __truediv__(self, other):
         if isinstance(other, numbers.Real):
@@ -76,14 +76,17 @@ class Interval(Geometry):
     def __rtruediv__(self, other):
         if isinstance(other, numbers.Real):
             bd = other / self._bd
-            return Interval(np.flip(bd, axis=0))
+            if other >= 0:
+                return Interval(np.flip(bd, axis=0))
+            return Interval(bd)
         else:
             raise NotImplementedError
 
     def __pow__(self, power, modulo=None):
         if isinstance(power, numbers.Real):
-            print("==========================")
-            return Interval(self.bd**power)
+            if power >= 0:
+                return Interval(self.bd ** power)
+            return Interval(np.flip(self._bd ** power))
         else:
             raise NotImplementedError
 
@@ -147,6 +150,9 @@ class Interval(Geometry):
             raise NotImplementedError  # TODO
         return other * self
         # raise NotImplementedError
+
+    def __rmul__(self, other):
+        return self * other
 
     def __or__(self, other):
         raise NotImplementedError

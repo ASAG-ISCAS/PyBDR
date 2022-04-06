@@ -55,7 +55,7 @@ def test_case_2():
 
     lamb = 0
     for i in range(3):
-        lamb += 1 / (2 * sigma**2) * (z[i] - h[i]) ** 2
+        lamb += 1 / (2 * sigma ** 2) * (z[i] - h[i]) ** 2
     simplify(lamb)
     print(lamb)
 
@@ -140,7 +140,7 @@ def test_sympy_using_custom_interval_arithmetic():
             raise NotImplementedError
 
     x, y = symbols(("x", "y"))
-    expr = x + y**2
+    expr = x + y ** 2
     f = lambdify((x, y), expr, dict(inspect.getmembers(Interval)))
 
     temp = f(Interval(-1, 1), Interval(2, 3))
@@ -156,6 +156,11 @@ def test_interval():
     print(v[0])
     print(v[1])
     x = symbols("x:2")
-    eqr = Matrix([0.0166104259427626 / x[0] ** (3 / 2), x[1]])
-    f = lambdify(x, eqr, Interval.ops())
+    eqr = 0.0166104259427626 / x[0] ** (3 / 2)
+    print(eqr.is_number)
+    eqr = 0
+    print(v[0])
+    f = lambdify([x], eqr, Interval.ops())
+    print(inspect.getsource(f))
+    temp = f(v)
     print(f(v))
