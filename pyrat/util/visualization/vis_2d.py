@@ -2,6 +2,7 @@ from itertools import combinations
 
 import matplotlib.pyplot as plt
 import numpy as np
+from pyrat.misc import Reachable
 
 
 def _halfspace_intersection(hs) -> np.ndarray:
@@ -151,7 +152,7 @@ def _vis_pts(pts, ax, pt_size=3):
     )
 
 
-def vis2d(objs, width=800, height=800, eq_axis=True):
+def vis2d_old(objs, width=800, height=800, eq_axis=True):
     """
     # NOTE
     all inputs must be in 2d space, dimensional issue must be confirmed by the caller
@@ -164,7 +165,6 @@ def vis2d(objs, width=800, height=800, eq_axis=True):
     px = 1 / plt.rcParams["figure.dpi"]
     fig, ax = plt.subplots(figsize=(width * px, height * px), layout="constrained")
     r_min, r_max, ext_bd = _min_max(objs)
-    print(r_min, r_max)
     for obj in objs:
         if obj.__class__.__name__ == "HalfSpace":
             _vis_halfspace(obj, ax, r_min, r_max)
@@ -178,6 +178,31 @@ def vis2d(objs, width=800, height=800, eq_axis=True):
         plt.axis("equal")
     plt.xlim([r_min + ext_bd, r_max - ext_bd])
     plt.ylim([r_min + ext_bd, r_max - ext_bd])
+    ax.axhline(y=0, color="k")
+    ax.axvline(x=0, color="k")
+    plt.show()
+
+
+def vis2d(r: Reachable.Result, dims: list, width=800, height=800):
+    assert len(dims) == 2
+    px = 1 / plt.rcParams["figure.dpi"]
+    fig, ax = plt.subplots(figsize=(width * px, height * px), layout="constrained")
+
+    def vis_element(e: Reachable.Element):
+        e.proj(dims)
+        p = plt.Polygon(e.polygon(), closed=True, alpha=0)
+        ax.add_patch(p)
+
+    if len(r.ti) >= 0:
+        for res in r.ti:
+            for re in res:
+                vis_element(re)
+    else:
+        for res in r.tp:
+            for re in res:
+                vis_element(re)
+
+    plt.axis("equal")
     ax.axhline(y=0, color="k")
     ax.axvline(x=0, color="k")
     plt.show()

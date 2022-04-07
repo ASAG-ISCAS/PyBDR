@@ -44,6 +44,13 @@ class Interval(Geometry):
     def center(self) -> np.ndarray:
         return self._bd.sum(axis=0) * 0.5
 
+    @property
+    def info(self):
+        info = "\n ------------- interval info ------------- \n"
+        info += str(self.dim) + "\n"
+        info += str(self._bd) + "\n"
+        return info
+
     # =============================================== class method
     @classmethod
     def ops(cls):
@@ -80,9 +87,7 @@ class Interval(Geometry):
 
     def __rtruediv__(self, other):
         if isinstance(other, numbers.Real):
-            bd = other / self._bd
-            if other >= 0:
-                return Interval(np.flip(bd, axis=0))
+            bd = np.sort(other / self._bd, axis=0)
             return Interval(bd)
         else:
             raise NotImplementedError
@@ -90,7 +95,8 @@ class Interval(Geometry):
     def __pow__(self, power, modulo=None):
         if isinstance(power, numbers.Real):
             if power >= 0:
-                return Interval(self.bd**power)
+                bd = abs(self._bd) ** power
+                return Interval(bd * np.sign(self._bd))
             return Interval(np.flip(self._bd**power))
         else:
             raise NotImplementedError
@@ -143,7 +149,8 @@ class Interval(Geometry):
 
     def __mul__(self, other):
         if isinstance(other, numbers.Real):
-            return Interval(self._bd * other)
+            bd = np.sort(self._bd * other, axis=0)
+            return Interval(bd)
         elif isinstance(other, Interval):
             aa = self._bd[0] * other._bd[0]
             ab = self._bd[0] * other._bd[1]
@@ -173,3 +180,10 @@ class Interval(Geometry):
     def rand(dim: int):
         bd = np.sort(np.random.rand(2, dim), axis=0)
         return Interval(bd)
+
+    # =============================================== public method
+    def reduce(self, method: str, order: int):
+        raise NotImplementedError
+
+    def proj(self, dims):
+        raise NotImplementedError

@@ -70,7 +70,7 @@ class LinSys:
                 xa_power_abs.append(xa_power_abs[i] @ xa_abs)
                 m += xa_power_abs[i] * op.factors[i]
             # determine error due the finite taylor series, see Prop.(2) in [1]
-            w = expm(xa_abs * op.t_step) - m
+            w = expm(xa_abs * op.step_size) - m
             # compute absolute value of w for numerical stability
             w = abs(w)
             e = Interval(np.stack([-w, w]))
@@ -139,7 +139,7 @@ class LinSys:
             asum = Interval(np.stack([asum_neg, asum_pos]))
             # compute error due to finite taylor series according to interval document
             # "Input Error Bounds in Reachability Analysis"
-            e_input = self._taylor["err"] * op.t_step
+            e_input = self._taylor["err"] * op.step_size
             # write to object structure
             self._taylor["input_f"] = asum + e_input
 
@@ -159,20 +159,20 @@ class LinSys:
             input_solv, input_corr = None, None
             if op.is_rv:
                 # init v_sum
-                v_sum = op.t_step * v
-                a_sum = op.t_step * np.eye(self.dim)
+                v_sum = op.step_size * v
+                a_sum = op.step_size * np.eye(self.dim)
                 # compute higher order terms
                 for i in range(op.taylor_terms):
                     v_sum += self._taylor["powers"][i] @ (op.factors[i + 1] * v)
                     a_sum += self._taylor["powers"][i] * op.factors[i + 1]
 
                 # compute overall solution
-                input_solv = v_sum + self._taylor["err"] * op.t_step * v
+                input_solv = v_sum + self._taylor["err"] * op.step_size * v
             else:
                 # TODO
                 raise NotImplementedError
             # compute solution due to constant input
-            ea_int = a_sum + self._taylor["err"] * op.t_step
+            ea_int = a_sum + self._taylor["err"] * op.step_size
             input_solv_trans = ea_int * VectorZonotope(v_trans)
             # compute additional uncertainty if origin is not contained in input set
             if op.origin_contained:
@@ -206,7 +206,7 @@ class LinSys:
             self._input_solution(op)
 
             # compute reachable set of first time interval
-            self._taylor["ea_t"] = expm(self._xa * op.t_step)
+            self._taylor["ea_t"] = expm(self._xa * op.step_size)
 
             r_trans = self._taylor["r_trans"]
 
@@ -247,14 +247,14 @@ class LinSys:
                 0 if v_stat is None else self._taylor["ea_int"] * v_stat
             )  # possible matrix multiplication
             # init asum
-            asum = op.t_step * v_dyn
+            asum = op.step_size * v_dyn
 
             for i in range(op.taylor_terms):
                 # compute powers
                 asum += op.factors[i + 1] * self._taylor["powers"][i] @ v_dyn
 
             # get error due to finite taylor series
-            f = self._taylor["err"] * v_dyn * op.t_step
+            f = self._taylor["err"] * v_dyn * op.step_size
 
             # compute error solution (dyn + stat)
             return asum + f + err_stat

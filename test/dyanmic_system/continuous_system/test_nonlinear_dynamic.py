@@ -7,6 +7,7 @@ from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import VectorZonotope
 from pyrat.misc import Reachable
 from pyrat.model import Tank6Eq
+from pyrat.util.visualization import vis2d
 
 
 def test_case_0():
@@ -34,8 +35,8 @@ def test_case_0():
     init options for the computation ---------------------------------------------------
     """
     option = NonLinSys.Option()
-    option.t_end = 400
-    option.t_step = 1
+    option.t_end = 40
+    option.steps = 41
     option.taylor_terms = 4
     option.zonotope_order = 50
     option.algo = "lin"
@@ -55,9 +56,17 @@ def test_case_0():
     reachable_results = system.reach(option)
 
     """
+    visualization the results
+    """
+
+    vis2d(reachable_results, [0, 1])
+    vis2d(reachable_results, [2, 3])
+    vis2d(reachable_results, [4, 5])
+
+    """
     simulation -------------------------------------------------------------------------
     """
-    simulation_results = system.simulate(option)
+    # simulation_results = system.simulate(option)
 
     """
     results visualization --------------------------------------------------------------
@@ -91,9 +100,10 @@ def test_sympy():
 
 def test_interval_matrix():
     import mpmath as mm
+
     v = mm.iv.matrix(2, 1)
     v[0, 0] = mm.iv.mpf([-1, 1])
-    print(v+1)
+    print(v + 1)
     print(v)
     print(mm.asin(v))
     a = np.array((2, 2), dtype=object)

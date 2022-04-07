@@ -1,7 +1,7 @@
 import numpy as np
 
 from pyrat.geometry import VectorZonotope
-from pyrat.util.visualization import vis2d
+from pyrat.util.visualization import vis2d_old
 
 
 def test_np_function():
@@ -75,12 +75,12 @@ def test_auxiliary_functions():
     # print(z.dim)
     # print(z.center, z.center.shape)
     # print(z.generator, z.generator.shape)
-    vis2d([z])
+    vis2d_old([z])
 
 
 def test_vis_2d():
     z = VectorZonotope(np.array([[0, 2, 3, 7, 9], [0, 9, 6, 8, 5]]))
-    vis2d([z.center, z.polygon(), z])
+    vis2d_old([z.center, z.polygon(), z])
 
 
 if __name__ == "__main__":

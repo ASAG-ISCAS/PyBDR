@@ -31,6 +31,9 @@ class NonLinSys:
         def validate(self, dim) -> bool:
             if self.max_err is None:
                 self.max_err = np.full(dim, np.inf)
+            if self.step_size is None:
+                self.step_size = (self.t_end - self.t_start) / self.steps
+
             #  TODO
             return True
 
@@ -113,7 +116,7 @@ class NonLinSys:
             # linearization point p.x of the state is the center of the last reachable
             # set R translated by 0.5*delta_t*f0
             f0_pre = self._evaluate(r.center, p["u"])
-            p["x"] = r.center + f0_pre * 0.5 * op.t_step
+            p["x"] = r.center + f0_pre * 0.5 * op.step_size
             # substitute p into the system equation to obtain the constraint input
             f0 = self._evaluate(p["x"], p["u"])
             # substitute p into the jacobian with respect to x and u to obtain the
@@ -128,7 +131,7 @@ class NonLinSys:
             lin_op.u_trans = op.u_trans
             lin_op.taylor_terms = op.taylor_terms
             lin_op.factors = op.factors
-            lin_op.t_step = op.t_step
+            lin_op.step_size = op.step_size
             lin_op.zonotope_order = op.zonotope_order
             # --------------------------------------- # TODO shall refine this part, like unify the option???
             lin_op.u = b @ (op.u + lin_op.u_trans - p["u"])
@@ -253,51 +256,90 @@ class NonLinSys:
             # store the linearization error
             return r_ti, Reachable.Element(r_tp, abstr_err), dim_for_split
 
-        def _reach_over_standard(self, op: NonLinSys.Option) -> Reachable.Result:
-            # obtain factors for initial state and input solution time step
-            i = np.arange(1, op.taylor_terms + 2)
-            op.factors = np.power(op.t_step, i) / factorial(i)
-            # if a trajectory should be tracked
-            self._run_time.cur_t = op.t_start
-            # init containers for storing the results
-            ti_set, ti_time, tp_set, tp_time = {}, {}, {}, {}
+        def _post(self, r: [Reachable.Element], op: NonLinSys.Option):
+            """
+            computes the reachable continuous set for one time step of a nonlinear system
+            by over approximate linearization
+            :param r:
+            :param op:
+            :return:
+            """
 
-            # init reachable set computation
-            r_next = self.reach_init(op.r_init, op)
+            next_ti, next_tp, next_r0 = self._reach_init(r, op)
 
-            # loop over all reachability steps
-            for i in range(op.steps):
-                # save reachable set
-                ti_set[i] = r_next[0]
-                # ti_time[i]=Interval(np.array([[]]))
-                # TODO
-                raise NotImplementedError
+            # reduce zonotopes
+            for i in range(len(next_tp)):
+                if not next_tp[i].set.is_empty:
+                    next_tp[i].set.reduce(op.reduction_method, op.zonotope_order)
+                    next_ti[i].reduce(op.reduction_method, op.zonotope_order)
 
+            # delete redundant reachable sets
             # TODO
-            raise NotImplementedError
 
-            # =============================================== public method
+            return next_ti, next_tp, next_r0
 
-        def reach_init(
+        def _reach_init(
             self, r_init: [Reachable.Element], op: NonLinSys.Option
-        ) -> (Reachable.Result, NonLinSys.Option):
+        ) -> ([Geometry], [Reachable.Element], [Reachable.Element]):
             # loop over all parallel initial sets
-            idx, r_tp, r_ti, r0 = 0, {}, {}, {}
+            r_ti, r_tp, r0 = [], [], []
             for i in range(len(r_init)):
                 temp_r_ti, temp_r_tp, dim_for_split = self._lin_reach(r_init[i], op)
 
                 # check if initial set has to be split
                 if len(dim_for_split) <= 0:
-                    r_tp[idx] = temp_r_tp
-                    r_tp[idx].pre = i
-                    r_ti[idx] = temp_r_ti
-                    r0[idx] = r_init[i]
-                    idx += 1
+                    r_tp.append(temp_r_tp)
+                    r_tp[-1].pre = i
+                    r_ti.append(temp_r_ti)
+                    r0.append(r_init[i])
                 else:
                     raise NotImplementedError  # TODO
 
             # store the result
             return r_ti, r_tp, r0
+
+        def _reach_over_standard(self, op: NonLinSys.Option) -> Reachable.Result:
+            # obtain factors for initial state and input solution time step
+            i = np.arange(1, op.taylor_terms + 2)
+            op.factors = np.power(op.step_size, i) / factorial(i)
+            # set current time
+            op.cur_t = op.t_start
+            # init containers for storing the results
+            ti_set, ti_time, tp_set, tp_time = [], [], [], []
+
+            # init reachable set computation
+            next_ti, next_tp, next_r0 = self._reach_init(op.r_init, op)
+
+            time_pts = np.linspace(op.t_start, op.t_end, op.steps, endpoint=True)
+
+            # loop over all reachability steps
+            for i in range(op.steps - 1):
+                # save reachable set
+                ti_set.append(next_ti)
+                ti_time.append(time_pts[i : i + 2])
+                tp_set.append(next_tp)
+                tp_time.append(time_pts[i + 1])
+
+                # check specification
+                if op.specs is not None:
+                    raise NotImplementedError  # TODO
+
+                # increment time
+                op.cur_t = time_pts[i + 1]
+
+                # compute next reachable set
+                next_ti, next_tp, next_r0 = self._post(next_tp, op)
+
+            # check specification
+            if op.specs is not None:
+                raise NotImplementedError
+
+            # save the last reachable set in cell structure
+            return Reachable.Result(
+                ti_set, tp_set, np.vstack(ti_time), np.array(tp_time)
+            )
+
+            # =============================================== public method
 
         def reach(self, op: NonLinSys.Option) -> Reachable.Result:
             assert op.validate(self.dim)

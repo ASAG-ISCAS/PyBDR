@@ -10,8 +10,9 @@ import numpy as np
 class Option(ABC):
     t_start: float = 0
     t_end: float = 0
-    t_step: float = 0
+    cur_t: float = 0
     steps: int = 10
+    step_size: float = None
     r_init: [Reachable.Element] = None
     r_unsafe: [Geometry] = None
     u: Geometry = None

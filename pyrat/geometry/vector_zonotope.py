@@ -40,7 +40,7 @@ class VectorZonotope:
     def __init_from_vector_zonotope(self, data: VectorZonotope):
         self._z = data.z
         self._rank = data.rank
-        self._vertices = data.vertices()
+        self._vertices = data.vertices
         self._ix = data.ix()
         self.remove_zero_gen()
 
@@ -94,6 +94,14 @@ class VectorZonotope:
     def is_interval(self) -> bool:
         raise NotImplementedError
         # TODO
+
+    @property
+    def info(self):
+        info = "\n ------------- vector zonotope info ------------- \n"
+        info += str(self.dim) + "\n"
+        info += str(self.gen_num) + "\n"
+        info += str(self.center) + "\n"
+        return info
 
     # =============================================== operators
     def __add__(self, other):
@@ -236,7 +244,7 @@ class VectorZonotope:
 
     # =============================================== private method
     def _picked_generators(self, order) -> (np.ndarray, np.ndarray):
-        gur, gu = np.empty((self.dim, 0), dtype=float), np.empty(
+        gur, gr = np.empty((self.dim, 0), dtype=float), np.empty(
             (self.dim, 0), dtype=float
         )
 
@@ -247,11 +255,24 @@ class VectorZonotope:
             # only reduce if zonotope order is greater than the desired order
             if gen_num > dim * order:
                 # compute metric of generators
-                raise NotImplementedError
+                h = np.linalg.norm(self.generator, ord=1, axis=0) - np.linalg.norm(
+                    self.generator, ord=np.inf, axis=0
+                )
+                # number of generators that are not reduced
+                num_ur = np.floor(self.dim * (order - 1)).astype(dtype=int)
+                # number of generators that are reduced
+                num_r = self.gen_num - num_ur
+
+                # pick generators with smallest h values to be reduced
+                idx_r = np.argpartition(h, num_r)
+                gr = self.generator[:, idx_r]
+                # unreduced generators
+                idx_ur = np.setdiff1d(np.arange(self.gen_num), idx_r)
+                gur = self.generator[:, idx_ur]
             else:
                 gur = self.generator
 
-        return gur, gu
+        return gur, gr
 
     def _reduce_girard(self, order: int):
         # pick generators to reduce
@@ -288,6 +309,7 @@ class VectorZonotope:
             ng = self.generator[:, 0:1]  # at least one generator even all zeros inside
         self._z = np.hstack([self.center.reshape((-1, 1)), ng])
 
+    @property
     def vertices(self):
         """
         get possible vertices of this zonotope
@@ -307,7 +329,7 @@ class VectorZonotope:
         :return: ordered vertices of the final polytope
         """
         assert self.dim == 2  # only care about 2d case
-        pts = self.vertices()[ConvexHull(self.vertices()).vertices, :].tolist()
+        pts = self.vertices[ConvexHull(self.vertices).vertices, :].tolist()
         pts.sort(
             key=lambda p: np.arctan2(p[1] - self.center[0, 1], p[0] - self.center[0, 0])
         )
@@ -336,6 +358,9 @@ class VectorZonotope:
             return self._reduce_girard(order)
         else:
             raise NotImplementedError
+
+    def proj(self, dims):
+        self.__init_from_numpy_array(self._z[dims, :])
 
     # =============================================== public method
     # =============================================== public method

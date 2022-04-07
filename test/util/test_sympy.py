@@ -55,7 +55,7 @@ def test_case_2():
 
     lamb = 0
     for i in range(3):
-        lamb += 1 / (2 * sigma ** 2) * (z[i] - h[i]) ** 2
+        lamb += 1 / (2 * sigma**2) * (z[i] - h[i]) ** 2
     simplify(lamb)
     print(lamb)
 
@@ -140,7 +140,7 @@ def test_sympy_using_custom_interval_arithmetic():
             raise NotImplementedError
 
     x, y = symbols(("x", "y"))
-    expr = x + y ** 2
+    expr = x + y**2
     f = lambdify((x, y), expr, dict(inspect.getmembers(Interval)))
 
     temp = f(Interval(-1, 1), Interval(2, 3))
@@ -164,3 +164,16 @@ def test_interval():
     print(inspect.getsource(f))
     temp = f(v)
     print(f(v))
+
+
+def test_interval_power():
+    from pyrat.geometry import Interval
+
+    a = Interval(np.array([[-0.02520596], [4.55162619]], dtype=float))
+    print(a * -1)
+    print("---------------------------")
+    # print(((-0.02520596) ** 1.5))
+    print(4.55162619**1.5)
+    b = 9.71068532
+    print(a**1.5)
+    print(b)

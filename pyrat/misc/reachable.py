@@ -10,10 +10,13 @@ class Reachable:
     class Element:
         set: Geometry = None
         err: np.ndarray = None
+        pre: int = -1
 
     @dataclass
     class Result:
-        ti: Reachable.Element = None
-        tp: Reachable.Element = None
+        ti: [Reachable.Element]
+        tp: [Reachable.Element]
+        ti_time: np.ndarray = None
+        tp_time: np.ndarray = None
         loc: int = -1
         pre: int = -1

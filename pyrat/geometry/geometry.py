@@ -31,6 +31,11 @@ class Geometry(ABC):
     def vertices(self) -> np.ndarray:
         raise NotImplementedError
 
+    @property
+    @abstractmethod
+    def info(self):
+        raise NotImplementedError
+
     # =============================================== operator
     @abstractmethod
     def __contains__(self, item):
@@ -77,4 +82,13 @@ class Geometry(ABC):
     @staticmethod
     @abstractmethod
     def rand(dim: int):
+        raise NotImplementedError
+
+    # =============================================== public method
+    @abstractmethod
+    def reduce(self, method: str, order: int):
+        raise NotImplementedError
+
+    @abstractmethod
+    def proj(self, dims):
         raise NotImplementedError
