@@ -25,3 +25,4 @@ class Tank6Eq(Model):
     vars = symbols(("x:6", "u:1"))
     f = _f(*vars)
     name = "Tank6Eq"
+    dim = f.rows

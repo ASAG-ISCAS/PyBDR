@@ -18,3 +18,8 @@ class Model(ABC):
     @abstractmethod
     def vars(self):
         raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def dim(self):
+        raise NotImplementedError

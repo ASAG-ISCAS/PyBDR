@@ -60,9 +60,14 @@ class Interval(Geometry):
             "__rtruediv__": cls.__rtruediv__,
             "__pow__": cls.__pow__,
             "__getitem__": cls.__getitem__,
+            "__abs__": cls.__abs__,
         }
 
     # =============================================== operator
+    def __abs__(self):
+        bd = np.sort(abs(self._bd), axis=0)
+        return Interval(bd)
+
     def __getitem__(self, item):
         assert isinstance(item, int) and item >= 0
         return Interval(self._bd[:, item].reshape((-1, 1)))
@@ -85,8 +90,8 @@ class Interval(Geometry):
     def __pow__(self, power, modulo=None):
         if isinstance(power, numbers.Real):
             if power >= 0:
-                return Interval(self.bd ** power)
-            return Interval(np.flip(self._bd ** power))
+                return Interval(self.bd**power)
+            return Interval(np.flip(self._bd**power))
         else:
             raise NotImplementedError
 
