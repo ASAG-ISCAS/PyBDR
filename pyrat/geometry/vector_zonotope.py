@@ -40,7 +40,7 @@ class VectorZonotope:
     def __init_from_vector_zonotope(self, data: VectorZonotope):
         self._z = data.z
         self._rank = data.rank
-        self._vertices = data.vertices
+        self._vertices = None
         self._ix = data.ix()
         self.remove_zero_gen()
 
@@ -57,11 +57,11 @@ class VectorZonotope:
 
     # =============================================== property
     @property
-    def center(self) -> np.ndarray:
+    def c(self) -> np.ndarray:
         return self._z[:, 0]
 
     @property
-    def generator(self) -> np.ndarray:
+    def gen(self) -> np.ndarray:
         return self._z[:, 1:]
 
     @property
@@ -87,7 +87,7 @@ class VectorZonotope:
     @property
     def rank(self) -> int:
         if self._rank is None:
-            self._rank = np.linalg.matrix_rank(self.generator)
+            self._rank = np.linalg.matrix_rank(self.gen)
         return self._rank
 
     @property
@@ -100,7 +100,7 @@ class VectorZonotope:
         info = "\n ------------- vector zonotope info ------------- \n"
         info += str(self.dim) + "\n"
         info += str(self.gen_num) + "\n"
-        info += str(self.center) + "\n"
+        info += str(self.c) + "\n"
         return info
 
     # =============================================== operators
@@ -111,8 +111,8 @@ class VectorZonotope:
         :return:
         """
         if isinstance(other, VectorZonotope):
-            z = np.hstack([self._z, other.generator])
-            z[:, 0] += other.center
+            z = np.hstack([self._z, other.gen])
+            z[:, 0] += other.c
             return VectorZonotope(z)
         elif isinstance(other, (np.ndarray, numbers.Real)):
             z = self._z.copy()
@@ -166,15 +166,11 @@ class VectorZonotope:
         if isinstance(other, numbers.Real):
             return VectorZonotope(self.z * other)
         elif isinstance(other, Interval):
-            # get minimum and maximum
-            inf, sup = other.inf, other.sup
-            # get center of interval matrix
-            c = other.center
             # get symmetric interval matrix
-            s = 0.5 * (sup - inf)
+            s = 0.5 * (other.sup - other.inf)
             z_as = np.sum(abs(self._z), axis=1)
             # compute new zonotope
-            return VectorZonotope(np.hstack([c @ self._z, np.diag(s @ z_as)]))
+            return VectorZonotope(np.hstack([other.c @ self._z, np.diag(s @ z_as)]))
 
         else:
             raise NotImplementedError
@@ -195,7 +191,7 @@ class VectorZonotope:
 
     def __str__(self):
         sep = "\n ====================================================== \n"
-        return sep + str(self.center) + "\n" + str(self.generator) + sep
+        return sep + str(self.c) + "\n" + str(self.gen) + sep
 
     def __abs__(self):
         return VectorZonotope(abs(self._z))
@@ -209,16 +205,16 @@ class VectorZonotope:
         """
         if isinstance(other, VectorZonotope):
             # get generator numbers
-            lhs_num, rhs_num = self.gen_num, other.gen_num
+            lhs_num, rhs_num = self.gen_num + 1, other.gen_num + 1
             # if first zonotope has more or equal generators
             z_cut, z_add, z_eq = None, None, None
             if rhs_num < lhs_num:
-                z_cut = self._z[:, : rhs_num + 1]
-                z_add = self._z[:, rhs_num + 1 : lhs_num]
+                z_cut = self._z[:, :rhs_num]
+                z_add = self._z[:, rhs_num:lhs_num]
                 z_eq = other._z
             else:
-                z_cut = other._z[:, : lhs_num + 1]
-                z_add = other._z[:, lhs_num + 1 : rhs_num]
+                z_cut = other._z[:, :lhs_num]
+                z_add = other._z[:, lhs_num:rhs_num]
                 z_eq = self._z
             return VectorZonotope(
                 np.concatenate(
@@ -237,9 +233,8 @@ class VectorZonotope:
         return VectorZonotope(np.zeros((dim, 0), dtype=float))
 
     @staticmethod
-    def rand(dim: int):
-        assert dim > 0
-        gen_num = np.random.randint(1, 10)
+    def rand(dim: int, gen_num: int):
+        assert dim > 0 and gen_num >= 1
         return VectorZonotope(np.random.rand(dim, gen_num))
 
     # =============================================== private method
@@ -248,15 +243,15 @@ class VectorZonotope:
             (self.dim, 0), dtype=float
         )
 
-        if not aux.is_empty(self.generator):
+        if not aux.is_empty(self.gen):
             # delete zero-length generators
             self.remove_zero_gen()
             dim, gen_num = self.dim, self.gen_num
             # only reduce if zonotope order is greater than the desired order
             if gen_num > dim * order:
                 # compute metric of generators
-                h = np.linalg.norm(self.generator, ord=1, axis=0) - np.linalg.norm(
-                    self.generator, ord=np.inf, axis=0
+                h = np.linalg.norm(self.gen, ord=1, axis=0) - np.linalg.norm(
+                    self.gen, ord=np.inf, axis=0
                 )
                 # number of generators that are not reduced
                 num_ur = np.floor(self.dim * (order - 1)).astype(dtype=int)
@@ -265,12 +260,12 @@ class VectorZonotope:
 
                 # pick generators with smallest h values to be reduced
                 idx_r = np.argpartition(h, num_r)
-                gr = self.generator[:, idx_r]
+                gr = self.gen[:, idx_r]
                 # unreduced generators
                 idx_ur = np.setdiff1d(np.arange(self.gen_num), idx_r)
-                gur = self.generator[:, idx_ur]
+                gur = self.gen[:, idx_ur]
             else:
-                gur = self.generator
+                gur = self.gen
 
         return gur, gr
 
@@ -281,7 +276,7 @@ class VectorZonotope:
         d = np.sum(abs(gr), axis=1)
         gb = np.diag(d)
         # build reduced zonotope
-        return VectorZonotope(np.hstack([self.center.reshape((-1, 1)), gur, gb]))
+        return VectorZonotope(np.hstack([self.c.reshape((-1, 1)), gur, gb]))
 
     # =============================================== public method
     def is_contain(self, other) -> bool:
@@ -291,23 +286,23 @@ class VectorZonotope:
     def is_equal(self, other: VectorZonotope, tol=np.finfo(np.float).eps) -> bool:
         if self.dim != other.dim:
             return False
-        if np.any(abs(self.center - other.center) > tol):
+        if np.any(abs(self.c - other.c) > tol):
             return False
         if self.gen_num != other.gen_num:
             return False
-        if np.all(abs(self.generator - other.generator) <= tol):
+        if np.all(abs(self.gen - other.gen) <= tol):
             return True
-        g0 = self.generator[:, self.ix()]
-        g1 = other.generator[:, other.ix()]
+        g0 = self.gen[:, self.ix()]
+        g1 = other.gen[:, other.ix()]
         return True if np.all(abs(g0 - g1) <= tol) else False
 
     def remove_zero_gen(self):
         if self.gen_num <= 1:
             return  # if only one generator, do nothing??? # TODO
-        ng = self.generator[:, abs(self.generator).sum(axis=0) > 0]
+        ng = self.gen[:, abs(self.gen).sum(axis=0) > 0]
         if aux.is_empty(ng):
-            ng = self.generator[:, 0:1]  # at least one generator even all zeros inside
-        self._z = np.hstack([self.center.reshape((-1, 1)), ng])
+            ng = self.gen[:, 0:1]  # at least one generator even all zeros inside
+        self._z = np.hstack([self.c.reshape((-1, 1)), ng])
 
     @property
     def vertices(self):
@@ -316,24 +311,52 @@ class VectorZonotope:
         :return:
         """
         if self._vertices is None:
-            x = np.array([-1, 1], dtype=float)
-            comb = np.array(list(product(x, repeat=self.gen_num)))
-            self._vertices = (
-                self.generator[None, :, None, :] @ comb[:, None, :, None]
-            ).squeeze() + self._z[:, 0][None, :]
+            if self.dim == 2:
+                self._vertices = self.polygon()
+            else:
+                raise NotImplementedError
+                # x = np.array([-1, 1], dtype=float)
+                # comb = np.array(list(product(x, repeat=self.gen_num)))
+                # self._vertices = (
+                #     self.gen[None, :, None, :] @ comb[:, None, :, None]
+                # ).squeeze() + self._z[:, 0][None, :]
         return self._vertices
 
     def polygon(self):
-        """
-        converts a 2d zonotope to a polygon
-        :return: ordered vertices of the final polytope
-        """
-        assert self.dim == 2  # only care about 2d case
-        pts = self.vertices[ConvexHull(self.vertices).vertices, :].tolist()
-        pts.sort(
-            key=lambda p: np.arctan2(p[1] - self.center[0, 1], p[0] - self.center[0, 0])
-        )
-        return np.array(pts)
+        # delete zero generators
+        self.remove_zero_gen()
+        # obtain size of enclosing interval hull of first two dimensions
+        x_max = np.sum(abs(self.gen[0, :]))
+        y_max = np.sum(abs(self.gen[1, :]))
+
+        # z with normalized direction: all generators pointing "up"
+        g_norm = self.gen.copy()
+        g_norm[:, g_norm[1, :] < 0] *= -1
+
+        # compute angles
+        angles = np.arctan2(g_norm[1, :], g_norm[0, :])
+        angles[angles < 0] += 2 * np.pi
+
+        # sort all generators by their angle
+        idx = np.argsort(angles)
+
+        # cumsum the generators in order of angle
+        pts = np.zeros((2, self.gen_num + 1), dtype=float)
+        for i in range(self.gen_num):
+            pts[:, i + 1] = pts[:, i] + 2 * g_norm[:, idx[i]]
+
+        pts[0, :] += x_max - np.max(pts[0, :])
+        pts[1, :] -= y_max
+
+        # flip/mirror upper half to get lower half of zonotope (point symmetry)
+        pts_sym = (pts[:, -1] + pts[:, 0])[:, None] - pts[:, 1:]
+        pts = np.concatenate([pts, pts_sym], axis=1)
+
+        # consider center
+        pts[0, :] += self.c[0]
+        pts[1, :] += self.c[1]
+
+        return pts.T
 
     def ix(self) -> np.ndarray:
         """
@@ -341,7 +364,7 @@ class VectorZonotope:
         :return: indices of original column vectors in ascending order
         """
         if self._ix is None:
-            self._ix = np.lexsort(self.generator[::-1, :])
+            self._ix = np.lexsort(self.gen[::-1, :])
         return self._ix
 
     def enclose(self, other: VectorZonotope) -> VectorZonotope:
@@ -360,7 +383,7 @@ class VectorZonotope:
             raise NotImplementedError
 
     def proj(self, dims):
-        self.__init_from_numpy_array(self._z[dims, :])
+        return VectorZonotope(self._z[dims, :])
 
     # =============================================== public method
     # =============================================== public method

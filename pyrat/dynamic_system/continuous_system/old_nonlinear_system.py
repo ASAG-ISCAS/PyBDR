@@ -87,12 +87,12 @@ class NonLinearSystem:
             else:
                 # linearization point p.x of the state is the center of the last
                 # reachable set R translated by 0.5*delta_t*f0
-                f0_prev = self.evaluation(r.center, p["u"])
+                f0_prev = self.evaluation(r.c, p["u"])
                 try:  # if time step not yet created
-                    p["x"] = r.center + f0_prev * 0.5 * opt.time_step
+                    p["x"] = r.c + f0_prev * 0.5 * opt.time_step
                 except:
                     print("time step does NOT created yet")
-                    p["x"] = r.center
+                    p["x"] = r.c
             # substitute p into the system equation to obtain the constraint input
             f0 = self.evaluation(p["x"], p["u"])
             # substitute p into the Jacobin with respect to x and u to obtain the
@@ -109,7 +109,7 @@ class NonLinearSystem:
                 lin_sys = LinearSystem.System(a, np.ones(len(self._model.variables[1])))
             # set up options for linearized system
             opt_lin.u = b * (opt.u + opt.u_trans - p["u"])
-            u_center = opt_lin.u.center
+            u_center = opt_lin.u.c
             opt_lin.u = opt_lin.u - u_center
             opt_lin.u_trans = VectorZonotope(
                 np.vstack([f0 + u_center, np.zeros((f0.shape[0], 1), dtype=float)])

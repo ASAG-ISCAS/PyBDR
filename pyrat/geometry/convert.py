@@ -13,7 +13,7 @@ def _vector_zonotope2interval(source: VectorZonotope):
     :param source: given zonotope
     :return:
     """
-    c = source.center
+    c = source.c
     # determine left and right limit, specially designed for high performance
     delta = np.sum(abs(source.z), axis=1) - abs(c)
     left_limit = c - delta

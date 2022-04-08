@@ -13,7 +13,7 @@ class Geometry(ABC):
     # =============================================== property
     @property
     @abstractmethod
-    def center(self) -> np.ndarray:
+    def c(self) -> np.ndarray:
         raise NotImplementedError
 
     @property

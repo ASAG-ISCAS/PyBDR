@@ -29,10 +29,11 @@ class NonLinSys:
         max_err: np.ndarray = None
 
         def validate(self, dim) -> bool:
+            assert self.steps >= 1
             if self.max_err is None:
                 self.max_err = np.full(dim, np.inf)
             if self.step_size is None:
-                self.step_size = (self.t_end - self.t_start) / self.steps
+                self.step_size = (self.t_end - self.t_start) / (self.steps - 1)
 
             #  TODO
             return True
@@ -115,8 +116,8 @@ class NonLinSys:
             p = {"u": op.u_trans}
             # linearization point p.x of the state is the center of the last reachable
             # set R translated by 0.5*delta_t*f0
-            f0_pre = self._evaluate(r.center, p["u"])
-            p["x"] = r.center + f0_pre * 0.5 * op.step_size
+            f0_pre = self._evaluate(r.c, p["u"])
+            p["x"] = r.c + f0_pre * 0.5 * op.step_size
             # substitute p into the system equation to obtain the constraint input
             f0 = self._evaluate(p["x"], p["u"])
             # substitute p into the jacobian with respect to x and u to obtain the
@@ -133,13 +134,14 @@ class NonLinSys:
             lin_op.factors = op.factors
             lin_op.step_size = op.step_size
             lin_op.zonotope_order = op.zonotope_order
+            lin_op.cur_t = op.cur_t
             # --------------------------------------- # TODO shall refine this part, like unify the option???
             lin_op.u = b @ (op.u + lin_op.u_trans - p["u"])
-            lin_op.u -= lin_op.u.center
+            lin_op.u -= lin_op.u.c
             lin_op.u_trans = VectorZonotope(
                 np.hstack(
                     [
-                        (f0 + lin_op.u.center).reshape((-1, 1)),
+                        (f0 + lin_op.u.c).reshape((-1, 1)),
                         np.zeros((f0.shape[0], 1), dtype=float),
                     ]
                 )
@@ -189,6 +191,7 @@ class NonLinSys:
                 v_err_dyn = VectorZonotope(
                     np.hstack([0 * err_lagr.reshape((-1, 1)), np.diag(err_lagr)])
                 )
+                print("err_lagr=", err_lagr)
                 return err_lagr, v_err_dyn
             else:
                 raise NotImplementedError  # TODO
@@ -212,6 +215,8 @@ class NonLinSys:
                 r_tp, r_ti = r.tp, r.ti
                 perf_ind_cur, perf_ind = np.inf, 0
                 applied_err, abstr_err, v_err_dyn = None, r_init.err, None
+                print()
+                print("abstr_err", abstr_err)
 
                 while perf_ind_cur > 1 and perf_ind <= 1:
                     # estimate the abstraction error
@@ -227,7 +232,8 @@ class NonLinSys:
                     # approach described in [1]
                     if op.algo == "lin":
                         # compute overall reachable set including linearization error
-                        r_max = r_ti + r_all_err
+                        r_max = r_ti + r_all_err  # TODO
+                        # r_max = r_ti
                         # compute linearization error
                         true_err, v_err_dyn = self._abst_err_lin(op, r_max)
                     else:
@@ -237,6 +243,7 @@ class NonLinSys:
                     perf_ind_cur = np.max(true_err / applied_err)
                     perf_ind = np.max(true_err / op.max_err)
                     abstr_err = true_err
+                    # print("abstr_err", abstr_err)
 
                 # translate reachable sets by linearization point
                 r_ti += self._run_time.lin_err_p["x"]
@@ -319,6 +326,11 @@ class NonLinSys:
                 ti_time.append(time_pts[i : i + 2])
                 tp_set.append(next_tp)
                 tp_time.append(time_pts[i + 1])
+
+                print(
+                    "\n ============================================================== "
+                    + str(i)
+                )
 
                 # check specification
                 if op.specs is not None:

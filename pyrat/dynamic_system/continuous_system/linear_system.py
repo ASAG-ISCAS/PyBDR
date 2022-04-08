@@ -152,7 +152,7 @@ class LinSys:
             v = op.u if self._ub is None else self._ub @ op.u
             # compute vTrans
             op.is_rv = True
-            if np.all(v.center == 0) and v.z.shape[1] == 1:
+            if np.all(v.c == 0) and v.z.shape[1] == 1:
                 op.is_rv = False
             v_trans = op.u_trans if self._ub is None else self._ub @ op.u
 

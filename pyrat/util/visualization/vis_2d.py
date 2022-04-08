@@ -3,6 +3,7 @@ from itertools import combinations
 import matplotlib.pyplot as plt
 import numpy as np
 from pyrat.misc import Reachable
+from pyrat.geometry import Geometry
 
 
 def _halfspace_intersection(hs) -> np.ndarray:
@@ -43,7 +44,7 @@ def _min_max(objs):
             hs.append(obj)
         elif obj.__class__.__name__ == "VectorZonotope":
             assert obj.dim == 2
-            pts = obj.vertices()
+            pts = obj.vertices
             r_min = min(pts.min(), r_min)
             r_max = max(pts.max(), r_max)
         elif isinstance(obj, np.ndarray):
@@ -139,7 +140,9 @@ def _vis_halfspace_old(h, ax, r_min, r_max):
 
 
 def _vis_vector_zonotope(z, ax, r_min, r_max):
-    p = plt.Polygon(z.polygon(), closed=True, alpha=0.3)
+    p = plt.Polygon(
+        z.polygon(), closed=True, alpha=1, fill=False, linewidth=2, edgecolor="black"
+    )
     ax.add_patch(p)
 
 
@@ -188,9 +191,16 @@ def vis2d(r: Reachable.Result, dims: list, width=800, height=800):
     px = 1 / plt.rcParams["figure.dpi"]
     fig, ax = plt.subplots(figsize=(width * px, height * px), layout="constrained")
 
-    def vis_element(e: Reachable.Element):
-        e.proj(dims)
-        p = plt.Polygon(e.polygon(), closed=True, alpha=0)
+    def vis_element(g: Geometry):
+        g = g.proj(dims)
+        p = plt.Polygon(
+            g.polygon(),
+            closed=True,
+            alpha=1,
+            fill=False,
+            linewidth=0.5,
+            edgecolor="black",
+        )
         ax.add_patch(p)
 
     if len(r.ti) >= 0:
@@ -203,6 +213,6 @@ def vis2d(r: Reachable.Result, dims: list, width=800, height=800):
                 vis_element(re)
 
     plt.axis("equal")
-    ax.axhline(y=0, color="k")
-    ax.axvline(x=0, color="k")
+    # ax.axhline(y=0, color="k")
+    # ax.axvline(x=0, color="k")
     plt.show()

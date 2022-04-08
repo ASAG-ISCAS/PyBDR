@@ -1,12 +1,11 @@
 from inspect import signature
 
 import numpy as np
-import scipy.special
 
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import VectorZonotope
 from pyrat.misc import Reachable
-from pyrat.model import Tank6Eq
+from pyrat.model import Tank6Eq, VanDerPol
 from pyrat.util.visualization import vis2d
 
 
@@ -19,7 +18,8 @@ def test_case_0():
     """
     init nonlinear system --------------------------------------------------------------
     """
-    system = NonLinSys.Sys(Tank6Eq())
+    # system = NonLinSys.Sys(Tank6Eq())
+    system = NonLinSys.Sys(VanDerPol())
 
     """
     init parameters for reachability analysis problem definition -----------------------
@@ -35,8 +35,8 @@ def test_case_0():
     init options for the computation ---------------------------------------------------
     """
     option = NonLinSys.Option()
-    option.t_end = 40
-    option.steps = 41
+    option.t_end = 0.4
+    option.steps = 1001
     option.taylor_terms = 4
     option.zonotope_order = 50
     option.algo = "lin"
@@ -45,6 +45,9 @@ def test_case_0():
     option.r_init = [Reachable.Element()]
     option.r_init[0].set = VectorZonotope(
         np.vstack([np.array([2, 4, 4, 2, 10, 4]), 0.2 * np.eye(6)]).T
+    )
+    option.r_init[0].set = VectorZonotope(
+        np.vstack([np.array([1.4, 2.4]), np.diag([0.17, 0.006])]).T
     )
     option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
     option.u = VectorZonotope(np.array([0, 0.005]).reshape((1, -1)))

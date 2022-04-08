@@ -9,7 +9,7 @@ def test_basic():
     print(bd[0])
     print(bd[1])
     print(i.dim)
-    print(i.center)
+    print(i.c)
     print(i)
 
     assert np.all(bd[0] <= bd[1])

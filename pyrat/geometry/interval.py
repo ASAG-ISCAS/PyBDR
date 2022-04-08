@@ -41,7 +41,7 @@ class Interval(Geometry):
         raise NotImplementedError
 
     @property
-    def center(self) -> np.ndarray:
+    def c(self) -> np.ndarray:
         return self._bd.sum(axis=0) * 0.5
 
     @property

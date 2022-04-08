@@ -75,3 +75,6 @@ def test_numpy_container():
     a = np.array([Interval(0, 1), Interval(2, 3)], dtype=Interval)
     b = np.array([Interval(4, 5), Interval(6, 7)], dtype=Interval)
     c = a + b
+    print(2.222 % 2)
+    print(2.0 % 2)
+    print(3 % 2)
