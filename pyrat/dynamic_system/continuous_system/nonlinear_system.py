@@ -5,6 +5,7 @@ import numbers
 from dataclasses import dataclass
 
 import numpy as np
+import scipy.sparse
 from scipy.special import factorial
 from sympy import lambdify, hessian
 
@@ -77,6 +78,19 @@ class NonLinSys:
                 self._hu = [
                     hessian(expr, self._model.vars[1]) for expr in self._model.f
                 ]  # TODO need refine this part, check "sympy array derivative"
+
+                # DEBUG
+                for hxi in self._hx:
+                    for this_hx in hxi:
+                        if not this_hx.is_number:
+                            print(this_hx)
+
+                for hui in self._hu:
+                    for this_hu in hui:
+                        if not this_hu.is_number:
+                            print(this_hu)
+                exit(False)
+                # DEBUG
 
         def _evaluate(self, x, u, mod: str = "numpy"):
             f = lambdify(self._model.vars, self._model.f, mod)
@@ -178,6 +192,25 @@ class NonLinSys:
 
                 # evaluate the hessian matrix with the selected range-bounding technique
                 hx, hu = self._hessian(total_int_x, total_int_u)
+
+                # DEBUG
+                for hxi in hx:
+                    # print(np.min(hxi.inf))
+                    # print(np.max(hxi.inf))
+                    # print(np.min(hxi.sup))
+                    # print(np.max(hxi.sup))
+                    print(scipy.sparse.csr_matrix(hxi.inf))
+                    print(scipy.sparse.csr_matrix(hxi.sup))
+                    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
+                print("++++++++++++++++++++++++++++++++++++++++")
+
+                for hui in hu:
+                    # print(scipy.sparse.csr_matrix(hui.inf))
+                    # print(scipy.sparse.csr_matrix(hui.sup))
+                    print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+
+                # DEBUG
 
                 # calculate the Lagrange remainder (second-order error)
                 err_lagr = np.zeros(self.dim, dtype=float)
