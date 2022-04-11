@@ -9,7 +9,7 @@ import scipy.sparse
 from scipy.special import factorial
 from sympy import lambdify, hessian
 
-from pyrat.geometry import Geometry, VectorZonotope, Interval, cvt2
+from pyrat.geometry import Geometry, VectorZonotope, IntervalOld, cvt2
 from pyrat.misc import Reachable, Simulation
 from pyrat.model import Model
 from .continuous_system import ContSys, Option, RunTime
@@ -102,7 +102,7 @@ class NonLinSys:
             return fx(x, u), fu(x, u)
 
         def _hessian(self, x, u):
-            ops = Interval.ops()
+            ops = IntervalOld.ops()
 
             def _fill_hessian(expr_h, dim):
                 hs = []
@@ -115,7 +115,7 @@ class NonLinSys:
                             v = f(x, u)
                             h[0, row, col] = v.inf
                             h[1, row, col] = v.sup
-                    hs.append(Interval(h))
+                    hs.append(IntervalOld(h))
                 return hs
 
             hx = _fill_hessian(self._hx, x.dim[0])
@@ -168,7 +168,7 @@ class NonLinSys:
 
         def _abst_err_lin(
             self, op: NonLinSys.Option, r: Geometry
-        ) -> (Interval, VectorZonotope):
+        ) -> (IntervalOld, VectorZonotope):
             """
             computes the abstraction error for linearization approach to enter
             :param op:

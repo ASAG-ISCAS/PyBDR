@@ -8,7 +8,7 @@ import numpy as np
 from scipy.spatial import ConvexHull
 
 import pyrat.util.functional.auxiliary as aux
-from .interval import Interval
+from .interval_old import IntervalOld
 
 
 class VectorZonotope:
@@ -32,7 +32,7 @@ class VectorZonotope:
         elif isinstance(data, np.ndarray):
             self.__init_from_numpy_array(data)
             return
-        elif isinstance(data, Interval):
+        elif isinstance(data, IntervalOld):
             self.__init_from_interval(data)
             return
         raise NotImplementedError  # TODO
@@ -52,7 +52,7 @@ class VectorZonotope:
         self._ix = None
         self.remove_zero_gen()  # remove zero generators
 
-    def __init_from_interval(self, interval: Interval):
+    def __init_from_interval(self, interval: IntervalOld):
         raise NotImplementedError
 
     # =============================================== property
@@ -165,7 +165,7 @@ class VectorZonotope:
         """
         if isinstance(other, numbers.Real):
             return VectorZonotope(self.z * other)
-        elif isinstance(other, Interval):
+        elif isinstance(other, IntervalOld):
             # get symmetric interval matrix
             s = 0.5 * (other.sup - other.inf)
             z_as = np.sum(abs(self._z), axis=1)

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.linalg import expm
 
-from pyrat.geometry import Geometry, Interval, VectorZonotope
+from pyrat.geometry import Geometry, IntervalOld, VectorZonotope
 from pyrat.misc import Reachable, Simulation
 from .continuous_system import ContSys, Option
 
@@ -73,7 +73,7 @@ class LinSys:
             w = expm(xa_abs * op.step_size) - m
             # compute absolute value of w for numerical stability
             w = abs(w)
-            e = Interval(np.stack([-w, w]))
+            e = IntervalOld(np.stack([-w, w]))
             # write to object structure
             self._taylor["powers"] = xa_power
             self._taylor["err"] = e
@@ -102,7 +102,7 @@ class LinSys:
                 asum_pos += factor * aneg
                 asum_neg += factor * apos
             # instantiate interval matrix
-            asum = Interval(np.stack([asum_neg, asum_pos]))
+            asum = IntervalOld(np.stack([asum_neg, asum_pos]))
             # write to object structure
             self._taylor["F"] = asum + self._taylor["err"]
 
@@ -136,7 +136,7 @@ class LinSys:
                 asum_pos += factor * aneg
                 asum_neg += factor * apos
             # instantiate interval matrix
-            asum = Interval(np.stack([asum_neg, asum_pos]))
+            asum = IntervalOld(np.stack([asum_neg, asum_pos]))
             # compute error due to finite taylor series according to interval document
             # "Input Error Bounds in Reachability Analysis"
             e_input = self._taylor["err"] * op.step_size

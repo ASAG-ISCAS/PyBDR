@@ -149,27 +149,26 @@ def test_sympy_using_custom_interval_arithmetic():
 
 
 def test_interval():
-    from pyrat.geometry import Interval
+    from pyrat.geometry import IntervalOld
 
-    v = Interval(np.array([[1.79294, 0], [2.21276, 0]], dtype=float).reshape((2, -1)))
+    v = IntervalOld(np.array([[1.79294, 0], [2.21276, 0]], dtype=float).reshape((2, -1)))
     print(v)
     print(v[0])
     print(v[1])
     x = symbols("x:2")
-    eqr = 0.0166104259427626 / x[0] ** (3 / 2)
+    eqr = 0.0166104259427626 / x[0] ** (3 / 2) + atan2(x[0], x[1])
     print(eqr.is_number)
-    eqr = 0
     print(v[0])
-    f = lambdify([x], eqr, Interval.ops())
+    f = lambdify([x], eqr, IntervalOld.ops())
     print(inspect.getsource(f))
     temp = f(v)
     print(f(v))
 
 
 def test_interval_power():
-    from pyrat.geometry import Interval
+    from pyrat.geometry import IntervalOld
 
-    a = Interval(np.array([[-0.02520596], [4.55162619]], dtype=float))
+    a = IntervalOld(np.array([[-0.02520596], [4.55162619]], dtype=float))
     print(a * -1)
     print("---------------------------")
     # print(((-0.02520596) ** 1.5))
