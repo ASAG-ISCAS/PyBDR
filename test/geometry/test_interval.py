@@ -19,16 +19,7 @@ def test_basic():
 def test_new_interval():
     from pyrat.geometry import Interval
 
-    a = Interval(-1, 1)
-    b = Interval([-1, 1], [2, 3])
-    c = [2, 4]
-    d = Interval(c, c)
-    print(a)
-    print(b)
-    print(a.dim)
-    print(b.dim)
-    print(c)
-    print(d)
-    print(d[0])
-    d[0] = Interval(-1, 1)
-    print(d)
+    a = Interval(-1, 0)
+    print()
+    print(a**3)
+    print(a**2)

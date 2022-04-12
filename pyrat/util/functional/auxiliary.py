@@ -1,7 +1,10 @@
+import numbers
+
 import numpy as np
+from scipy.sparse import coo_matrix
 
 
-def is_empty(arr: np.ndarray) -> bool:
+def is_empty(arr: (np.ndarray, coo_matrix)) -> bool:
     """
     check if given array is empty or not, same as MATLAB isempty function
     :param arr: given array
@@ -39,3 +42,51 @@ def min_affine(arr: np.ndarray) -> np.ndarray:
     # choose r linearly independent rows of the given array
     eig_v, _ = np.linalg.eig(arr)
     return arr[:, eig_v == 0]
+
+
+def mask_lt(m: coo_matrix, v: numbers.Real) -> coo_matrix:
+    mask = m.data < v
+    data = m.data[mask]
+    row = m.row[mask]
+    col = m.col[mask]
+    return coo_matrix((data, (row, col)), shape=m.shape, dtype=float)
+
+
+def mask_le(m: coo_matrix, v: numbers.Real) -> coo_matrix:
+    mask = m.data <= v
+    data = m.data[mask]
+    row = m.row[mask]
+    col = m.col[mask]
+    return coo_matrix((data, (row, col)), shape=m.shape, dtype=float)
+
+
+def mask_eq(m: coo_matrix, v: numbers.Real, tol: float = 1e-30) -> coo_matrix:
+    mask = abs(m.data - v) <= tol
+    data = m.data[mask]
+    row = m.row[mask]
+    col = m.col[mask]
+    return coo_matrix((data, (row, col)), shape=m.shape, dtype=float)
+
+
+def mask_gt(m: coo_matrix, v: numbers.Real) -> coo_matrix:
+    mask = m.data > v
+    data = np.ones_like(m.data[mask])
+    row = m.row[mask]
+    col = m.col[mask]
+    return coo_matrix((data, (row, col)), shape=m.shape, dtype=float)
+
+
+def mask_ge(m: coo_matrix, v: numbers.Real) -> coo_matrix:
+    mask = m.data >= v
+    data = np.ones_like(m.data[mask])
+    row = m.row[mask]
+    col = m.col[mask]
+    return coo_matrix((data, (row, col)), shape=m.shape, dtype=bool)
+
+
+def mask_condition(m: coo_matrix, inr_mask: np.ndarray) -> coo_matrix:
+    assert inr_mask.ndim == 1
+    data = np.ones_like(m.data[inr_mask])
+    row = m.row[inr_mask]
+    col = m.col[inr_mask]
+    return coo_matrix((data, (row, col)), shape=m.shape, dtype=bool)
