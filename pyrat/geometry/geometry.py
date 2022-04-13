@@ -1,6 +1,12 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
+from enum import IntEnum
+
+
+class GeoTYPE(IntEnum):
+    INTERVAL = 0
+    ZONOTOPE = 1
 
 
 class Geometry(ABC):
@@ -34,6 +40,11 @@ class Geometry(ABC):
     @property
     @abstractmethod
     def info(self):
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def type(self) -> GeoTYPE:
         raise NotImplementedError
 
     # =============================================== operator
@@ -71,6 +82,17 @@ class Geometry(ABC):
 
     @abstractmethod
     def __or__(self, other):
+        raise NotImplementedError
+
+    # =============================================== class method
+
+    @classmethod
+    @abstractmethod
+    def functional(cls):
+        """
+        public functional for supporting general arithmetic
+        :return:
+        """
         raise NotImplementedError
 
     # =============================================== static method

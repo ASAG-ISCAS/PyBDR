@@ -1,13 +1,17 @@
-from .interval_old import IntervalOld
-from .vector_zonotope import VectorZonotope
+from __future__ import annotations
+
 import numpy as np
 
+from .geometry import GeoTYPE
+from .interval import Interval
+from .zonotope import Zonotope
 
-def _interval2vector_zonotope(source: IntervalOld):
+
+def _interval2zonotope(source: Interval):
     raise NotImplementedError  # TODO
 
 
-def _vector_zonotope2interval(source: VectorZonotope):
+def _zonotope2interval(source: Zonotope):
     """
     over approximate a zonotope by an interval
     :param source: given zonotope
@@ -18,13 +22,17 @@ def _vector_zonotope2interval(source: VectorZonotope):
     delta = np.sum(abs(source.z), axis=1) - abs(c)
     left_limit = c - delta
     right_limit = c + delta
-    return IntervalOld(np.vstack([left_limit, right_limit]))
+    return Interval(left_limit, right_limit)
 
 
-def cvt2(source, target: str):
-    if isinstance(source, IntervalOld) and target == "vz":
-        return _interval2vector_zonotope(source)
-    elif isinstance(source, VectorZonotope) and target == "int":
-        return _vector_zonotope2interval(source)
+def cvt2(source, target: GeoTYPE):
+    if source.type == GeoTYPE.INTERVAL and target == GeoTYPE.INTERVAL:
+        return source
+    elif source.type == GeoTYPE.INTERVAL and target == GeoTYPE.ZONOTOPE:
+        return _interval2zonotope(source)
+    elif source.type == GeoTYPE.ZONOTOPE and target == GeoTYPE.INTERVAL:
+        return _zonotope2interval(source)
+    elif source.type == GeoTYPE.ZONOTOPE and target == GeoTYPE.ZONOTOPE:
+        return source
     else:
         raise NotImplementedError

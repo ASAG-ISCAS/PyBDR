@@ -5,11 +5,11 @@ import numbers
 from dataclasses import dataclass
 
 import numpy as np
-import scipy.sparse
+from scipy.sparse import csc_matrix, diags
 from scipy.special import factorial
 from sympy import lambdify, hessian
 
-from pyrat.geometry import Geometry, VectorZonotope, IntervalOld, cvt2
+from pyrat.geometry import Geometry, GeoTYPE, Zonotope, Interval, cvt2
 from pyrat.misc import Reachable, Simulation
 from pyrat.model import Model
 from .continuous_system import ContSys, Option, RunTime
@@ -79,19 +79,6 @@ class NonLinSys:
                     hessian(expr, self._model.vars[1]) for expr in self._model.f
                 ]  # TODO need refine this part, check "sympy array derivative"
 
-                # DEBUG
-                for hxi in self._hx:
-                    for this_hx in hxi:
-                        if not this_hx.is_number:
-                            print(this_hx)
-
-                for hui in self._hu:
-                    for this_hu in hui:
-                        if not this_hu.is_number:
-                            print(this_hu)
-                exit(False)
-                # DEBUG
-
         def _evaluate(self, x, u, mod: str = "numpy"):
             f = lambdify(self._model.vars, self._model.f, mod)
             return np.squeeze(f(x, u))
@@ -102,7 +89,7 @@ class NonLinSys:
             return fx(x, u), fu(x, u)
 
         def _hessian(self, x, u):
-            ops = IntervalOld.ops()
+            ops = Interval.functional()
 
             def _fill_hessian(expr_h, dim):
                 hs = []
@@ -113,9 +100,13 @@ class NonLinSys:
                         if not expr[idx].is_number:
                             f = lambdify(self._model.vars, expr[idx], ops)
                             v = f(x, u)
+                            print(v.inf)
+                            print(expr[idx])
+                            print(x[0][0])
+                            print(x[0])
                             h[0, row, col] = v.inf
                             h[1, row, col] = v.sup
-                    hs.append(IntervalOld(h))
+                    hs.append(Interval(h[0], h[1]))
                 return hs
 
             hx = _fill_hessian(self._hx, x.dim[0])
@@ -152,13 +143,8 @@ class NonLinSys:
             # --------------------------------------- # TODO shall refine this part, like unify the option???
             lin_op.u = b @ (op.u + lin_op.u_trans - p["u"])
             lin_op.u -= lin_op.u.c
-            lin_op.u_trans = VectorZonotope(
-                np.hstack(
-                    [
-                        (f0 + lin_op.u.c).reshape((-1, 1)),
-                        np.zeros((f0.shape[0], 1), dtype=float),
-                    ]
-                )
+            lin_op.u_trans = Zonotope(
+                (f0 + lin_op.u.c), csc_matrix((f0.shape[0], 1), dtype=float)
             )
             lin_op.origin_contained = False
             # save constant input
@@ -168,7 +154,7 @@ class NonLinSys:
 
         def _abst_err_lin(
             self, op: NonLinSys.Option, r: Geometry
-        ) -> (IntervalOld, VectorZonotope):
+        ) -> (Interval, Zonotope):
             """
             computes the abstraction error for linearization approach to enter
             :param op:
@@ -176,19 +162,21 @@ class NonLinSys:
             :return:
             """
             # compute interval of reachable set
-            ihx = cvt2(r, "int")
+            ihx = cvt2(r, GeoTYPE.INTERVAL)
             # compute intervals of total reachable set
             total_int_x = ihx + self._run_time.lin_err_p["x"]
 
             # compute intervals of input
-            ihu = cvt2(op.u, "int")
+            ihu = cvt2(op.u, GeoTYPE.INTERVAL)
             # translate intervals by linearization point
             total_int_u = ihu + self._run_time.lin_err_p["u"]
 
             if op.tensor_order == 2:
                 # obtain maximum absolute values within ihx, ihu
-                dx = np.maximum(abs(ihx.inf), abs(ihx.sup))
-                du = np.maximum(abs(ihu.inf), abs(ihu.sup))
+                # dx = np.maximum(abs(ihx.inf), abs(ihx.sup))
+                # du = np.maximum(abs(ihu.inf), abs(ihu.sup))
+                dx = csc_matrix(abs(ihx.inf)).maximum(csc_matrix(abs(ihx.sup)))
+                du = csc_matrix(abs(ihu.inf)).maximum(csc_matrix(abs(ihu.sup)))
 
                 # evaluate the hessian matrix with the selected range-bounding technique
                 hx, hu = self._hessian(total_int_x, total_int_u)
@@ -199,8 +187,8 @@ class NonLinSys:
                     # print(np.max(hxi.inf))
                     # print(np.min(hxi.sup))
                     # print(np.max(hxi.sup))
-                    print(scipy.sparse.csr_matrix(hxi.inf))
-                    print(scipy.sparse.csr_matrix(hxi.sup))
+                    print(csc_matrix(hxi.inf))
+                    print(csc_matrix(hxi.sup))
                     print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
                 print("++++++++++++++++++++++++++++++++++++++++")
@@ -217,13 +205,13 @@ class NonLinSys:
 
                 for i in range(self.dim):
                     abs_hx, abs_hu = abs(hx[i]), abs(hu[i])
-                    hx_ = np.max(abs_hx.bd, axis=0)
-                    hu_ = np.max(abs_hu.bd, axis=0)
+                    # hx_ = np.max(abs_hx.bd, axis=0)
+                    # hu_ = np.max(abs_hu.bd, axis=0)
+                    hx_ = abs_hx.inf.maximum(abs_hx.sup)
+                    hu_ = abs_hu.inf.maximum(abs_hu.sup)
                     err_lagr[i] = 0.5 * (dx @ hx_ @ dx + du @ hu_ @ du)
 
-                v_err_dyn = VectorZonotope(
-                    np.hstack([0 * err_lagr.reshape((-1, 1)), np.diag(err_lagr)])
-                )
+                v_err_dyn = Zonotope(0 * err_lagr.reshape((-1, 1)), diags(err_lagr))
                 print("err_lagr=", err_lagr)
                 return err_lagr, v_err_dyn
             else:
@@ -254,19 +242,14 @@ class NonLinSys:
                 while perf_ind_cur > 1 and perf_ind <= 1:
                     # estimate the abstraction error
                     applied_err = 1.1 * abstr_err
-                    v_err = VectorZonotope(
-                        np.hstack(
-                            [0 * applied_err.reshape((-1, 1)), np.diag(applied_err)]
-                        )
-                    )
+                    v_err = Zonotope(0 * applied_err, diags(applied_err))
                     r_all_err = lin_sys.error_solution(lin_op, v_err)
 
                     # compute the abstraction error using the conservative linearization
                     # approach described in [1]
                     if op.algo == "lin":
                         # compute overall reachable set including linearization error
-                        r_max = r_ti + r_all_err  # TODO
-                        # r_max = r_ti
+                        r_max = r_ti + r_all_err
                         # compute linearization error
                         true_err, v_err_dyn = self._abst_err_lin(op, r_max)
                     else:

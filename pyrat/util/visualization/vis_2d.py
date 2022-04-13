@@ -3,7 +3,7 @@ from itertools import combinations
 import matplotlib.pyplot as plt
 import numpy as np
 from pyrat.misc import Reachable
-from pyrat.geometry import Geometry
+from pyrat.geometry import Geometry, GeoTYPE
 
 
 def _halfspace_intersection(hs) -> np.ndarray:
@@ -52,7 +52,7 @@ def _min_max(objs):
             r_min = min(np.min(obj), r_min)
             r_max = max(np.max(obj), r_max)
         else:
-            raise NotImplementedError
+            pass
     # check intersections among halfspaces
     intersections = _halfspace_intersection(hs)
     r_min = min(np.min(intersections), r_min)
@@ -176,7 +176,7 @@ def vis2d_old(objs, width=800, height=800, eq_axis=True):
         elif isinstance(obj, np.ndarray):
             _vis_pts(obj, ax)
         else:
-            raise NotImplementedError
+            pass
     if eq_axis:
         plt.axis("equal")
     plt.xlim([r_min + ext_bd, r_max - ext_bd])

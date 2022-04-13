@@ -7,7 +7,7 @@ from numpy.typing import ArrayLike
 from scipy.sparse import csc_matrix, vstack
 
 import pyrat.util.functional.auxiliary as aux
-from .geometry import Geometry
+from .geometry import Geometry, GeoTYPE
 
 
 class Interval(Geometry):
@@ -21,6 +21,7 @@ class Interval(Geometry):
         assert (sup - inf).min() >= 0
         self._inf = inf
         self._sup = sup
+        self._type = GeoTYPE.INTERVAL
 
     # =============================================== property
     @property
@@ -56,11 +57,21 @@ class Interval(Geometry):
 
     @property
     def info(self):
-        raise NotImplementedError
+        info = "\n ------------- Interval BEGIN ------------- \n"
+        info += ">>> dimension -- inf -- sup\n"
+        info += str(self.dim) + "\n"
+        info += str(self.inf) + "\n"
+        info += str(self.sup) + "\n"
+        info += "\n ------------- Interval END ------------- \n"
+        return info
+
+    @property
+    def type(self) -> GeoTYPE:
+        return self._type
 
     # =============================================== class method
     @classmethod
-    def functions(cls):
+    def functional(cls):
         return {
             "__add__": cls.__add__,
             "__radd__": cls.__radd__,
@@ -103,16 +114,7 @@ class Interval(Geometry):
         raise NotImplementedError
 
     def __str__(self):
-        return (
-            "------------------------ Interval Info Begin ---------------------------\n"
-            + str(self.dim)
-            + "\n"
-            + str(self.inf)
-            + "\n"
-            + str(self.sup)
-            + "\n"
-            + "------------------------ Interval Info End ---------------------------\n"
-        )
+        return self.info
 
     def __abs__(self):
         np_idx = (self.inf < 0).multiply(self.sup > 0)
@@ -143,14 +145,14 @@ class Interval(Geometry):
             raise NotImplementedError
 
     def __radd__(self, other):
-        return other + self
+        return self + other
 
     def __iadd__(self, other):
         return self + other
 
     def __getitem__(self, item):
         assert isinstance(item, (int, ArrayLike))
-        return Interval(self.inf[:, item], self.sup[:, item])
+        return Interval(self.inf[item, :], self.sup[item, :])  # TODO need fix this bug
 
     def __setitem__(self, key, value):
         assert isinstance(key, (int, ArrayLike))
@@ -184,7 +186,6 @@ class Interval(Geometry):
 
     def __mul__(self, other):
         if isinstance(other, Interval):
-            print(self.inf.shape, self.sup.shape)
             bd = vstack(
                 [
                     self.inf.multiply(other.inf),
@@ -198,9 +199,14 @@ class Interval(Geometry):
             return Interval(inf, sup)
         elif isinstance(other, (numbers.Real, np.ndarray, list, tuple)):
             other = np.array(other) if isinstance(other, (list, tuple)) else other
-            inf = np.minimum(self.inf * other, self.sup * other)
-            sup = np.maximum(self.inf * other, self.sup * other)
+            infm, supm = self.inf * other, self.sup * other
+            inf, sup = infm.minimum(supm), infm.maximum(supm)
             return Interval(inf, sup)
+        elif isinstance(other, Geometry):
+            if other.type == GeoTYPE.ZONOTOPE:
+                return other * self
+            else:
+                raise NotImplementedError
         else:
             raise NotImplementedError
 
@@ -235,37 +241,86 @@ class Interval(Geometry):
         raise NotImplementedError
 
     def __truediv__(self, other):
-        raise NotImplementedError
-
-    def __rtruediv__(self, other):
-        raise NotImplementedError
-
-    def __pow__(self, power, modulo=None):
-        if self.is_scalar:
-            if isinstance(power, numbers.Real):
-                if abs(round(power) - power) <= np.finfo(np.float).eps:
-                    if power >= 0:  # positive scalar integer exponent
-                        temp0 = self.inf.power(power)
-                        temp1 = self.sup.power(power)
-                        inf = temp0.minimum(temp1)
-                        sup = temp0.maximum(temp1)
-
-                        # modification for even power
-                        if power % 2 == 0 and power != 0:
-                            ind = (inf < 0) + (sup > 0)
-                            inf[ind] = 0
-                        return Interval(inf, sup)
-                    else:  # negative scalar integer power
-                        return (1 / self) ** (-power)
-                else:
-                    if power >= 0:  # positive scalar real valued power
-                        raise NotImplementedError
-                    raise NotImplementedError
-            elif isinstance(power, Interval):
-                raise NotImplementedError
+        if isinstance(other, numbers.Real):
+            raise NotImplementedError
         else:
             raise NotImplementedError
-        raise NotImplementedError
+
+    def __rtruediv__(self, other):
+        def __rt_real(numerator):
+            # need to preserve the shape of the input
+            inf_dense, sup_dense = self.inf.toarray(), self.sup.toarray()
+            infrt, suprt = other / inf_dense, other / sup_dense
+            inf, sup = np.minimum(infrt, suprt), np.maximum(infrt, suprt)
+
+            ind = np.argwhere(np.logical_and(inf_dense == 0, sup_dense == 0))
+            inf[ind] = np.nan
+            sup[ind] = np.nan
+
+            ind = sup_dense == 0
+            inf[ind] = -np.inf
+            sup[ind] = other / sup_dense[ind]
+
+            ind = np.argwhere(np.logical_and(inf_dense < 0, sup_dense > 0))
+            inf[ind] = -np.inf
+            sup[ind] = +np.inf
+
+            return Interval(inf, sup)
+
+        if isinstance(other, numbers.Real):
+            return __rt_real(other)
+        else:
+            raise NotImplementedError
+
+    def __pow__(self, power, modulo=None):
+        # inner auxiliary functions
+        def __exp_int(exponent):
+            if exponent >= 0:  # positive integer exponent
+                infp, supp = self.inf.power(exponent), self.sup.power(exponent)
+                inf, sup = infp.minimum(supp), infp.maximum(supp)
+                # modification for even exponent
+                if exponent % 2 == 0 and exponent != 0:
+                    ind = (self.inf < 0).multiply(self.sup > 0)
+                    inf[ind] = 0
+                return Interval(inf, sup)
+            else:  # negative integer exponent
+                return (1 / self) ** (-exponent)
+
+        def __exp_real(exponent):
+            if exponent >= 0:  # positive real valued exponent
+                inf, sup = self.inf.power(exponent), self.sup.power(exponent)
+                ind = self.inf < 0
+                inf[ind] = np.nan
+                sup[ind] = np.nan
+                return Interval(inf, sup)
+            else:  # negative real valued exponent
+                return (1 / self) ** (-exponent)
+
+        def __exp_num(exponent):
+            if abs(round(exponent) - exponent) <= np.finfo(np.float).eps:
+                return __exp_int(int(exponent))
+            else:
+                return __exp_real(exponent)
+
+        # main body
+        if isinstance(power, numbers.Real):
+            return __exp_num(power)
+        elif isinstance(power, Interval):
+            raise NotImplementedError  # TODO
+        else:
+            raise NotImplementedError
+
+    def __rpow__(self, other):
+        if isinstance(other, numbers.Real):
+            assert other >= 0
+            other = float(other)
+            inf, sup = (
+                other ** self.inf.toarray(),
+                other ** self.sup.toarray(),
+            )
+            return Interval(inf, sup)
+        elif isinstance(other, Interval):
+            raise NotImplementedError
 
     # =============================================== public method
     def diag(self):

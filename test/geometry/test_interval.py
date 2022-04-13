@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.sparse
 
 from pyrat.geometry import IntervalOld
 
@@ -17,9 +18,42 @@ def test_basic():
 
 
 def test_new_interval():
-    from pyrat.geometry import Interval
+    from pyrat.geometry import Interval, Geometry, IntervalOld
 
-    a = Interval(-1, 0)
-    print()
-    print(a**3)
+    a = np.random.rand(3)
+
+    print(a)
+    print(2**a)
     print(a**2)
+    a = scipy.sparse.rand(3, 1)
+    print(a.toarray())
+
+    a = Interval([-1, 1, 3], [2, 3, 9])
+    print(isinstance(a, Geometry))
+    print(isinstance(a, Interval))
+    print(isinstance(a, IntervalOld))
+
+    exit(False)
+    temp = 2**a
+    print(temp.inf.toarray())
+    print(temp.sup.toarray())
+    exit(False)
+    bounds = [
+        [-1.7929, 2.2128],
+        [3.7566, 4.2047],
+        [3.7963, 4.2034],
+        [1.7967, 2.2419],
+        [9.6800, 10.2047],
+        [3.7979, 4.2784],
+    ]
+    c = Interval(bounds[:3], bounds[3:])
+    print()
+    temp0 = a**2
+    temp1 = a**3
+    temp2 = c**-2
+    print(temp0.inf.toarray())
+    print(temp0.sup.toarray())
+    print(temp1.inf.toarray())
+    print(temp1.sup.toarray())
+    print(temp2.inf.toarray())
+    print(temp2.sup.toarray())

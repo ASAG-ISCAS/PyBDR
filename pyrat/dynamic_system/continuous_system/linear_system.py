@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.linalg import expm
 
-from pyrat.geometry import Geometry, IntervalOld, VectorZonotope
+from pyrat.geometry import Geometry, GeoTYPE, Interval, Zonotope, cvt2
 from pyrat.misc import Reachable, Simulation
 from .continuous_system import ContSys, Option
 
@@ -73,7 +73,7 @@ class LinSys:
             w = expm(xa_abs * op.step_size) - m
             # compute absolute value of w for numerical stability
             w = abs(w)
-            e = IntervalOld(np.stack([-w, w]))
+            e = Interval(-w, w)
             # write to object structure
             self._taylor["powers"] = xa_power
             self._taylor["err"] = e
@@ -102,7 +102,7 @@ class LinSys:
                 asum_pos += factor * aneg
                 asum_neg += factor * apos
             # instantiate interval matrix
-            asum = IntervalOld(np.stack([asum_neg, asum_pos]))
+            asum = Interval(asum_neg, asum_pos)
             # write to object structure
             self._taylor["F"] = asum + self._taylor["err"]
 
@@ -136,7 +136,7 @@ class LinSys:
                 asum_pos += factor * aneg
                 asum_neg += factor * apos
             # instantiate interval matrix
-            asum = IntervalOld(np.stack([asum_neg, asum_pos]))
+            asum = Interval(asum_neg, asum_pos)
             # compute error due to finite taylor series according to interval document
             # "Input Error Bounds in Reachability Analysis"
             e_input = self._taylor["err"] * op.step_size
@@ -173,23 +173,23 @@ class LinSys:
                 raise NotImplementedError
             # compute solution due to constant input
             ea_int = a_sum + self._taylor["err"] * op.step_size
-            input_solv_trans = ea_int * VectorZonotope(v_trans)
+            input_solv_trans = ea_int * cvt2(v_trans, GeoTYPE.ZONOTOPE)
             # compute additional uncertainty if origin is not contained in input set
             if op.origin_contained:
                 raise NotImplementedError  # TODO
             else:
                 # compute inputF
                 self._input_tie(op)
-                input_corr = self._taylor["input_f"] * VectorZonotope(v_trans)
+                input_corr = self._taylor["input_f"] * cvt2(v_trans, GeoTYPE.ZONOTOPE)
 
             # write to object structure
             self._taylor["v"] = v
-            if op.is_rv and np.any(input_solv.z):  # need refine ???
+            if op.is_rv and input_solv.z.sum().astype(bool):  # need refine ???
                 self._taylor["rv"] = input_solv
             else:
                 raise NotImplementedError  # TODO
 
-            if np.any(input_solv_trans.z):
+            if input_solv_trans.z.sum().astype(bool):
                 self._taylor["r_trans"] = input_solv_trans
             else:
                 raise NotImplementedError  # TODO
@@ -212,7 +212,9 @@ class LinSys:
 
             # first time step homogeneous solution
             rhom_tp = self._taylor["ea_t"] @ r + r_trans
-            rhom = (r | rhom_tp) + self._taylor["F"] * r + self._taylor["input_corr"]
+            rhom = (
+                r.enclose(rhom_tp) + self._taylor["F"] * r + self._taylor["input_corr"]
+            )
 
             # reduce zonotope
             rhom = rhom.reduce(op.reduction_method, op.zonotope_order)

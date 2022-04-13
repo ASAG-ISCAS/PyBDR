@@ -112,7 +112,7 @@ class IntervalOld(Geometry):
             if power >= 0:
                 bd = abs(self._bd) ** power
                 return IntervalOld(bd * np.sign(self._bd))
-            return IntervalOld(np.flip(self._bd ** power))
+            return IntervalOld(np.flip(self._bd**power))
         else:
             raise NotImplementedError
 

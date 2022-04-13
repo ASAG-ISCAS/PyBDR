@@ -1,8 +1,8 @@
 import numpy as np
 
-from pyrat.geometry import VectorZonotope
-from pyrat.util.visualization import vis2d_old
+from pyrat.geometry import Zonotope, GeoTYPE
 from pyrat.geometry import cvt2
+from pyrat.util.visualization import vis2d_old
 
 
 def test_np_function():
@@ -15,24 +15,18 @@ def test_np_function():
 
 
 def test_construction():
-    z = VectorZonotope.rand(2)
-    p = z.to("polyhedron")
-    print(p)
-    print(z)
-    print(z.dim)
+    z = Zonotope.rand(2, 5)
+    print(z.info)
     assert z.dim == 2
 
 
 def test_numeric_operations():
-    z = VectorZonotope(
-        np.array(
-            [[3, 2, -4, -6, 3, 5, 0], [3, 1, -7, 3, -5, 2, 0], [-2, 0, 4, -7, 3, 2, 0]],
-            dtype=float,
-        )
+    data = np.array(
+        [[3, 2, -4, -6, 3, 5, 0], [3, 1, -7, 3, -5, 2, 0], [-2, 0, 4, -7, 3, 2, 0]],
+        dtype=float,
     )
+    z = Zonotope(data[:, 0], data[:, 1:])
     abs_z = abs(z)
-    assert np.allclose(abs(z.c), abs_z.c)
-    assert np.allclose(abs(z.gen), abs_z.gen)
     z.remove_zero_gen()
     z0 = z + np.array([1, 0, 1])
     z0 += np.ones(3)
@@ -41,16 +35,11 @@ def test_numeric_operations():
     z3 = z0 - np.ones(3)
     z4 = z + 1
     z5 = 1 + z
-    temp = z == z3
-    print(temp)
     z6 = np.random.rand(3, 3) @ z5
     print()
     print(z4)
     print(z5)
     print(z2)
-    exit(False)
-    # z2 = z0 - z1
-    # z3=Zonotope.__sub__(z,z1,method=)
 
 
 def test_python():
@@ -71,52 +60,52 @@ def test_python():
 
 
 def test_auxiliary_functions():
-    z = VectorZonotope.rand(2, 4)
+    z = Zonotope.rand(2, 4)
     # print(z)
     # print(z.dim)
     # print(z.center, z.center.shape)
     # print(z.generator, z.generator.shape)
     print(z.z)
-    vis2d_old([z])
 
 
 def test_polygon():
-    z = VectorZonotope(
-        np.array(
-            [
-                [0.62573669, 0.10487259, 0.21082717, 0.12907895],
-                [0.66141065, 0.87252549, 0.07096709, 0.26345968],
-            ],
-            dtype=float,
-        )
+    data = np.array(
+        [
+            [0.62573669, 0.10487259, 0.21082717, 0.12907895],
+            [0.66141065, 0.87252549, 0.07096709, 0.26345968],
+        ],
+        dtype=float,
     )
-    print(z.polygon())
-    vis2d_old([z])
-
-    interval = cvt2(z, "int")
+    z = Zonotope(data[:, 0], data[:, 1:])
     print()
+    temp = z.polygon()
+    print(temp)
+
+    interval = cvt2(z, GeoTYPE.INTERVAL)
+
     print(interval)
 
 
 def test_vis_2d():
-    z = VectorZonotope(np.array([[0, -2, 3, -7, 9], [0, -9, 6, -8, -5]]))
+    data = np.array([[0, -2, 3, -7, 9], [0, -9, 6, -8, -5]])
+    z = Zonotope(data[:, 0], data[:, 1:])
     vis2d_old([z.c.reshape((-1, 2)), z.polygon(), z])
 
 
 def test_enclose():
-    z0 = VectorZonotope(np.array([[0, -2, 3, -7, 9], [0, -9, 6, -8, -5]]))
-    z1 = VectorZonotope(
-        np.array(
-            [
-                [0.62573669, 0.10487259, 0.21082717, 0.12907895],
-                [0.66141065, 0.87252549, 0.07096709, 0.26345968],
-            ]
-        )
+    data = np.array([[0, -2, 3, -7, 9], [0, -9, 6, -8, -5]])
+    z0 = Zonotope(data[:, 0], data[:, 1:])
+    data = np.array(
+        [
+            [0.62573669, 0.10487259, 0.21082717, 0.12907895],
+            [0.66141065, 0.87252549, 0.07096709, 0.26345968],
+        ]
     )
-    z0 = VectorZonotope.rand(2, 2)
-    z1 = VectorZonotope.rand(2, 19)
-    z2 = z0 | z1
-    z3 = z1 | z0
+    z1 = Zonotope(data[:, 0], data[:, 1:])
+    z0 = Zonotope.rand(2, 2)
+    z1 = Zonotope.rand(2, 19)
+    z2 = z0.enclose(z1)
+    z3 = z1.enclose(z0)
     print()
     print()
     print(z0.z.T)
