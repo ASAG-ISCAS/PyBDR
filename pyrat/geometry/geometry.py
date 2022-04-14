@@ -1,116 +1,118 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 
 import numpy as np
 from enum import IntEnum
 
 
-class GeoTYPE(IntEnum):
-    INTERVAL = 0
-    ZONOTOPE = 1
+class Geometry:
+    class TYPE(IntEnum):
+        INTERVAL = 0
+        INTERVAL_MATRIX = 1
+        ZONOTOPE = 2
 
+    class Base(ABC):
+        __array_ufunc__ = None
 
-class Geometry(ABC):
-    __array_ufunc__ = None
+        @abstractmethod
+        def __init__(self):
+            raise NotImplementedError
 
-    @abstractmethod
-    def __init__(self):
-        raise NotImplementedError
+        # =============================================== property
+        @property
+        @abstractmethod
+        def c(self) -> np.ndarray:
+            raise NotImplementedError
 
-    # =============================================== property
-    @property
-    @abstractmethod
-    def c(self) -> np.ndarray:
-        raise NotImplementedError
+        @property
+        @abstractmethod
+        def dim(self) -> int:
+            raise NotImplementedError
 
-    @property
-    @abstractmethod
-    def dim(self) -> int:
-        raise NotImplementedError
+        @property
+        @abstractmethod
+        def is_empty(self) -> bool:
+            raise NotImplementedError
 
-    @property
-    @abstractmethod
-    def is_empty(self) -> bool:
-        raise NotImplementedError
+        @property
+        @abstractmethod
+        def vertices(self) -> np.ndarray:
+            raise NotImplementedError
 
-    @property
-    @abstractmethod
-    def vertices(self) -> np.ndarray:
-        raise NotImplementedError
+        @property
+        @abstractmethod
+        def info(self):
+            raise NotImplementedError
 
-    @property
-    @abstractmethod
-    def info(self):
-        raise NotImplementedError
+        @property
+        @abstractmethod
+        def type(self) -> Geometry.TYPE:
+            raise NotImplementedError
 
-    @property
-    @abstractmethod
-    def type(self) -> GeoTYPE:
-        raise NotImplementedError
+        # =============================================== operator
+        @abstractmethod
+        def __contains__(self, item):
+            raise NotImplementedError
 
-    # =============================================== operator
-    @abstractmethod
-    def __contains__(self, item):
-        raise NotImplementedError
+        @abstractmethod
+        def __str__(self):
+            raise NotImplementedError
 
-    @abstractmethod
-    def __str__(self):
-        raise NotImplementedError
+        @abstractmethod
+        def __add__(self, other):
+            raise NotImplementedError
 
-    @abstractmethod
-    def __add__(self, other):
-        raise NotImplementedError
+        @abstractmethod
+        def __sub__(self, other):
+            raise NotImplementedError
 
-    @abstractmethod
-    def __sub__(self, other):
-        raise NotImplementedError
+        @abstractmethod
+        def __pos__(self):
+            raise NotImplementedError
 
-    @abstractmethod
-    def __pos__(self):
-        raise NotImplementedError
+        @abstractmethod
+        def __neg__(self):
+            raise NotImplementedError
 
-    @abstractmethod
-    def __neg__(self):
-        raise NotImplementedError
+        @abstractmethod
+        def __matmul__(self, other):
+            raise NotImplementedError
 
-    @abstractmethod
-    def __matmul__(self, other):
-        raise NotImplementedError
+        @abstractmethod
+        def __mul__(self, other):
+            raise NotImplementedError
 
-    @abstractmethod
-    def __mul__(self, other):
-        raise NotImplementedError
+        @abstractmethod
+        def __or__(self, other):
+            raise NotImplementedError
 
-    @abstractmethod
-    def __or__(self, other):
-        raise NotImplementedError
+        # =============================================== class method
 
-    # =============================================== class method
+        @classmethod
+        @abstractmethod
+        def functional(cls):
+            """
+            public functional for supporting general arithmetic
+            :return:
+            """
+            raise NotImplementedError
 
-    @classmethod
-    @abstractmethod
-    def functional(cls):
-        """
-        public functional for supporting general arithmetic
-        :return:
-        """
-        raise NotImplementedError
+        # =============================================== static method
+        @staticmethod
+        @abstractmethod
+        def empty(dim: int):
+            raise NotImplementedError
 
-    # =============================================== static method
-    @staticmethod
-    @abstractmethod
-    def empty(dim: int):
-        raise NotImplementedError
+        @staticmethod
+        @abstractmethod
+        def rand(dim: int):
+            raise NotImplementedError
 
-    @staticmethod
-    @abstractmethod
-    def rand(dim: int):
-        raise NotImplementedError
+        # =============================================== public method
+        @abstractmethod
+        def reduce(self, method: str, order: int):
+            raise NotImplementedError
 
-    # =============================================== public method
-    @abstractmethod
-    def reduce(self, method: str, order: int):
-        raise NotImplementedError
-
-    @abstractmethod
-    def proj(self, dims):
-        raise NotImplementedError
+        @abstractmethod
+        def proj(self, dims):
+            raise NotImplementedError

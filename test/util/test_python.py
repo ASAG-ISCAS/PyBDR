@@ -78,3 +78,11 @@ def test_numpy_container():
     print(2.222 % 2)
     print(2.0 % 2)
     print(3 % 2)
+
+
+def test_basic_numpy():
+    a = np.random.rand(2)
+    print((-2) ** a)
+    inf = np.nan
+    sup = np.nan
+    assert inf <= sup

@@ -1,6 +1,6 @@
 import numpy as np
 
-from pyrat.geometry import Zonotope, GeoTYPE
+from pyrat.geometry import Geometry, Zonotope, Interval, IntervalMatrix
 from pyrat.geometry import cvt2
 from pyrat.util.visualization import vis2d_old
 
@@ -81,7 +81,7 @@ def test_polygon():
     temp = z.polygon()
     print(temp)
 
-    interval = cvt2(z, GeoTYPE.INTERVAL)
+    interval = cvt2(z, Geometry.TYPE.INTERVAL)
 
     print(interval)
 
@@ -115,7 +115,12 @@ def test_enclose():
     print(z3.z.T)
 
 
-if __name__ == "__main__":
-    test_construction()
-    test_numeric_operations()
-    test_auxiliary_functions()
+def test_mul():
+    a = np.array([[2, 4, 5], [7, 6, 8]])
+    a = IntervalMatrix(a.T, a.T)
+    b = np.array([[-2, 4, -5, 7], [9, 6, 3, 11]])
+    b = Zonotope(b[:, 0], b[:, 1:])
+    print(a)
+    print(b)
+    print(a * b)
+    print(b * a)

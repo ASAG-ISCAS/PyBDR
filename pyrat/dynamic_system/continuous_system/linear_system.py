@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.linalg import expm
 
-from pyrat.geometry import Geometry, GeoTYPE, Interval, Zonotope, cvt2
+from pyrat.geometry import Geometry, Interval, IntervalMatrix, Zonotope, cvt2
 from pyrat.misc import Reachable, Simulation
 from .continuous_system import ContSys, Option
 
@@ -19,13 +19,13 @@ class LinSys:
         taylor_terms = 0
         factors: np.ndarray = None
         is_rv: bool = False
-        reduction_method: str = "girard"
+        reduction_method: str = Zonotope.MethodReduce.GIRARD
         zonotope_order: int = 50
-        rhom: Geometry = None
-        rhom_tp: Geometry = None
-        rv: Geometry = None
-        r_par: Geometry = None
-        r_trans: Geometry = None
+        rhom: Geometry.Base = None
+        rhom_tp: Geometry.Base = None
+        rv: Geometry.Base = None
+        r_par: Geometry.Base = None
+        r_trans: Geometry.Base = None
 
         def validate(self) -> bool:
             raise NotImplementedError
@@ -73,7 +73,7 @@ class LinSys:
             w = expm(xa_abs * op.step_size) - m
             # compute absolute value of w for numerical stability
             w = abs(w)
-            e = Interval(-w, w)
+            e = IntervalMatrix(-w, w)
             # write to object structure
             self._taylor["powers"] = xa_power
             self._taylor["err"] = e
@@ -102,7 +102,7 @@ class LinSys:
                 asum_pos += factor * aneg
                 asum_neg += factor * apos
             # instantiate interval matrix
-            asum = Interval(asum_neg, asum_pos)
+            asum = IntervalMatrix(asum_neg, asum_pos)
             # write to object structure
             self._taylor["F"] = asum + self._taylor["err"]
 
@@ -136,7 +136,7 @@ class LinSys:
                 asum_pos += factor * aneg
                 asum_neg += factor * apos
             # instantiate interval matrix
-            asum = Interval(asum_neg, asum_pos)
+            asum = IntervalMatrix(asum_neg, asum_pos)
             # compute error due to finite taylor series according to interval document
             # "Input Error Bounds in Reachability Analysis"
             e_input = self._taylor["err"] * op.step_size
@@ -173,14 +173,16 @@ class LinSys:
                 raise NotImplementedError
             # compute solution due to constant input
             ea_int = a_sum + self._taylor["err"] * op.step_size
-            input_solv_trans = ea_int * cvt2(v_trans, GeoTYPE.ZONOTOPE)
+            input_solv_trans = ea_int * cvt2(v_trans, Geometry.TYPE.ZONOTOPE)
             # compute additional uncertainty if origin is not contained in input set
             if op.origin_contained:
                 raise NotImplementedError  # TODO
             else:
                 # compute inputF
                 self._input_tie(op)
-                input_corr = self._taylor["input_f"] * cvt2(v_trans, GeoTYPE.ZONOTOPE)
+                input_corr = self._taylor["input_f"] * cvt2(
+                    v_trans, Geometry.TYPE.ZONOTOPE
+                )
 
             # write to object structure
             self._taylor["v"] = v
@@ -197,7 +199,7 @@ class LinSys:
             self._taylor["input_corr"] = input_corr
             self._taylor["ea_int"] = ea_int
 
-        def _reach_init_euclidean(self, r: Geometry, op: LinSys.Option):
+        def _reach_init_euclidean(self, r: Geometry.Base, op: LinSys.Option):
             # compute exponential matrix
             self._exponential(op)
             # compute time interval error
@@ -216,8 +218,28 @@ class LinSys:
                 r.enclose(rhom_tp) + self._taylor["F"] * r + self._taylor["input_corr"]
             )
 
+            # DEBUG
+            # print()
+            # print(np.sum(rhom.z, axis=0))
+            # print(np.sum(rhom.z, axis=1))
+            # print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+            # print(np.sum(rv.z, axis=0))
+            # print(np.sum(rv.z, axis=1))
+            # print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+            # print(np.sum(r_total.z, axis=0))
+            # print(np.sum(r_total.z, axis=1))
+            # print(r_total.c)
+            # DEBUG
+
             # reduce zonotope
             rhom = rhom.reduce(op.reduction_method, op.zonotope_order)
+
+            # DEBUG
+            # print(np.sum(rhom.z, axis=0))
+            # print(np.sum(rhom.z, axis=1))
+            # exit(False)
+            # DEBUG
+
             rhom_tp = rhom_tp.reduce(op.reduction_method, op.zonotope_order)
             rv = self._taylor["rv"].reduce(op.reduction_method, op.zonotope_order)
 
@@ -261,7 +283,7 @@ class LinSys:
             # compute error solution (dyn + stat)
             return asum + f + err_stat
 
-        def reach_init(self, r_init: Geometry, op: LinSys.Option):
+        def reach_init(self, r_init: Geometry.Base, op: LinSys.Option):
             if op.algo == "euclidean":
                 return self._reach_init_euclidean(r_init, op)
             else:

@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.sparse
 
-from pyrat.geometry import IntervalOld
+from pyrat.geometry import Interval
 
 
 def test_basic():
@@ -18,7 +18,6 @@ def test_basic():
 
 
 def test_new_interval():
-    from pyrat.geometry import Interval, Geometry, IntervalOld
 
     a = np.random.rand(3)
 

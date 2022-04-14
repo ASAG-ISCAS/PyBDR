@@ -8,7 +8,7 @@ from pyrat.geometry import Geometry
 class Reachable:
     @dataclass
     class Element:
-        set: Geometry = None
+        set: Geometry.Base = None
         err: np.ndarray = None
         pre: int = -1
 

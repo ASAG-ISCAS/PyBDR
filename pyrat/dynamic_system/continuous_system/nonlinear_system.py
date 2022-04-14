@@ -5,11 +5,10 @@ import numbers
 from dataclasses import dataclass
 
 import numpy as np
-from scipy.sparse import csc_matrix, diags
 from scipy.special import factorial
 from sympy import lambdify, hessian
 
-from pyrat.geometry import Geometry, GeoTYPE, Zonotope, Interval, cvt2
+from pyrat.geometry import Geometry, Zonotope, Interval, IntervalMatrix, cvt2
 from pyrat.misc import Reachable, Simulation
 from pyrat.model import Model
 from .continuous_system import ContSys, Option, RunTime
@@ -25,7 +24,7 @@ class NonLinSys:
         factors: np.ndarray = None
         u_trans: np.ndarray = None
         zonotope_order: int = 50
-        reduction_method: str = "girard"
+        reduction_method: str = Zonotope.MethodReduce.GIRARD
         tensor_order = 2
         max_err: np.ndarray = None
 
@@ -96,21 +95,17 @@ class NonLinSys:
                 for expr in expr_h:
                     h = np.zeros((2, dim, dim), dtype=float)
                     for idx in range(len(expr)):
-                        row, col = int(idx / x.dim[0]), int(idx % x.dim[0])
+                        row, col = int(idx / x.dim), int(idx % x.dim)
                         if not expr[idx].is_number:
                             f = lambdify(self._model.vars, expr[idx], ops)
                             v = f(x, u)
-                            print(v.inf)
-                            print(expr[idx])
-                            print(x[0][0])
-                            print(x[0])
                             h[0, row, col] = v.inf
                             h[1, row, col] = v.sup
-                    hs.append(Interval(h[0], h[1]))
+                    hs.append(IntervalMatrix(h[0], h[1]))
                 return hs
 
-            hx = _fill_hessian(self._hx, x.dim[0])
-            hu = _fill_hessian(self._hu, u.dim[0])
+            hx = _fill_hessian(self._hx, x.dim)
+            hu = _fill_hessian(self._hu, u.dim)
 
             return hx, hu
 
@@ -144,7 +139,7 @@ class NonLinSys:
             lin_op.u = b @ (op.u + lin_op.u_trans - p["u"])
             lin_op.u -= lin_op.u.c
             lin_op.u_trans = Zonotope(
-                (f0 + lin_op.u.c), csc_matrix((f0.shape[0], 1), dtype=float)
+                f0 + lin_op.u.c, np.zeros((f0.shape[0], 1), dtype=float)
             )
             lin_op.origin_contained = False
             # save constant input
@@ -162,21 +157,19 @@ class NonLinSys:
             :return:
             """
             # compute interval of reachable set
-            ihx = cvt2(r, GeoTYPE.INTERVAL)
+            ihx = cvt2(r, Geometry.TYPE.INTERVAL)
             # compute intervals of total reachable set
             total_int_x = ihx + self._run_time.lin_err_p["x"]
 
             # compute intervals of input
-            ihu = cvt2(op.u, GeoTYPE.INTERVAL)
+            ihu = cvt2(op.u, Geometry.TYPE.INTERVAL)
             # translate intervals by linearization point
             total_int_u = ihu + self._run_time.lin_err_p["u"]
 
             if op.tensor_order == 2:
                 # obtain maximum absolute values within ihx, ihu
-                # dx = np.maximum(abs(ihx.inf), abs(ihx.sup))
-                # du = np.maximum(abs(ihu.inf), abs(ihu.sup))
-                dx = csc_matrix(abs(ihx.inf)).maximum(csc_matrix(abs(ihx.sup)))
-                du = csc_matrix(abs(ihu.inf)).maximum(csc_matrix(abs(ihu.sup)))
+                dx = np.maximum(abs(ihx.inf), abs(ihx.sup))
+                du = np.maximum(abs(ihu.inf), abs(ihu.sup))
 
                 # evaluate the hessian matrix with the selected range-bounding technique
                 hx, hu = self._hessian(total_int_x, total_int_u)
@@ -187,8 +180,6 @@ class NonLinSys:
                     # print(np.max(hxi.inf))
                     # print(np.min(hxi.sup))
                     # print(np.max(hxi.sup))
-                    print(csc_matrix(hxi.inf))
-                    print(csc_matrix(hxi.sup))
                     print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
                 print("++++++++++++++++++++++++++++++++++++++++")
@@ -207,11 +198,13 @@ class NonLinSys:
                     abs_hx, abs_hu = abs(hx[i]), abs(hu[i])
                     # hx_ = np.max(abs_hx.bd, axis=0)
                     # hu_ = np.max(abs_hu.bd, axis=0)
-                    hx_ = abs_hx.inf.maximum(abs_hx.sup)
-                    hu_ = abs_hu.inf.maximum(abs_hu.sup)
+                    hx_ = np.minimum(abs_hx.inf, abs_hx.sup)
+                    hu_ = np.maximum(abs_hu.inf, abs_hu.sup)
+                    # hx_ = abs_hx.inf.maximum(abs_hx.sup)
+                    # hu_ = abs_hu.inf.maximum(abs_hu.sup)
                     err_lagr[i] = 0.5 * (dx @ hx_ @ dx + du @ hu_ @ du)
 
-                v_err_dyn = Zonotope(0 * err_lagr.reshape((-1, 1)), diags(err_lagr))
+                v_err_dyn = Zonotope(0 * err_lagr.reshape(-1), np.diag(err_lagr))
                 print("err_lagr=", err_lagr)
                 return err_lagr, v_err_dyn
             else:
@@ -242,7 +235,7 @@ class NonLinSys:
                 while perf_ind_cur > 1 and perf_ind <= 1:
                     # estimate the abstraction error
                     applied_err = 1.1 * abstr_err
-                    v_err = Zonotope(0 * applied_err, diags(applied_err))
+                    v_err = Zonotope(0 * applied_err, np.diag(applied_err))
                     r_all_err = lin_sys.error_solution(lin_op, v_err)
 
                     # compute the abstraction error using the conservative linearization

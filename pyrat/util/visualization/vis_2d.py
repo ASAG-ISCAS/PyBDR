@@ -3,7 +3,7 @@ from itertools import combinations
 import matplotlib.pyplot as plt
 import numpy as np
 from pyrat.misc import Reachable
-from pyrat.geometry import Geometry, GeoTYPE
+from pyrat.geometry import Geometry
 
 
 def _halfspace_intersection(hs) -> np.ndarray:
@@ -206,6 +206,7 @@ def vis2d(r: Reachable.Result, dims: list, width=800, height=800):
     if len(r.ti) >= 0:
         for res in r.ti:
             for re in res:
+                print(re)
                 vis_element(re)
     else:
         for res in r.tp:
