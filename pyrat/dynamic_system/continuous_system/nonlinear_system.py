@@ -110,7 +110,7 @@ class NonLinSys:
             return hx, hu
 
         def _linearize(
-            self, op: NonLinSys.Option, r: Geometry
+            self, op: NonLinSys.Option, r: Geometry.Base
         ) -> (LinSys.Sys, LinSys.Option):
             # linearization point p.u of the input is the center of the input set
             p = {"u": op.u_trans}
@@ -174,23 +174,6 @@ class NonLinSys:
                 # evaluate the hessian matrix with the selected range-bounding technique
                 hx, hu = self._hessian(total_int_x, total_int_u)
 
-                # DEBUG
-                for hxi in hx:
-                    # print(np.min(hxi.inf))
-                    # print(np.max(hxi.inf))
-                    # print(np.min(hxi.sup))
-                    # print(np.max(hxi.sup))
-                    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-
-                print("++++++++++++++++++++++++++++++++++++++++")
-
-                for hui in hu:
-                    # print(scipy.sparse.csr_matrix(hui.inf))
-                    # print(scipy.sparse.csr_matrix(hui.sup))
-                    print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-
-                # DEBUG
-
                 # calculate the Lagrange remainder (second-order error)
                 err_lagr = np.zeros(self.dim, dtype=float)
 
@@ -198,14 +181,13 @@ class NonLinSys:
                     abs_hx, abs_hu = abs(hx[i]), abs(hu[i])
                     # hx_ = np.max(abs_hx.bd, axis=0)
                     # hu_ = np.max(abs_hu.bd, axis=0)
-                    hx_ = np.minimum(abs_hx.inf, abs_hx.sup)
+                    hx_ = np.maximum(abs_hx.inf, abs_hx.sup)
                     hu_ = np.maximum(abs_hu.inf, abs_hu.sup)
                     # hx_ = abs_hx.inf.maximum(abs_hx.sup)
                     # hu_ = abs_hu.inf.maximum(abs_hu.sup)
                     err_lagr[i] = 0.5 * (dx @ hx_ @ dx + du @ hu_ @ du)
 
                 v_err_dyn = Zonotope(0 * err_lagr.reshape(-1), np.diag(err_lagr))
-                print("err_lagr=", err_lagr)
                 return err_lagr, v_err_dyn
             else:
                 raise NotImplementedError  # TODO
@@ -229,8 +211,6 @@ class NonLinSys:
                 r_tp, r_ti = r.tp, r.ti
                 perf_ind_cur, perf_ind = np.inf, 0
                 applied_err, abstr_err, v_err_dyn = None, r_init.err, None
-                print()
-                print("abstr_err", abstr_err)
 
                 while perf_ind_cur > 1 and perf_ind <= 1:
                     # estimate the abstraction error
@@ -252,7 +232,6 @@ class NonLinSys:
                     perf_ind_cur = np.max(true_err / applied_err)
                     perf_ind = np.max(true_err / op.max_err)
                     abstr_err = true_err
-                    # print("abstr_err", abstr_err)
 
                 # translate reachable sets by linearization point
                 r_ti += self._run_time.lin_err_p["x"]
@@ -335,11 +314,6 @@ class NonLinSys:
                 ti_time.append(time_pts[i : i + 2])
                 tp_set.append(next_tp)
                 tp_time.append(time_pts[i + 1])
-
-                print(
-                    "\n ============================================================== "
-                    + str(i)
-                )
 
                 # check specification
                 if op.specs is not None:

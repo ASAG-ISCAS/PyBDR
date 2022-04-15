@@ -218,27 +218,8 @@ class LinSys:
                 r.enclose(rhom_tp) + self._taylor["F"] * r + self._taylor["input_corr"]
             )
 
-            # DEBUG
-            # print()
-            # print(np.sum(rhom.z, axis=0))
-            # print(np.sum(rhom.z, axis=1))
-            # print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            # print(np.sum(rv.z, axis=0))
-            # print(np.sum(rv.z, axis=1))
-            # print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            # print(np.sum(r_total.z, axis=0))
-            # print(np.sum(r_total.z, axis=1))
-            # print(r_total.c)
-            # DEBUG
-
             # reduce zonotope
             rhom = rhom.reduce(op.reduction_method, op.zonotope_order)
-
-            # DEBUG
-            # print(np.sum(rhom.z, axis=0))
-            # print(np.sum(rhom.z, axis=1))
-            # exit(False)
-            # DEBUG
 
             rhom_tp = rhom_tp.reduce(op.reduction_method, op.zonotope_order)
             rv = self._taylor["rv"].reduce(op.reduction_method, op.zonotope_order)

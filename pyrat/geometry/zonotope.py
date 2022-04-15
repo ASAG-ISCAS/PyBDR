@@ -221,7 +221,7 @@ class Zonotope(Geometry.Base):
                 num_r = self.gen_num - num_ur
 
                 # pick generators with smallest h values to be reduced
-                idx_r = np.argpartition(h, num_r)
+                idx_r = np.argpartition(h, num_r)[:num_r]
                 gr = self.gen[:, idx_r]
                 # unreduced generators
                 idx_ur = np.setdiff1d(np.arange(self.gen_num), idx_r)

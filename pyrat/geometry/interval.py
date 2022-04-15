@@ -169,7 +169,7 @@ class Interval(Geometry.Base):
             raise NotImplementedError("Invalid rhs operand")
 
     def __rmul__(self, other):
-        return other * self
+        return self * other
 
     def __imul__(self, other):
         return self * other

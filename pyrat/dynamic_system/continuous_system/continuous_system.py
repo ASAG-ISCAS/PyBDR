@@ -14,8 +14,8 @@ class Option(ABC):
     steps: int = 10
     step_size: float = None
     r_init: [Reachable.Element] = None
-    r_unsafe: [Geometry] = None
-    u: Geometry = None
+    r_unsafe: [Geometry.Base] = None
+    u: Geometry.Base = None
     u_trans: np.ndarray = None
     algo: str = None
     mod: str = "over"  # otherwise "under"

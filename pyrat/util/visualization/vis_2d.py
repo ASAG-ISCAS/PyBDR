@@ -191,7 +191,7 @@ def vis2d(r: Reachable.Result, dims: list, width=800, height=800):
     px = 1 / plt.rcParams["figure.dpi"]
     fig, ax = plt.subplots(figsize=(width * px, height * px), layout="constrained")
 
-    def vis_element(g: Geometry):
+    def vis_element(g: Geometry.Base):
         g = g.proj(dims)
         p = plt.Polygon(
             g.polygon(),
@@ -206,7 +206,6 @@ def vis2d(r: Reachable.Result, dims: list, width=800, height=800):
     if len(r.ti) >= 0:
         for res in r.ti:
             for re in res:
-                print(re)
                 vis_element(re)
     else:
         for res in r.tp:

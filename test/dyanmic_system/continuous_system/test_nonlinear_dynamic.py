@@ -5,31 +5,19 @@ import numpy as np
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Zonotope
 from pyrat.misc import Reachable
-from pyrat.model import Tank6Eq, VanDerPol
+from pyrat.model import Tank6Eq, VanDerPol, LaubLoomis
 from pyrat.util.visualization import vis2d
 
 
-def test_case_0():
+def test_tank6Eq():
     """
-    test case for tank6eq model using nonlinear system over-reach analysis
-    :return:
+    NOTE: TODO
     """
 
     """
     init nonlinear system --------------------------------------------------------------
     """
     system = NonLinSys.Sys(Tank6Eq())
-    # system = NonLinSys.Sys(VanDerPol())
-
-    """
-    init parameters for reachability analysis problem definition -----------------------
-    """
-    # params = NonLinSys.Parameters()
-    # params.time_end = 400
-    # params.set_r0 = VectorZonotope(
-    #     np.vstack([np.array([2, 4, 4, 2, 10, 4]), 0.2 * np.eye(6)]).T
-    # )
-    # params.set_ru = VectorZonotope(np.array([0, 0.005]).reshape((1, -1)))
 
     """
     init options for the computation ---------------------------------------------------
@@ -65,66 +53,84 @@ def test_case_0():
     vis2d(reachable_results, [2, 3])
     vis2d(reachable_results, [4, 5])
 
-    """
-    simulation -------------------------------------------------------------------------
-    """
-    # simulation_results = system.simulate(option)
 
+def test_vanDerPol():
     """
-    results visualization --------------------------------------------------------------
+    NOTE: TODO
     """
 
+    """
+    init nonlinear system --------------------------------------------------------------
+    """
+    system = NonLinSys.Sys(VanDerPol())
 
-def test_sympy():
-    import sympy as sy
+    """
+    init options for the computation ---------------------------------------------------
+    """
+    option = NonLinSys.Option()
+    option.t_end = 3.5
+    option.steps = 701
+    option.taylor_terms = 4
+    option.zonotope_order = 50
+    option.algo = "lin"
+    option.tensor_order = 2
+    option.lagrange_rem["simplify"] = "simplify"
+    option.r_init = [Reachable.Element()]
+    option.r_init[0].set = Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))
+    option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
+    option.u = Zonotope([0], [[0.005]])
+    option.u_trans = np.zeros(1)
 
-    x, t, z, nu = sy.symbols("x t z nu")
-    x = sy.symbols("x:3")
-    print(x)
-    dxdt = sy.symbols(("dxdt:5"))
-    print(dxdt)
-    expr = sy.sin(x[0]) * sy.exp(x[0]) + 1
-    print(expr)
-    f = sy.lambdify(x, expr, "numpy")
-    ivf = sy.lambdify(x, expr, "mpmath")
-    print(signature(f))
-    print(signature(ivf))
-    print(f(*np.ones(3)))
-    import mpmath as mm
+    """
+    over approximating reachability analysis -------------------------------------------
+    """
+    reachable_results = system.reach(option)
 
-    x = mm.iv.matrix(3, 1)
-    print(x)
-    print(ivf(*x))
+    """
+    visualization the results
+    """
 
-    # TODO
-    pass
-
-
-def test_interval_matrix():
-    import mpmath as mm
-
-    v = mm.iv.matrix(2, 1)
-    v[0, 0] = mm.iv.mpf([-1, 1])
-    print(v + 1)
-    print(v)
-    print(mm.asin(v))
-    a = np.array((2, 2), dtype=object)
-    v = mm.iv.mpf(1)
-    print(v.a)
-    a = mm.iv.zeros(2, 2)
-    a[0, 0] = mm.iv.mpf([])
-    print(a[0, 0])
-    print(mm.expm(a))
-    print(a)
-
-    pass
+    vis2d(reachable_results, [0, 1])
 
 
-def test_nonlinear_reach_01_tank():
-    # TODO
-    pass
+def test_laubloomis():
+    """
+    NOTE: TODO
+    """
 
+    """
+    init nonlinear system --------------------------------------------------------------
+    """
+    system = NonLinSys.Sys(LaubLoomis())
 
-def test_nonlinear_reach_02_vanDerPol_polyZonotope():
-    # TODO
-    pass
+    """
+    init options for the computation ---------------------------------------------------
+    """
+    option = NonLinSys.Option()
+    option.t_end = 5
+    option.steps = 501
+    option.taylor_terms = 20
+    option.zonotope_order = 50
+    option.algo = "lin"
+    option.tensor_order = 2
+    option.lagrange_rem["simplify"] = "simplify"
+    option.r_init = [Reachable.Element()]
+    option.r_init[0].set = Zonotope(
+        [1.2, 1.05, 1.5, 2.4, 1, 0.1, 0.45], np.eye(7) * 0.15
+    )
+    option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
+    # option.u = Zonotope([0], [[0]])
+    # option.u_trans = np.zeros(1)
+
+    """
+    over approximating reachability analysis -------------------------------------------
+    """
+    reachable_results = system.reach(option)
+
+    """
+    visualization the results
+    """
+
+    vis2d(reachable_results, [0, 1])
+    vis2d(reachable_results, [2, 4])
+    vis2d(reachable_results, [5, 6])
