@@ -300,7 +300,7 @@ class Zonotope(Geometry.Base):
     def reduce(self, method: MethodReduce, order: int):
         def __reduce_girard(ord: int):
             # pick generators to reduce
-            gur, gr = self._picked_gen(order)
+            gur, gr = self._picked_gen(ord)
             # box remaining generators
             d = np.sum(abs(gr), axis=1)
             d = d[abs(d) > 0]
@@ -315,3 +315,6 @@ class Zonotope(Geometry.Base):
 
     def proj(self, dims):
         return Zonotope(self.c[dims], self.gen[dims, :])
+
+    def boundary(self, max_dist: float, element: Geometry.TYPE):
+        raise NotImplementedError

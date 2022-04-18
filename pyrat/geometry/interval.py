@@ -283,7 +283,35 @@ class Interval(Geometry.Base):
         raise NotImplementedError
 
     def proj(self, dims):
-        raise NotImplementedError
+        return Interval(self.inf[dims], self.sup[dims])
+
+    def boundary(self, max_dist: float, element: Geometry.TYPE):
+        def __interval_boundary():
+            def __sampling(lhs: float, rhs: float, seg: int):
+                if abs(rhs - lhs) <= np.finfo(np.float).eps:
+                    return np.array([lhs], dtype=float)
+                elif seg == 1:
+                    return np.array([lhs, rhs], dtype=float)
+                return np.linspace(lhs, rhs, seg, endpoint=True)
+
+            def __fix_dim_boundary(arrs, fix_dim: int):
+                raise NotImplementedError
+
+            seg_nums = np.floor((self.sup - self.inf) / max_dist).astype(dtype=int) + 2
+            seg_nums[abs(self.sup - self.inf) <= np.finfo(np.float).eps] = 1
+            samples = [
+                __sampling(self.inf[idx], self.sup[idx], seg_nums[idx])
+                for idx in range(self.dim)
+            ]
+
+            exit(False)
+
+        if element == Geometry.TYPE.INTERVAL:
+            return __interval_boundary()
+        elif element == Geometry.TYPE.ZONOTOPE:
+            raise NotImplementedError
+        else:
+            raise NotImplementedError
 
     # =============================================== static method
     @staticmethod
@@ -292,4 +320,5 @@ class Interval(Geometry.Base):
 
     @staticmethod
     def rand(dim: int):
-        raise NotImplementedError
+        bd = np.sort(np.random.rand(dim, 2), axis=1)
+        return Interval(bd[:, 0], bd[:, 1])

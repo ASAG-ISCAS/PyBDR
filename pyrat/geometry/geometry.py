@@ -10,6 +10,8 @@ class Geometry:
         INTERVAL = 0
         INTERVAL_MATRIX = 1
         ZONOTOPE = 2
+        POLYTOPE = 3
+        POLY_ZONOTOPE = 4
 
     class Base(ABC):
         __array_ufunc__ = None
@@ -115,4 +117,8 @@ class Geometry:
 
         @abstractmethod
         def proj(self, dims):
+            raise NotImplementedError
+
+        @abstractmethod
+        def boundary(self, max_dist: float, element: Geometry.TYPE):
             raise NotImplementedError
