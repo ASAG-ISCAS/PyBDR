@@ -152,6 +152,9 @@ class IntervalMatrix(Geometry.Base):
     def proj(self, dims):
         raise NotImplementedError
 
+    def boundary(self, max_dist: float, element: Geometry.TYPE):
+        raise NotImplementedError
+
     # =============================================== static method
     @staticmethod
     def empty(dim: int):

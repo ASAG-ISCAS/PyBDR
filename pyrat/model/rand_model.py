@@ -3,8 +3,15 @@ from .model import Model
 
 
 def _f(x, u):
-    raise NotImplementedError
+    dxdt = [None] * 2
+
+    dxdt[0] = x[1]
+    dxdt[1] = 1
+    return Matrix(dxdt)
 
 
 class RandModel(Model):
-    raise NotImplementedError
+    vars = symbols(("x:2", "u:1"))
+    f = _f(*vars)
+    name = "Random Model"
+    dim = f.rows
