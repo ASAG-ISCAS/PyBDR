@@ -68,7 +68,7 @@ def test_vanDerPol():
     init options for the computation ---------------------------------------------------
     """
     option = NonLinSys.Option()
-    option.t_end = 3.5
+    option.t_end = 13
     option.steps = 701
     option.taylor_terms = 4
     option.zonotope_order = 50
@@ -76,7 +76,7 @@ def test_vanDerPol():
     option.tensor_order = 2
     option.lagrange_rem["simplify"] = "simplify"
     option.r_init = [Reachable.Element()]
-    option.r_init[0].set = Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))
+    option.r_init[0].set = Zonotope([1.4, 1.4], np.diag([0.00, 0.00]))
     option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
     option.u = Zonotope([0], [[0.005]])
     option.u_trans = np.zeros(1)
