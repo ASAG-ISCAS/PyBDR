@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from itertools import chain
 from numbers import Real
 
 import numpy as np
@@ -279,6 +280,44 @@ class Interval(Geometry.Base):
             raise NotImplementedError
 
     # =============================================== public method
+    def rectangle(self, dims: ArrayLike):
+        dims = dims if isinstance(dims, np.ndarray) else np.asarray(dims, dtype=int)
+        assert dims.ndim == 1 and dims.size == 2
+        assert dims.dtype == int
+        pts = np.zeros((4, 2), dtype=float)
+        pts[[0, 3], 0] = self.inf[dims[0]]
+        pts[[1, 2], 0] = self.sup[dims[0]]
+        pts[[0, 1], 1] = self.inf[dims[1]]
+        pts[[2, 3], 1] = self.sup[dims[1]]
+        return pts
+
+    def cube(self, dims: ArrayLike) -> (np.ndarray, np.ndarray):
+        dims = dims if isinstance(dims, np.ndarray) else np.asarray(dims, dtype=int)
+        assert dims.ndim == 1 and dims.size == 3
+        # set points
+        pts = np.zeros((8, 3), dtype=float)
+        pts[:4, 0] = self.inf[dims[0]]
+        pts[4:, 0] = self.sup[dims[0]]
+        pts[[0, 1, 4, 5], 1] = self.inf[dims[1]]
+        pts[[2, 3, 6, 7], 1] = self.sup[dims[1]]
+        pts[[0, 2, 4, 6], 2] = self.inf[dims[2]]
+        pts[[1, 3, 5, 7], 2] = self.sup[dims[2]]
+        # set edges
+        edges = np.zeros((12, 2), dtype=int)
+        edges[0] = 0, 1
+        edges[1] = 0, 2
+        edges[2] = 2, 3
+        edges[3] = 3, 1
+        edges[4] = 0, 4
+        edges[5] = 2, 6
+        edges[6] = 3, 7
+        edges[7] = 1, 5
+        edges[8] = 4, 5
+        edges[9] = 5, 7
+        edges[10] = 7, 6
+        edges[11] = 6, 4
+        return pts, edges
+
     def reduce(self, method: str, order: int):
         raise NotImplementedError
 
@@ -286,32 +325,62 @@ class Interval(Geometry.Base):
         return Interval(self.inf[dims], self.sup[dims])
 
     def boundary(self, max_dist: float, element: Geometry.TYPE):
-        def __interval_boundary():
-            def __sampling(lhs: float, rhs: float, seg: int):
-                if abs(rhs - lhs) <= np.finfo(np.float).eps:
-                    return np.array([lhs], dtype=float)
-                elif seg == 1:
-                    return np.array([lhs, rhs], dtype=float)
-                return np.linspace(lhs, rhs, seg, endpoint=True)
+        def __boundary_interval():
+            bd = []
+            dims = np.arange(self.dim)
+            for i in range(self.dim):
+                valid_dims = np.setdiff1d(dims, i)
+                g = self.proj(valid_dims).grid(max_dist)
+                data = np.zeros((g.shape[0], self.dim * 2, 2), dtype=float)
+                # set this dimension inf related boundary
+                data[:, valid_dims, :] = g
+                data[:, i, :] = self.inf[i]
+                # set this dimension sup related boundary
+                data[:, valid_dims + self.dim, :] = g
+                data[:, i + self.dim, :] = self.sup[i]
+                data = data.reshape((-1, self.dim, 2))
+                bd.append(
+                    [Interval(cur_data[:, 0], cur_data[:, 1]) for cur_data in data]
+                )
 
-            def __fix_dim_boundary(arrs, fix_dim: int):
-                raise NotImplementedError
-
-            seg_nums = np.floor((self.sup - self.inf) / max_dist).astype(dtype=int) + 2
-            seg_nums[abs(self.sup - self.inf) <= np.finfo(np.float).eps] = 1
-            samples = [
-                __sampling(self.inf[idx], self.sup[idx], seg_nums[idx])
-                for idx in range(self.dim)
-            ]
-
-            exit(False)
+            return list(chain.from_iterable(bd))
 
         if element == Geometry.TYPE.INTERVAL:
-            return __interval_boundary()
+            return __boundary_interval()
         elif element == Geometry.TYPE.ZONOTOPE:
             raise NotImplementedError
         else:
             raise NotImplementedError
+
+    def grid(self, max_dist: float) -> np.ndarray:
+        def __ll2arr(ll, fill_value: float):
+            lens = [lst.shape[0] for lst in ll]
+            max_len = max(lens)
+            mask = np.arange(max_len) < np.array(lens)[:, None]
+            arr = np.ones((len(lens), max_len, 2), dtype=float) * fill_value
+            arr[mask] = np.concatenate(ll)
+            return arr, mask
+
+        def __get_seg(dim_idx: int, seg_num: int):
+            if seg_num <= 1:
+                return np.array(
+                    [self.inf[dim_idx], self.sup[dim_idx]], dtype=float
+                ).reshape((1, -1))
+            else:
+                samples = np.linspace(
+                    self.inf[dim_idx], self.sup[dim_idx], num=seg_num + 1
+                )
+                this_segs = np.zeros((seg_num, 2), dtype=float)
+                this_segs[:, 0] = samples[:-1]
+                this_segs[:, 1] = samples[1:]
+                return this_segs
+
+        nums = np.floor((self.sup - self.inf) / max_dist).astype(dtype=int) + 1
+        segs, _ = __ll2arr([__get_seg(i, nums[i]) for i in range(self.dim)], np.nan)
+        idx_list = [np.arange(nums[i]) for i in range(self.dim)]
+        ext_idx = np.array(np.meshgrid(*idx_list)).T.reshape((-1, len(idx_list)))
+        aux_idx = np.tile(np.arange(self.dim), ext_idx.shape[0])
+        return segs[aux_idx, ext_idx.reshape(-1)].reshape((-1, self.dim, 2))
 
     # =============================================== static method
     @staticmethod
