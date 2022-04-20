@@ -12,8 +12,8 @@ def test_interval_2d_boundary():
 def test_interval_3d_boundary():
 
     a = Interval(
-        [-5, -2.5, 3],
-        [-1, 3.7, 9],
+        [-2, 2.5, -3],
+        [1, 3.7, 2.7],
     )
     boundary = a.boundary(1, Geometry.TYPE.INTERVAL)
     vis3dGeo(boundary, [0, 1, 2])
@@ -23,4 +23,3 @@ def test_interval_4d_boundary():
     a = Interval([-1, 3, -2, 9], [2, 7, 5, 11])
     boundary = a.boundary(1, Geometry.TYPE.INTERVAL)
     vis3dGeo(boundary, [0, 1, 2])
-    vis3dGeo(boundary, [1, 2, 3])

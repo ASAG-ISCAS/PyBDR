@@ -134,3 +134,8 @@ def test_laubloomis():
     vis2d(reachable_results, [0, 1])
     vis2d(reachable_results, [2, 4])
     vis2d(reachable_results, [5, 6])
+
+
+def test_linear_model():
+    # TODO
+    raise NotImplementedError

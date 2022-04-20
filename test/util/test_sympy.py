@@ -2,6 +2,7 @@ import inspect
 import numbers
 from inspect import signature
 
+import numpy
 import numpy as np
 from sympy import *
 
@@ -148,31 +149,20 @@ def test_sympy_using_custom_interval_arithmetic():
     print(temp)
 
 
-def test_interval():
-    from pyrat.geometry import IntervalOld
+def test_sympy_derivative_tensor():
+    from pyrat.model import Tank6Eq, RandModel, LaubLoomis
 
-    v = IntervalOld(np.array([[1.79294, 0], [2.21276, 0]], dtype=float).reshape((2, -1)))
-    print(v)
-    print(v[0])
-    print(v[1])
-    x = symbols("x:2")
-    eqr = 0.0166104259427626 / x[0] ** (3 / 2) + atan2(x[0], x[1])
-    print(eqr.is_number)
-    print(v[0])
-    f = lambdify([x], eqr, IntervalOld.ops())
-    print(inspect.getsource(f))
-    temp = f(v)
-    print(f(v))
-
-
-def test_interval_power():
-    from pyrat.geometry import IntervalOld
-
-    a = IntervalOld(np.array([[-0.02520596], [4.55162619]], dtype=float))
-    print(a * -1)
-    print("---------------------------")
-    # print(((-0.02520596) ** 1.5))
-    print(4.55162619**1.5)
-    b = 9.71068532
-    print(a**1.5)
-    print(b)
+    model = Tank6Eq()
+    j = derive_by_array(model.f, model.vars[0])
+    h = derive_by_array(j, model.vars[0])
+    tag = h.applyfunc(lambda x: x.is_number)
+    tag = np.asarray(tag, dtype=bool).squeeze()
+    print(tag.shape)
+    exit(False)
+    x = np.ones(6, dtype=float) * 10
+    u = np.ones(1, dtype=float) * 3
+    fj = lambdify(model.vars, j, ["numpy", {"sqrt": numpy.sin}])
+    fh = lambdify(model.vars, h, "numpy")
+    vj = np.asarray(fj(x, u))
+    vh = np.asarray(fh(x, u))
+    print(vj.shape, vh.shape)

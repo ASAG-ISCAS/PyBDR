@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import inspect
-import numbers
 from dataclasses import dataclass
 
 import numpy as np
 from scipy.special import factorial
-from sympy import lambdify, hessian
+from sympy import lambdify, hessian, derive_by_array
 
 from pyrat.geometry import Geometry, Zonotope, Interval, IntervalMatrix, cvt2
 from pyrat.misc import Reachable, Simulation
@@ -51,6 +49,8 @@ class NonLinSys:
             self._ju = None
             self._hx = None
             self._hu = None
+            self._jaco = None
+            self._hess = None
             self._post_init()
 
         # =============================================== operator
@@ -108,6 +108,43 @@ class NonLinSys:
             hu = _fill_hessian(self._hu, u.dim)
 
             return hx, hu
+
+        # ------------------------------------------------------------------------------
+        # improve the performance of the jacobian and hessian computation
+
+        def __post_init_new(self):
+            self._jaco, self._hess = [], []
+            for var in self._model.vars:
+                j = derive_by_array(self._model.f, var)
+                h = derive_by_array(j, var)
+                self._jaco.append(j)
+                self._hess.append(h)
+
+        def _evaluate_new(self, xs: tuple, mod: str = "numpy"):
+            f = lambdify(self._model.vars, self._model.f, mod)
+            return np.squeeze(f(*xs))
+
+        def _jacobian_new(self, xs: tuple, mod: str = "numpy"):
+            def _eval_jacob(jc):
+                f = lambdify(self._model.vars, jc, mod)
+                return f(*xs)
+
+            return [_eval_jacob(j) for j in self._jaco]
+
+        def _hessian_new(self, xs: tuple, ops: dict):
+            """
+            NOTE: only support interval matrix currently
+            """
+
+            def _eval_hessian_interval(he):
+                f = lambdify(self._model.vars, he, ops)
+                v = f(*xs)
+                # TODO
+                return
+
+            raise NotImplementedError
+
+        # ------------------------------------------------------------------------------
 
         def _linearize(
             self, op: NonLinSys.Option, r: Geometry.Base
@@ -189,8 +226,10 @@ class NonLinSys:
 
                 v_err_dyn = Zonotope(0 * err_lagr.reshape(-1), np.diag(err_lagr))
                 return err_lagr, v_err_dyn
-            else:
+            elif op.tensor_order == 3:
                 raise NotImplementedError  # TODO
+            else:
+                raise Exception("unsupported tensor order")
 
         def _lin_reach(self, r_init: Reachable.Element, op: NonLinSys.Option):
             # linearize the nonlinear system
