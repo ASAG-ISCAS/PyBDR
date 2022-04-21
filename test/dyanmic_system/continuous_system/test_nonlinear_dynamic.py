@@ -150,16 +150,18 @@ def test_linear_model():
     init options for the computation ---------------------------------------------------
     """
     option = NonLinSys.Option()
-    option.t_end = 400
-    option.steps = 401
+    option.t_end = 3
+    option.steps = 100
     option.taylor_terms = 4
     option.zonotope_order = 50
     option.algo = "lin"
     option.tensor_order = 2
     option.lagrange_rem["simplify"] = "simplify"
     option.r_init = [Reachable.Element()]
-    option.r_init[0].set = Zonotope([1.4, 2.4], np.diag([0.17, 0.006]))
+    option.r_init[0].set = Zonotope([1.4, 1.4], np.diag([0, 0]))
     option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
+    option.u = Zonotope([0], [[]])
+    option.u_trans = np.zeros(1)
 
     """
     over approximating reachability analysis -------------------------------------------

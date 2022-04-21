@@ -172,6 +172,7 @@ class NonLinSys:
             # substitute p into the jacobian with respect to x and u to obtain the
             # system matrix A and the input matrix B
             a, b = self._jacobian((p["x"], p["u"]))
+            assert not (np.any(np.isnan(a)) or np.any(np.isnan(b)))
             # set up linearized system
             lin_sys = LinSys.Sys(xa=a)
             # set up options for linearized system

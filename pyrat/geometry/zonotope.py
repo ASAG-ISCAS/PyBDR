@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from enum import IntEnum
 from numbers import Real
 from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.typing import ArrayLike
-from enum import IntEnum
+
 import pyrat.util.functional.auxiliary as aux
 from .geometry import Geometry
 
@@ -303,7 +304,7 @@ class Zonotope(Geometry.Base):
             gur, gr = self._picked_gen(ord)
             # box remaining generators
             d = np.sum(abs(gr), axis=1)
-            d = d[abs(d) > 0]
+            d[abs(d) < 0] = 0
             gb = np.diag(d) if d.shape[0] > 0 else np.empty((self.dim, 0), dtype=float)
             # build reduced zonotope
             return Zonotope(self.c, np.hstack([gur, gb]))

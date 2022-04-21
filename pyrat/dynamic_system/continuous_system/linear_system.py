@@ -169,8 +169,13 @@ class LinSys:
                 # compute overall solution
                 input_solv = v_sum + self._taylor["err"] * op.step_size * v
             else:
-                # TODO
-                raise NotImplementedError
+                # only a_sum, since v == origin(0)
+                a_sum = op.step_size * np.eye(self.dim)
+                # compute higher order terms
+                for i in range(op.taylor_terms):
+                    # compute sum
+                    a_sum += self._taylor["powers"][i] * op.factors[i + 1]
+
             # compute solution due to constant input
             ea_int = a_sum + self._taylor["err"] * op.step_size
             input_solv_trans = ea_int * cvt2(v_trans, Geometry.TYPE.ZONOTOPE)
@@ -189,12 +194,16 @@ class LinSys:
             if op.is_rv and input_solv.z.sum().astype(bool):  # need refine ???
                 self._taylor["rv"] = input_solv
             else:
-                raise NotImplementedError  # TODO
+                self._taylor["rv"] = Zonotope(
+                    np.zeros(self.dim), np.zeros((self.dim, 0))
+                )
 
             if input_solv_trans.z.sum().astype(bool):
                 self._taylor["r_trans"] = input_solv_trans
             else:
-                raise NotImplementedError  # TODO
+                self._taylor["rv"] = Zonotope(
+                    np.zeros(self.dim), np.zeros((self.dim, 0))
+                )
 
             self._taylor["input_corr"] = input_corr
             self._taylor["ea_int"] = ea_int
