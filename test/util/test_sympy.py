@@ -150,14 +150,23 @@ def test_sympy_using_custom_interval_arithmetic():
 
 
 def test_sympy_derivative_tensor():
-    from pyrat.model import Tank6Eq, RandModel, LaubLoomis
+    from pyrat.model import Tank6Eq, RandModel, LaubLoomis, VanDerPol
 
-    model = Tank6Eq()
-    j = derive_by_array(model.f, model.vars[0])
-    h = derive_by_array(j, model.vars[0])
-    tag = h.applyfunc(lambda x: x.is_number)
+    model = VanDerPol()
+    j = np.asarray(derive_by_array(model.f, model.vars[0])).squeeze()
+    print(j)
+    h = np.asarray(derive_by_array(j, model.vars[0])).squeeze()
+    tag = np.vectorize(lambda x: x.is_number and not x.is_zero)(j)
+    print(j.shape)
+    print(h.shape)
+    print(tag)
+    exit(False)
+    tag = j.applyfunc(lambda x: x.is_number and not x.is_zero)
     tag = np.asarray(tag, dtype=bool).squeeze()
-    print(tag.shape)
+    for this_tag in tag:
+        print(this_tag)
+    for this_h in h:
+        print(this_h)
     exit(False)
     x = np.ones(6, dtype=float) * 10
     u = np.ones(1, dtype=float) * 3

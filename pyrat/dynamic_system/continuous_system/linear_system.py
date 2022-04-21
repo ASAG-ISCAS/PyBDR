@@ -241,7 +241,7 @@ class LinSys:
             return r, ret_op
 
         # =============================================== public method
-        def error_solution(self, op: LinSys.Option, v_dyn, v_stat=None):
+        def error_solution(self, op: LinSys.Option, v_dyn: Geometry.Base, v_stat=None):
             """
             computes teh solution due to the linearization error
             :param op: options for the computation

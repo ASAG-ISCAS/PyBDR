@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+import sympy
 from scipy.special import factorial
 from sympy import lambdify, hessian, derive_by_array
 
@@ -43,15 +44,13 @@ class NonLinSys:
 
     class Sys(ContSys):
         def __init__(self, model: Model):
+            assert 1 <= len(model.vars) <= 2  # only support f(x) or f(x,u) as input
             self._model = model
             self._run_time = RunTime()
-            self._jx = None
-            self._ju = None
-            self._hx = None
-            self._hu = None
             self._jaco = None
             self._hess = None
             self._post_init()
+            self._post_init_old()
 
         # =============================================== operator
         def __str__(self):
@@ -63,31 +62,29 @@ class NonLinSys:
             return self._model.dim
 
         # =============================================== private method
-        def _post_init(self):
+        def _post_init_old(self):
             """
             necessary steps after general initialization
             :return:
             """
-            if self._jx is None:
-                self._jx = self._model.f.jacobian(self._model.vars[0])
-                self._ju = self._model.f.jacobian(self._model.vars[1])
-                self._hx = [
-                    hessian(expr, self._model.vars[0]) for expr in self._model.f
-                ]
-                self._hu = [
-                    hessian(expr, self._model.vars[1]) for expr in self._model.f
-                ]  # TODO need refine this part, check "sympy array derivative"
 
-        def _evaluate(self, x, u, mod: str = "numpy"):
+            self._jx = self._model.f.jacobian(self._model.vars[0])
+            self._ju = self._model.f.jacobian(self._model.vars[1])
+            self._hx = [hessian(expr, self._model.vars[0]) for expr in self._model.f]
+            self._hu = [
+                hessian(expr, self._model.vars[1]) for expr in self._model.f
+            ]  # TODO need refine this part, check "sympy array derivative"
+
+        def _evaluate_old(self, x, u, mod: str = "numpy"):
             f = lambdify(self._model.vars, self._model.f, mod)
             return np.squeeze(f(x, u))
 
-        def _jacobian(self, x, u):
+        def _jacobian_old(self, x, u):
             fx = lambdify(self._model.vars, self._jx, "numpy")
             fu = lambdify(self._model.vars, self._ju, "numpy")
             return fx(x, u), fu(x, u)
 
-        def _hessian(self, x, u):
+        def _hessian_old(self, x, u):
             ops = Interval.functional()
 
             def _fill_hessian(expr_h, dim):
@@ -112,37 +109,52 @@ class NonLinSys:
         # ------------------------------------------------------------------------------
         # improve the performance of the jacobian and hessian computation
 
-        def __post_init_new(self):
+        def _post_init(self):
+            def _take_derivative(f, x):
+                d = np.asarray(derive_by_array(f, x))
+                return np.moveaxis(d, 0, -2)
+
             self._jaco, self._hess = [], []
             for var in self._model.vars:
-                j = derive_by_array(self._model.f, var)
-                h = derive_by_array(j, var)
-                self._jaco.append(j)
-                self._hess.append(h)
+                j = _take_derivative(self._model.f, var)
+                h = _take_derivative(j, var)
+                j = j.squeeze(axis=-1)
+                h = h.squeeze(axis=-1)
+                self._jaco.append(sympy.ImmutableDenseNDimArray(j))
+                self._hess.append(sympy.ImmutableDenseNDimArray(h))
 
-        def _evaluate_new(self, xs: tuple, mod: str = "numpy"):
+        def _evaluate(self, xs: tuple, mod: str = "numpy"):
             f = lambdify(self._model.vars, self._model.f, mod)
             return np.squeeze(f(*xs))
 
-        def _jacobian_new(self, xs: tuple, mod: str = "numpy"):
+        def _jacobian(self, xs: tuple, mod: str = "numpy"):
             def _eval_jacob(jc):
                 f = lambdify(self._model.vars, jc, mod)
                 return f(*xs)
 
             return [_eval_jacob(j) for j in self._jaco]
 
-        def _hessian_new(self, xs: tuple, ops: dict):
+        def _hessian(self, xs: tuple, ops: dict):
             """
             NOTE: only support interval matrix currently
             """
 
             def _eval_hessian_interval(he):
-                f = lambdify(self._model.vars, he, ops)
-                v = f(*xs)
-                # TODO
-                return
+                def __eval_element(x):
+                    if x.is_number:
+                        return Interval(float(x), float(x))
+                    else:
+                        f = lambdify(self._model.vars, x, ops)
+                        return f(*xs)
 
-            raise NotImplementedError
+                v = np.vectorize(__eval_element)(he)
+                inf = np.vectorize(lambda x: x.inf)(v)
+                sup = np.vectorize(lambda x: x.sup)(v)
+                return [
+                    IntervalMatrix(inf[idx], sup[idx]) for idx in range(he.shape[0])
+                ]
+
+            return [_eval_hessian_interval(h) for h in self._hess]
 
         # ------------------------------------------------------------------------------
 
@@ -150,20 +162,19 @@ class NonLinSys:
             self, op: NonLinSys.Option, r: Geometry.Base
         ) -> (LinSys.Sys, LinSys.Option):
             # linearization point p.u of the input is the center of the input set
-            p = {"u": op.u_trans}
+            p = {"u": op.u_trans} if op.u is not None else {}
             # linearization point p.x of the state is the center of the last reachable
             # set R translated by 0.5*delta_t*f0
-            f0_pre = self._evaluate(r.c, p["u"])
+            f0_pre = self._evaluate((r.c, p["u"]))
             p["x"] = r.c + f0_pre * 0.5 * op.step_size
             # substitute p into the system equation to obtain the constraint input
-            f0 = self._evaluate(p["x"], p["u"])
+            f0 = self._evaluate((p["x"], p["u"]))
             # substitute p into the jacobian with respect to x and u to obtain the
             # system matrix A and the input matrix B
-            a, b = self._jacobian(p["x"], p["u"])
+            a, b = self._jacobian((p["x"], p["u"]))
             # set up linearized system
             lin_sys = LinSys.Sys(xa=a)
             # set up options for linearized system
-            # lin_op = LinSys.Option(**dataclasses.asdict(op))
             # ---------------------------------------
             lin_op = LinSys.Option()  # TODO update values inside this linear option
             lin_op.u_trans = op.u_trans
@@ -209,19 +220,17 @@ class NonLinSys:
                 du = np.maximum(abs(ihu.inf), abs(ihu.sup))
 
                 # evaluate the hessian matrix with the selected range-bounding technique
-                hx, hu = self._hessian(total_int_x, total_int_u)
+                hx, hu = self._hessian(
+                    (total_int_x, total_int_u), Interval.functional()
+                )
 
                 # calculate the Lagrange remainder (second-order error)
                 err_lagr = np.zeros(self.dim, dtype=float)
 
                 for i in range(self.dim):
                     abs_hx, abs_hu = abs(hx[i]), abs(hu[i])
-                    # hx_ = np.max(abs_hx.bd, axis=0)
-                    # hu_ = np.max(abs_hu.bd, axis=0)
                     hx_ = np.maximum(abs_hx.inf, abs_hx.sup)
                     hu_ = np.maximum(abs_hu.inf, abs_hu.sup)
-                    # hx_ = abs_hx.inf.maximum(abs_hx.sup)
-                    # hu_ = abs_hu.inf.maximum(abs_hu.sup)
                     err_lagr[i] = 0.5 * (dx @ hx_ @ dx + du @ hu_ @ du)
 
                 v_err_dyn = Zonotope(0 * err_lagr.reshape(-1), np.diag(err_lagr))

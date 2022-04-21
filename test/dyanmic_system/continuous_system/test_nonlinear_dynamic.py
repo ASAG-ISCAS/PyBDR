@@ -5,7 +5,7 @@ import numpy as np
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Zonotope
 from pyrat.misc import Reachable
-from pyrat.model import Tank6Eq, VanDerPol, LaubLoomis
+from pyrat.model import Tank6Eq, VanDerPol, LaubLoomis, RandModel
 from pyrat.util.visualization import vis2d
 
 
@@ -137,5 +137,37 @@ def test_laubloomis():
 
 
 def test_linear_model():
-    # TODO
-    raise NotImplementedError
+    """
+    NOTE: TODO
+    """
+
+    """
+    init nonlinear system --------------------------------------------------------------
+    """
+    system = NonLinSys.Sys(RandModel())
+
+    """
+    init options for the computation ---------------------------------------------------
+    """
+    option = NonLinSys.Option()
+    option.t_end = 400
+    option.steps = 401
+    option.taylor_terms = 4
+    option.zonotope_order = 50
+    option.algo = "lin"
+    option.tensor_order = 2
+    option.lagrange_rem["simplify"] = "simplify"
+    option.r_init = [Reachable.Element()]
+    option.r_init[0].set = Zonotope([1.4, 2.4], np.diag([0.17, 0.006]))
+    option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
+
+    """
+    over approximating reachability analysis -------------------------------------------
+    """
+    reachable_results = system.reach(option)
+
+    """
+    visualization the results
+    """
+
+    vis2d(reachable_results, [0, 1])
