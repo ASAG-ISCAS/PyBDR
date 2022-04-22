@@ -33,6 +33,8 @@ def vis2d(r: Reachable.Result, dims: list, width=800, height=800):
                 vis_element(re)
 
     ax.autoscale_view()
+    ax.set_xlabel("x" + str(dims[0]))
+    ax.set_ylabel("x" + str(dims[1]))
 
     plt.show()
 
@@ -61,5 +63,7 @@ def vis2dGeo(geos: [Geometry.Base], dims: list, width=800, height=800):
         __add_patch(geo)
 
     ax.autoscale_view()
+    ax.set_xlabel("x" + str(dims[0]))
+    ax.set_ylabel("x" + str(dims[1]))
 
     plt.show()

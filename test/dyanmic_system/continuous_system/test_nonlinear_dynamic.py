@@ -22,7 +22,7 @@ def test_tank6Eq():
     """
     option = NonLinSys.Option()
     option.t_end = 400
-    option.steps = 50
+    option.steps = 100
     option.taylor_terms = 4
     option.zonotope_order = 50
     option.algo = "lin"
