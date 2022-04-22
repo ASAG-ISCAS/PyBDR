@@ -1,5 +1,3 @@
-from inspect import signature
-
 import numpy as np
 
 from pyrat.dynamic_system import NonLinSys
@@ -108,7 +106,7 @@ def test_laubloomis():
     """
     option = NonLinSys.Option()
     option.t_end = 5
-    option.steps = 501
+    option.steps = 1000
     option.taylor_terms = 20
     option.zonotope_order = 50
     option.algo = "lin"
@@ -116,11 +114,11 @@ def test_laubloomis():
     option.lagrange_rem["simplify"] = "simplify"
     option.r_init = [Reachable.Element()]
     option.r_init[0].set = Zonotope(
-        [1.2, 1.05, 1.5, 2.4, 1, 0.1, 0.45], np.eye(7) * 0.15
+        [1.2, 1.05, 1.5, 2.4, 1, 0.1, 0.45], np.eye(7) * 0.01
     )
     option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
-    # option.u = Zonotope([0], [[0]])
-    # option.u_trans = np.zeros(1)
+    option.u = Zonotope([0], [[0]])
+    option.u_trans = np.zeros(1)
 
     """
     over approximating reachability analysis -------------------------------------------
@@ -134,6 +132,8 @@ def test_laubloomis():
     vis2d(reachable_results, [0, 1])
     vis2d(reachable_results, [2, 4])
     vis2d(reachable_results, [5, 6])
+    vis2d(reachable_results, [1, 5])
+    vis2d(reachable_results, [4, 6])
 
 
 def test_linear_model():
@@ -150,7 +150,7 @@ def test_linear_model():
     init options for the computation ---------------------------------------------------
     """
     option = NonLinSys.Option()
-    option.t_end = 3
+    option.t_end = 50
     option.steps = 100
     option.taylor_terms = 4
     option.zonotope_order = 50
@@ -158,7 +158,7 @@ def test_linear_model():
     option.tensor_order = 2
     option.lagrange_rem["simplify"] = "simplify"
     option.r_init = [Reachable.Element()]
-    option.r_init[0].set = Zonotope([1.4, 1.4], np.diag([0, 0]))
+    option.r_init[0].set = Zonotope([1.4, 1.4, 1.4], np.diag([0, 0, 0]))
     option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
     option.u = Zonotope([0], [[]])
     option.u_trans = np.zeros(1)
@@ -173,3 +173,5 @@ def test_linear_model():
     """
 
     vis2d(reachable_results, [0, 1])
+    vis2d(reachable_results, [1, 2])
+    vis2d(reachable_results, [0, 2])

@@ -2,7 +2,7 @@ from sympy import *
 from .model import Model
 
 
-def _f(x):
+def _f(x, u):
     dxdt = [None] * 7
 
     dxdt[0] = 1.4 * x[2] - 0.9 * x[0]
@@ -17,7 +17,7 @@ def _f(x):
 
 
 class LaubLoomis(Model):
-    vars = symbols("x:7")
-    f = _f(vars)
+    vars = symbols(("x:7", "u:1"))
+    f = _f(*vars)
     name = "LaubLoomis"
     dim = f.rows
