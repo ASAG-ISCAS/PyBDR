@@ -50,7 +50,6 @@ class NonLinSys:
             self._jaco = None
             self._hess = None
             self._post_init()
-            self._post_init_old()
 
         # =============================================== operator
         def __str__(self):

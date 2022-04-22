@@ -179,7 +179,7 @@ class Interval(Geometry.Base):
         return self
 
     def __neg__(self):
-        return self * -1
+        return Interval(-self.sup, -self.inf)
 
     def __or__(self, other):
         raise NotImplementedError
@@ -191,7 +191,16 @@ class Interval(Geometry.Base):
         raise NotImplementedError
 
     def __sub__(self, other):
-        raise NotImplementedError
+
+        if isinstance(other, Real):
+            return Interval(self.inf - other, self.sup - other)
+        elif isinstance(other, Geometry.Base):
+            if other.type == Geometry.TYPE.INTERVAL:
+                return Interval(self.inf - other.sup, self.sup - other.inf)
+            else:
+                raise NotImplementedError
+        else:
+            raise NotImplementedError
 
     def __rsub__(self, other):
         raise NotImplementedError
@@ -200,11 +209,27 @@ class Interval(Geometry.Base):
         raise NotImplementedError
 
     def __truediv__(self, other):
-        raise NotImplementedError
+        def __t_real(rhs: Real):
+            inft, supt = self.inf / rhs, self.sup / rhs
+            inf, sup = np.minimum(inft, supt), np.maximum(inft, supt)
+            if rhs == 0:
+                inf[:] = -np.inf
+                sup[:] = np.inf
+            return Interval(inf, sup)
+
+        if isinstance(other, Real):
+            return __t_real(other)
+        elif isinstance(other, Geometry.Base):
+            if other.type == Geometry.TYPE.INTERVAL:
+                return self * (1 / other)
+            else:
+                raise NotImplementedError
+        else:
+            raise NotImplementedError
 
     def __rtruediv__(self, other):
-        def __rt_real(rhs: Real):
-            infrt, suprt = rhs / self.inf, rhs / self.sup
+        def __rt_real(lhs: Real):
+            infrt, suprt = lhs / self.inf, lhs / self.sup
             inf, sup = np.minimum(infrt, suprt), np.maximum(infrt, suprt)
 
             ind = (self.inf == 0) & (self.sup == 0)
@@ -224,7 +249,7 @@ class Interval(Geometry.Base):
         if isinstance(other, Real):
             return __rt_real(other)
         elif isinstance(other, Geometry.Base):
-            raise NotImplementedError  # TODO
+            raise NotImplemented
         else:
             raise NotImplementedError
 
