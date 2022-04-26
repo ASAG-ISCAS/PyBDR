@@ -86,3 +86,8 @@ def test_basic_numpy():
     inf = np.nan
     sup = np.nan
     assert inf <= sup
+
+
+def test_svd():
+
+    raise NotImplementedError

@@ -3,23 +3,55 @@ from __future__ import annotations
 from numbers import Real
 from typing import TYPE_CHECKING
 import numpy as np
+from numpy.typing import ArrayLike
 from enum import IntEnum
 from .geometry import Geometry
 import pyrat.util.functional.auxiliary as aux
 
 
 class PolyZonotope(Geometry.Base):
-    def __init__(self):
-        raise NotImplementedError
+    def __init__(
+        self,
+        c: ArrayLike,
+        gen: ArrayLike = None,
+        gen_rst: ArrayLike = None,
+        exp_mat: ArrayLike = None,
+    ):
+        def __input_validation(data, tp=float):
+            if data is None or isinstance(data, tp):
+                return data
+            return np.asarray(data, dtype=tp)
+
+        self._c = __input_validation(c)
+        self._gen = __input_validation(gen)
+        self._gen_rst = __input_validation(gen_rst)
+        self._exp_mat = __input_validation(exp_mat, tp=int)
+        # post check
+        assert self._c.ndim == 1
+        assert self._gen is None or self._gen.ndim == 2
+        assert self._gen_rst is None or self._gen_rst.ndim == 2
+        assert self._exp_mat is None or self._exp_mat.ndim == 2
 
     # =============================================== property
     @property
     def c(self) -> np.ndarray:
-        raise NotImplementedError
+        return self._c
+
+    @property
+    def gen(self):
+        return self._gen
+
+    @property
+    def gen_rst(self):
+        return self._gen_rst
+
+    @property
+    def exp_mat(self):
+        return self._exp_mat
 
     @property
     def dim(self) -> int:
-        raise NotImplementedError
+        return None if self.is_empty else self._c.shape[0]
 
     @property
     def is_empty(self) -> bool:

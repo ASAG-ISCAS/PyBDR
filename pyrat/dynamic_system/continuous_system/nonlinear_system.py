@@ -382,12 +382,17 @@ class NonLinSys:
                 ti_set, tp_set, np.vstack(ti_time), np.array(tp_time)
             )
 
+        def _reach_over_poly(self, op: NonLinSys.Option) -> Reachable.Result:
+            raise NotImplementedError  # TODO
+
             # =============================================== public method
 
         def reach(self, op: NonLinSys.Option) -> Reachable.Result:
             assert op.validate(self.dim)
             if op.algo == "lin":
                 return self._reach_over_standard(op)
+            elif op.algo == "poly":
+                return self._reach_over_poly(op)
             else:
                 raise NotImplementedError
 
