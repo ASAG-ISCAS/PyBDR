@@ -20,7 +20,7 @@ def test_tank6Eq():
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.Option()
+    option = NonLinSys.OptionOld()
     option.t_end = 400
     option.steps = 100
     option.taylor_terms = 4
@@ -61,14 +61,13 @@ def test_vanDerPol():
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.Option()
+    option = NonLinSys.OptionOld()
     option.t_end = 13
     option.steps = 701
     option.taylor_terms = 4
     option.zonotope_order = 50
     option.algo = "lin"
     option.tensor_order = 2
-    option.lagrange_rem["simplify"] = "simplify"
     option.r_init = [Reachable.Element()]
     option.r_init[0].set = Zonotope([1.4, 1.4], np.diag([0.00, 0.00]))
     option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
@@ -99,7 +98,7 @@ def test_vanDerPol_PolyZonotope():
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.Option()
+    option = NonLinSys.OptionOld()
     option.t_end = 6.74
     option.steps = 1349
     option.zonotope_order = 50
@@ -136,7 +135,7 @@ def test_laubLoomis():
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.Option()
+    option = NonLinSys.OptionOld()
     option.t_end = 20
     option.steps = 500
     option.taylor_terms = 20
@@ -179,7 +178,7 @@ def test_linear_model():
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.Option()
+    option = NonLinSys.OptionOld()
     option.t_end = 50
     option.steps = 100
     option.taylor_terms = 4
@@ -220,7 +219,7 @@ def test_ltv():
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.Option()
+    option = NonLinSys.OptionOld()
     option.t_end = 5
     option.steps = 500
     option.taylor_terms = 4
@@ -259,7 +258,7 @@ def test_genetic():
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.Option()
+    option = NonLinSys.OptionOld()
     option.t_end = 3
     option.steps = 500
     option.taylor_terms = 4
@@ -301,7 +300,7 @@ def test_p53_small():
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.Option()
+    option = NonLinSys.OptionOld()
     option.t_end = 10
     option.steps = 500
     option.taylor_terms = 4
@@ -326,3 +325,9 @@ def test_p53_small():
 
     vis2d(reachable_results, [0, 1])
     vis2d(reachable_results, [2, 5])
+
+
+def test_continuous_system():
+    system = NonLinSys.Sys(VanDerPol())
+    option = NonLinSys.Option.Linear()
+    raise None

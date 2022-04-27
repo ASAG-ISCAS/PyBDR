@@ -1,4 +1,4 @@
-from .continuous_system import ContSys
+import continuous_system as ContSys
 from .linear_system import LinSys
 from .nonlinear_system import NonLinSys
 

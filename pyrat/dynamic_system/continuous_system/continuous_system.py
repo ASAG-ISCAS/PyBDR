@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pyrat.geometry import Geometry
 from pyrat.misc import Reachable, Simulation, Specification
 import numpy as np
+from enum import IntEnum
 
 
 @dataclass
@@ -33,27 +34,42 @@ class RunTime(ABC):
     lin_err_p: dict = None
 
 
-class ContSys(ABC):
-    @abstractmethod
-    def __init__(self):
-        raise NotImplementedError
+class ContSys:
+    class Option:
+        class Base(ABC):
+            t_start = float = 0
+            t_end: float = 0
+            steps: int = 10
+            step_size: float = None
+            r0 = [Reachable.Element] = []
+            u: Geometry.Base = None
 
-    # =============================================== operator
-    @abstractmethod
-    def __str__(self):
-        raise NotImplementedError
+            @abstractmethod
+            def validate(self) -> bool:
+                raise NotImplementedError
 
-    # =============================================== property
-    @property
-    @abstractmethod
-    def dim(self) -> int:
-        raise NotImplementedError
+    class Entity(ABC):
+        @abstractmethod
+        def __init__(self):
+            raise NotImplementedError
 
-    # =============================================== public method
-    @abstractmethod
-    def reach(self, op) -> Reachable.Result:
-        raise NotImplementedError
+        # =============================================== operator
+        @abstractmethod
+        def __str__(self):
+            raise NotImplementedError
 
-    @abstractmethod
-    def simulate(self, op) -> Simulation.Result:
-        raise NotImplementedError
+        # =============================================== property
+        @property
+        @abstractmethod
+        def dim(self) -> int:
+            raise NotImplementedError
+
+        # =============================================== public method
+        @abstractmethod
+        def reach(self, op: ContSys.Option) -> Reachable.Result:
+            raise NotImplementedError
+
+        @abstractmethod
+        def simulate(self, op: ContSys.Option) -> Simulation.Result:
+            # TODO
+            raise NotImplementedError

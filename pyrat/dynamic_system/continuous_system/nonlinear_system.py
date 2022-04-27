@@ -3,20 +3,23 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from enum import IntEnum
 import sympy
 from scipy.special import factorial
-from sympy import lambdify, hessian, derive_by_array
+from sympy import lambdify, derive_by_array
 
 from pyrat.geometry import Geometry, Zonotope, Interval, IntervalMatrix, cvt2
 from pyrat.misc import Reachable, Simulation
 from pyrat.model import Model
-from .continuous_system import ContSys, Option, RunTime
+
+# from .continuous_system import ContSys, Option, RunTime
+from continuous_system import Entity, Option
 from .linear_system import LinSys
 
 
 class NonLinSys:
     @dataclass
-    class Option(Option):
+    class OptionOld(Option):
         algo: str = "standard"
         taylor_terms: int = 0
         lagrange_rem = {}
@@ -42,7 +45,24 @@ class NonLinSys:
         step: int = 0
         # TODO
 
-    class Sys(ContSys):
+    class Option:
+        class ALGORITHM(IntEnum):
+            LINEAR = 0
+            POLYNOMIAL = 1
+
+        class __Base(Option.Base):
+            algorithm: NonLinSys.ALGORITHM = None
+
+            def validate(self) -> bool:
+                raise NotImplementedError  # TODO
+
+        class Linear(__Base):
+            algorithm = ALGORITHM.LINEAR
+
+            def validate(self):
+                raise NotImplementedError  # TODO
+
+    class Sys(ContSys.Entity):
         def __init__(self, model: Model):
             assert 1 <= len(model.vars) <= 2  # only support f(x) or f(x,u) as input
             self._model = model
@@ -112,7 +132,7 @@ class NonLinSys:
         # ------------------------------------------------------------------------------
 
         def _linearize(
-            self, op: NonLinSys.Option, r: Geometry.Base
+            self, op: NonLinSys.OptionOld, r: Geometry.Base
         ) -> (LinSys.Sys, LinSys.Option):
             # linearization point p.u of the input is the center of the input set
             p = {"u": op.u_trans} if op.u is not None else {}
@@ -150,7 +170,7 @@ class NonLinSys:
             return lin_sys, lin_op
 
         def _abst_err_lin(
-            self, op: NonLinSys.Option, r: Geometry
+            self, op: NonLinSys.OptionOld, r: Geometry
         ) -> (Interval, Zonotope):
             """
             computes the abstraction error for linearization approach to enter
@@ -194,7 +214,7 @@ class NonLinSys:
             else:
                 raise Exception("unsupported tensor order")
 
-        def _lin_reach(self, r_init: Reachable.Element, op: NonLinSys.Option):
+        def _lin_reach(self, r_init: Reachable.Element, op: NonLinSys.OptionOld):
             # linearize the nonlinear system
             lin_sys, lin_op = self._linearize(op, r_init.set)
             # translate r_init by linearization point
@@ -253,7 +273,7 @@ class NonLinSys:
             # store the linearization error
             return r_ti, Reachable.Element(r_tp, abstr_err), dim_for_split
 
-        def _post(self, r: [Reachable.Element], op: NonLinSys.Option):
+        def _post(self, r: [Reachable.Element], op: NonLinSys.OptionOld):
             """
             computes the reachable continuous set for one time step of a nonlinear system
             by over approximate linearization
@@ -276,7 +296,7 @@ class NonLinSys:
             return next_ti, next_tp, next_r0
 
         def _reach_init(
-            self, r_init: [Reachable.Element], op: NonLinSys.Option
+            self, r_init: [Reachable.Element], op: NonLinSys.OptionOld
         ) -> ([Geometry], [Reachable.Element], [Reachable.Element]):
             # loop over all parallel initial sets
             r_ti, r_tp, r0 = [], [], []
@@ -295,7 +315,7 @@ class NonLinSys:
             # store the result
             return r_ti, r_tp, r0
 
-        def _reach_over_standard(self, op: NonLinSys.Option) -> Reachable.Result:
+        def _reach_over_standard(self, op: NonLinSys.OptionOld) -> Reachable.Result:
             # obtain factors for initial state and input solution time step
             i = np.arange(1, op.taylor_terms + 2)
             op.factors = np.power(op.step_size, i) / factorial(i)
@@ -336,12 +356,12 @@ class NonLinSys:
                 ti_set, tp_set, np.vstack(ti_time), np.array(tp_time)
             )
 
-        def _reach_over_poly(self, op: NonLinSys.Option) -> Reachable.Result:
+        def _reach_over_poly(self, op: NonLinSys.OptionOld) -> Reachable.Result:
             raise NotImplementedError  # TODO
 
             # =============================================== public method
 
-        def reach(self, op: NonLinSys.Option) -> Reachable.Result:
+        def reach(self, op: NonLinSys.OptionOld) -> Reachable.Result:
             assert op.validate(self.dim)
             if op.algo == "lin":
                 return self._reach_over_standard(op)
@@ -350,5 +370,5 @@ class NonLinSys:
             else:
                 raise NotImplementedError
 
-        def simulate(self, op: NonLinSys.Option) -> Simulation.Result:
+        def simulate(self, op: NonLinSys.OptionOld) -> Simulation.Result:
             raise NotImplementedError
