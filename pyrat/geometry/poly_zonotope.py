@@ -26,6 +26,7 @@ class PolyZonotope(Geometry.Base):
         self._gen = __input_validation(gen)
         self._gen_rst = __input_validation(gen_rst)
         self._exp_mat = __input_validation(exp_mat, tp=int)
+        self._type = Geometry.TYPE.POLY_ZONOTOPE
         # post check
         assert self._c.ndim == 1
         assert self._gen is None or self._gen.ndim == 2
@@ -55,7 +56,11 @@ class PolyZonotope(Geometry.Base):
 
     @property
     def is_empty(self) -> bool:
-        raise NotImplementedError
+        return (
+            aux.is_empty(self._c)
+            and aux.is_empty(self._gen)
+            and aux.is_empty(self._gen_rst)
+        )
 
     @property
     def vertices(self) -> np.ndarray:
@@ -63,11 +68,17 @@ class PolyZonotope(Geometry.Base):
 
     @property
     def info(self):
+        info = "\n ------------- Polynomial Zonotope BEGIN ------------- \n"
+        info += ">>> dimension -- gen_num -- center"
+        info += str(self.dim) + "\n"
+        info += str(self.c) + "\n"
+        info += str(self.gen) + "\n"
+        info += "\n ------------- Polynomial Zonotope END ------------- \n"
         raise NotImplementedError
 
     @property
     def type(self) -> Geometry.TYPE:
-        raise NotImplementedError
+        return self._type
 
     # =============================================== operator
 

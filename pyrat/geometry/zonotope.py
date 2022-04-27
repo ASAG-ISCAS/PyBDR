@@ -197,9 +197,14 @@ class Zonotope(Geometry.Base):
         return Zonotope(np.empty(dim, dtype=float), np.empty((dim, 0), dtype=float))
 
     @staticmethod
-    def rand(dim: int, gen_num: int):
+    def rand(dim: int, gen_num: int = 0):
         assert dim >= 1 and gen_num >= 0
         return Zonotope(np.random.rand(dim), np.random.rand(dim, gen_num))
+
+    @staticmethod
+    def zero(dim: int, gen_num: int = 0):
+        assert dim >= 1 and gen_num >= 0
+        return Zonotope(np.zeros(dim), np.zeros((dim, gen_num)))
 
     # =============================================== private method
     def _picked_gen(self, order) -> (np.ndarray, np.ndarray):

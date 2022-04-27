@@ -1,7 +1,7 @@
 import numpy as np
 
 from pyrat.dynamic_system import NonLinSys
-from pyrat.geometry import Zonotope
+from pyrat.geometry import Zonotope, PolyZonotope
 from pyrat.misc import Reachable
 from pyrat.model import *
 from pyrat.util.visualization import vis2d
@@ -87,7 +87,43 @@ def test_vanDerPol():
     vis2d(reachable_results, [0, 1])
 
 
-def test_laubloomis():
+def test_vanDerPol_PolyZonotope():
+    """
+    NOTE:
+    """
+
+    """
+    init nonlinear system --------------------------------------------------------------
+    """
+    system = NonLinSys.Sys(VanDerPol())
+    """
+    init options for the computation ---------------------------------------------------
+    """
+    option = NonLinSys.Option()
+    option.t_end = 6.74
+    option.steps = 1349
+    option.zonotope_order = 50
+    option.algo = "poly"
+    option.tensor_order = 3
+    option.r_init = [Reachable.Element()]
+    option.r_init[0].set = Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))
+    option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
+    option.u = Zonotope.zero(1, 1)
+    option.u_trans = np.zeros(1)
+
+    """
+    over approximating reachability analysis -------------------------------------------
+    """
+    reachable_results = system.reach(option)
+
+    """
+    visualization the results
+    """
+
+    vis2d(reachable_results, [0, 1])
+
+
+def test_laubLoomis():
     """
     NOTE: TODO
     """
@@ -111,7 +147,7 @@ def test_laubloomis():
     option.r_init = [Reachable.Element()]
     option.r_init[0].set = Zonotope([1.2, 1.05, 1.5, 2.4, 1, 0.1, 0.45], np.eye(7) * 0)
     option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
-    option.u = Zonotope([0], [[0]])
+    option.u = Zonotope.zero(1, 1)
     option.u_trans = np.zeros(1)
 
     """

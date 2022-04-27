@@ -61,52 +61,6 @@ class NonLinSys:
             return self._model.dim
 
         # =============================================== private method
-        def _post_init_old(self):
-            """
-            necessary steps after general initialization
-            :return:
-            """
-
-            self._jx = self._model.f.jacobian(self._model.vars[0])
-            self._ju = self._model.f.jacobian(self._model.vars[1])
-            self._hx = [hessian(expr, self._model.vars[0]) for expr in self._model.f]
-            self._hu = [
-                hessian(expr, self._model.vars[1]) for expr in self._model.f
-            ]  # TODO need refine this part, check "sympy array derivative"
-
-        def _evaluate_old(self, x, u, mod: str = "numpy"):
-            f = lambdify(self._model.vars, self._model.f, mod)
-            return np.squeeze(f(x, u))
-
-        def _jacobian_old(self, x, u):
-            fx = lambdify(self._model.vars, self._jx, "numpy")
-            fu = lambdify(self._model.vars, self._ju, "numpy")
-            return fx(x, u), fu(x, u)
-
-        def _hessian_old(self, x, u):
-            ops = Interval.functional()
-
-            def _fill_hessian(expr_h, dim):
-                hs = []
-                for expr in expr_h:
-                    h = np.zeros((2, dim, dim), dtype=float)
-                    for idx in range(len(expr)):
-                        row, col = int(idx / x.dim), int(idx % x.dim)
-                        if not expr[idx].is_number:
-                            f = lambdify(self._model.vars, expr[idx], ops)
-                            v = f(x, u)
-                            h[0, row, col] = v.inf
-                            h[1, row, col] = v.sup
-                    hs.append(IntervalMatrix(h[0], h[1]))
-                return hs
-
-            hx = _fill_hessian(self._hx, x.dim)
-            hu = _fill_hessian(self._hu, u.dim)
-
-            return hx, hu
-
-        # ------------------------------------------------------------------------------
-        # improve the performance of the jacobian and hessian computation
 
         def _post_init(self):
             def _take_derivative(f, x):
