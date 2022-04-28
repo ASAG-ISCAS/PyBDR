@@ -44,7 +44,7 @@ class LinSys:
 
             def validation(self):
                 # TODO
-                return False
+                return True
 
         @dataclass
         class KRYLOV(Base):
@@ -240,6 +240,7 @@ class LinSys:
             return asum + f + err_stat
 
         def reach_init(self, r0: [Set], option):
+            assert option.validation()
             if option.algorithm == ALGORITHM.EUCLIDEAN:
                 return self.__reach_init_euclidean(r0, option)
             elif option.algorithm == ALGORITHM.KRYLOV:
