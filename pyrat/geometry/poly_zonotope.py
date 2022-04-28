@@ -10,6 +10,13 @@ import pyrat.util.functional.auxiliary as aux
 
 
 class PolyZonotope(Geometry.Base):
+    class RESTRUCTURE(IntEnum):
+        REDUCE_PCA = 0
+
+    _max_depth_gen_order = 50
+    _max_poly_zono_ratio = 0.01
+    _restructure_tech: RESTRUCTURE = RESTRUCTURE.REDUCE_PCA
+
     def __init__(
         self,
         c: ArrayLike,

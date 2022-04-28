@@ -88,6 +88,18 @@ def test_basic_numpy():
     assert inf <= sup
 
 
-def test_svd():
+def test_static_class_variables():
+    class Foo:
+        _var0 = 0
 
-    raise NotImplementedError
+        def __init__(self):
+            self.__var1 = self.__class__._var0
+
+        def var(self):
+            return self.__var1
+
+    f0 = Foo()
+    Foo._var0 = 2
+    f1 = Foo()
+    print(f0.var())
+    print(f1.var())

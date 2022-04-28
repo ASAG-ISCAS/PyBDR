@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from enum import IntEnum
+from dataclasses import dataclass
 
 
 class Geometry:
@@ -111,8 +112,11 @@ class Geometry:
             raise NotImplementedError
 
         # =============================================== public method
+        def enclose(self, other):
+            raise NotImplementedError
+
         @abstractmethod
-        def reduce(self, method: str, order: int):
+        def reduce(self):
             raise NotImplementedError
 
         @abstractmethod

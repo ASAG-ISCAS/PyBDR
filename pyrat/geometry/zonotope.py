@@ -16,8 +16,12 @@ if TYPE_CHECKING:  # for type hint, easy coding ：)
 
 
 class Zonotope(Geometry.Base):
-    class MethodReduce(IntEnum):
-        GIRARD = 0
+    class METHOD:
+        class REDUCE(IntEnum):
+            GIRARD = 0
+
+    REDUCE_METHOD = METHOD.REDUCE.GIRARD
+    ORDER = 50
 
     def __init__(self, c: ArrayLike, gen: ArrayLike):
         c = c if isinstance(c, np.ndarray) else np.array(c, dtype=float)
@@ -207,7 +211,7 @@ class Zonotope(Geometry.Base):
         return Zonotope(np.zeros(dim), np.zeros((dim, gen_num)))
 
     # =============================================== private method
-    def _picked_gen(self, order) -> (np.ndarray, np.ndarray):
+    def _picked_gen(self) -> (np.ndarray, np.ndarray):
         gur = np.empty((self.dim, 0), dtype=float)
         gr = np.empty((self.dim, 0), dtype=float)
 
@@ -216,13 +220,13 @@ class Zonotope(Geometry.Base):
             self.remove_zero_gen()
             dim, gen_num = self.dim, self.gen_num
             # only reduce if zonotope order is greater than the desired order
-            if gen_num > dim * order:
+            if gen_num > dim * self.ORDER:
                 # compute metric of generators
                 h = np.linalg.norm(self.gen, ord=1, axis=0) - np.linalg.norm(
                     self.gen, ord=np.inf, axis=0
                 )
                 # number of generators that are not reduced
-                num_ur = np.floor(self.dim * (order - 1)).astype(dtype=int)
+                num_ur = np.floor(self.dim * (self.ORDER - 1)).astype(dtype=int)
                 # number of generators that are reduced
                 num_r = self.gen_num - num_ur
 
@@ -303,10 +307,10 @@ class Zonotope(Geometry.Base):
         else:
             raise NotImplementedError
 
-    def reduce(self, method: MethodReduce, order: int):
-        def __reduce_girard(ord: int):
+    def reduce(self):
+        def __reduce_girard():
             # pick generators to reduce
-            gur, gr = self._picked_gen(ord)
+            gur, gr = self._picked_gen()
             # box remaining generators
             d = np.sum(abs(gr), axis=1)
             d[abs(d) < 0] = 0
@@ -314,8 +318,8 @@ class Zonotope(Geometry.Base):
             # build reduced zonotope
             return Zonotope(self.c, np.hstack([gur, gb]))
 
-        if method == Zonotope.MethodReduce.GIRARD:
-            return __reduce_girard(order)
+        if self.REDUCE_METHOD == Zonotope.METHOD.REDUCE.GIRARD:
+            return __reduce_girard()
         else:
             raise NotImplementedError
 

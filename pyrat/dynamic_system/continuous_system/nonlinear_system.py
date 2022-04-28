@@ -1,88 +1,76 @@
 from __future__ import annotations
 
+from abc import abstractmethod
 from dataclasses import dataclass
-
 import numpy as np
-from enum import IntEnum
-import sympy
-from scipy.special import factorial
-from sympy import lambdify, derive_by_array
-
-from pyrat.geometry import Geometry, Zonotope, Interval, IntervalMatrix, cvt2
-from pyrat.misc import Reachable, Simulation
+from sympy import derive_by_array, ImmutableDenseNDimArray, lambdify
 from pyrat.model import Model
-
-# from .continuous_system import ContSys, Option, RunTime
-from continuous_system import Entity, Option
+from pyrat.geometry import Geometry, Interval, IntervalMatrix, Zonotope, cvt2
+from pyrat.misc import Reachable, Set
+from .continuous_system import ContSys
 from .linear_system import LinSys
+from enum import IntEnum
+
+
+class ALGORITHM(IntEnum):
+    LINEAR = 1
+    POLYNOMIAL = 2
 
 
 class NonLinSys:
-    @dataclass
-    class OptionOld(Option):
-        algo: str = "standard"
-        taylor_terms: int = 0
-        lagrange_rem = {}
-        factors: np.ndarray = None
-        u_trans: np.ndarray = None
-        zonotope_order: int = 50
-        reduction_method: str = Zonotope.MethodReduce.GIRARD
-        tensor_order = 2
-        max_err: np.ndarray = None
-
-        def validate(self, dim) -> bool:
-            assert self.steps >= 1
-            if self.max_err is None:
-                self.max_err = np.full(dim, np.inf)
-            if self.step_size is None:
-                self.step_size = (self.t_end - self.t_start) / (self.steps - 1)
-
-            #  TODO
-            return True
-
-    @dataclass
-    class RunTime(RunTime):
-        step: int = 0
-        # TODO
-
     class Option:
-        class ALGORITHM(IntEnum):
-            LINEAR = 0
-            POLYNOMIAL = 1
+        @dataclass
+        class Base(ContSys.Option.Base):
+            algorithm: ALGORITHM = ALGORITHM.LINEAR
+            tensor_order: int = 2
+            u_trans: np.ndarray = None
+            factors: np.ndarray = None
+            max_err: np.ndarray = None
 
-        class __Base(Option.Base):
-            algorithm: NonLinSys.ALGORITHM = None
+            def _validate_misc(self, dim: int):
+                assert self.tensor_order == 2 or self.tensor_order == 3  # only 2/3
+                if self.max_err is None:
+                    self.max_err = np.full(dim, np.inf)
+                return True
 
-            def validate(self) -> bool:
-                raise NotImplementedError  # TODO
+            @abstractmethod
+            def validation(self, dim: int):
+                return NotImplemented
 
-        class Linear(__Base):
-            algorithm = ALGORITHM.LINEAR
+        @dataclass
+        class Linear(Base):
+            # runtime variables
+            px = None
+            pu = None
+            lin_err_px = None
+            lin_err_pu = None
+            lin_err_f0 = None
 
-            def validate(self):
-                raise NotImplementedError  # TODO
+            def validation(self, dim: int):
+                assert self._validate_time_related()
+                assert self._validate_inputs()
+                assert self._validate_misc(dim)
+                return True
 
-    class Sys(ContSys.Entity):
+        @dataclass
+        class Polynomial(Base):
+            tensor_order: int = 3
+
+            def validation(self, dim: int):
+                assert self._validate_time_related()
+                assert self._validate_inputs()
+                assert self._validate_misc(dim)
+                return True
+
+    class Entity(ContSys.Entity):
         def __init__(self, model: Model):
             assert 1 <= len(model.vars) <= 2  # only support f(x) or f(x,u) as input
             self._model = model
-            self._run_time = RunTime()
             self._jaco = None
             self._hess = None
-            self._post_init()
+            self.__init_symbolic()  # init symbolic jacobian and hessian
 
-        # =============================================== operator
-        def __str__(self):
-            raise NotImplementedError
-
-        # =============================================== property
-        @property
-        def dim(self) -> int:
-            return self._model.dim
-
-        # =============================================== private method
-
-        def _post_init(self):
+        def __init_symbolic(self):
             def _take_derivative(f, x):
                 d = np.asarray(derive_by_array(f, x))
                 return np.moveaxis(d, 0, -2)
@@ -93,8 +81,8 @@ class NonLinSys:
                 h = _take_derivative(j, var)
                 j = j.squeeze(axis=-1)
                 h = h.squeeze(axis=-1)
-                self._jaco.append(sympy.ImmutableDenseNDimArray(j))
-                self._hess.append(sympy.ImmutableDenseNDimArray(h))
+                self._jaco.append(ImmutableDenseNDimArray(j))
+                self._hess.append(ImmutableDenseNDimArray(h))
 
         def _evaluate(self, xs: tuple, mod: str = "numpy"):
             f = lambdify(self._model.vars, self._model.f, mod)
@@ -129,66 +117,48 @@ class NonLinSys:
 
             return [_eval_hessian_interval(h) for h in self._hess]
 
-        # ------------------------------------------------------------------------------
+        def __str__(self):
+            raise NotImplementedError
 
-        def _linearize(
-            self, op: NonLinSys.OptionOld, r: Geometry.Base
-        ) -> (LinSys.Sys, LinSys.Option):
-            # linearization point p.u of the input is the center of the input set
-            p = {"u": op.u_trans} if op.u is not None else {}
-            # linearization point p.x of the state is the center of the last reachable
-            # set R translated by 0.5*delta_t*f0
-            f0_pre = self._evaluate((r.c, p["u"]))
-            p["x"] = r.c + f0_pre * 0.5 * op.step_size
-            # substitute p into the system equation to obtain the constraint input
-            f0 = self._evaluate((p["x"], p["u"]))
-            # substitute p into the jacobian with respect to x and u to obtain the
-            # system matrix A and the input matrix B
-            a, b = self._jacobian((p["x"], p["u"]))
-            assert not (np.any(np.isnan(a)) or np.any(np.isnan(b)))
-            # set up linearized system
-            lin_sys = LinSys.Sys(xa=a)
-            # set up options for linearized system
-            # ---------------------------------------
-            lin_op = LinSys.Option()  # TODO update values inside this linear option
-            lin_op.u_trans = op.u_trans
-            lin_op.taylor_terms = op.taylor_terms
-            lin_op.factors = op.factors
-            lin_op.step_size = op.step_size
-            lin_op.zonotope_order = op.zonotope_order
-            lin_op.cur_t = op.cur_t
-            # --------------------------------------- # TODO shall refine this part, like unify the option???
-            lin_op.u = b @ (op.u + lin_op.u_trans - p["u"])
+        @property
+        def dim(self):
+            return self._model.dim
+
+        def __linearize(self, r: Geometry.Base, option: NonLinSys.Option.Linear):
+            option.lin_err_pu = option.u_trans if option.u is not None else None
+            f0_pre = self._evaluate((r.c, option.lin_err_pu))
+            option.lin_err_px = r.c + f0_pre * 0.5 * option.step_size
+            option.lin_err_f0 = self._evaluate((option.lin_err_px, option.lin_err_pu))
+            a, b = self._jacobian((option.lin_err_px, option.lin_err_pu))
+            assert not (np.any(np.isnan(a))) or np.any(np.isnan(b))
+            lin_sys = LinSys.Entity(xa=a)
+            lin_op = LinSys.Option.Euclidean(
+                u_trans=option.u_trans,
+                step_size=option.step_size,
+                taylor_terms=option.taylor_terms,
+                factors=option.factors,
+            )
+
+            lin_op.u = b @ (option.u + lin_op.u_trans - option.lin_err_pu)
             lin_op.u -= lin_op.u.c
             lin_op.u_trans = Zonotope(
-                f0 + lin_op.u.c, np.zeros((f0.shape[0], 1), dtype=float)
+                option.lin_err_f0 + lin_op.u.c,
+                np.zeros((option.lin_err_f0.shape[0], 1)),
             )
-            lin_op.origin_contained = False
-            # save constant input
-            self._run_time.lin_err_f0 = f0
-            self._run_time.lin_err_p = p
             return lin_sys, lin_op
 
-        def _abst_err_lin(
-            self, op: NonLinSys.OptionOld, r: Geometry
-        ) -> (Interval, Zonotope):
-            """
-            computes the abstraction error for linearization approach to enter
-            :param op:
-            :param r:
-            :return:
-            """
+        def __abstract_err_lin(self, r: Geometry.Base, option: NonLinSys.Option.Linear):
             # compute interval of reachable set
             ihx = cvt2(r, Geometry.TYPE.INTERVAL)
             # compute intervals of total reachable set
-            total_int_x = ihx + self._run_time.lin_err_p["x"]
+            total_int_x = ihx + option.lin_err_px
 
             # compute intervals of input
-            ihu = cvt2(op.u, Geometry.TYPE.INTERVAL)
+            ihu = cvt2(option.u, Geometry.TYPE.INTERVAL)
             # translate intervals by linearization point
-            total_int_u = ihu + self._run_time.lin_err_p["u"]
+            total_int_u = ihu + option.lin_err_pu
 
-            if op.tensor_order == 2:
+            if option.tensor_order == 2:
                 # obtain maximum absolute values within ihx, ihu
                 dx = np.maximum(abs(ihx.inf), abs(ihx.sup))
                 du = np.maximum(abs(ihu.inf), abs(ihu.sup))
@@ -199,176 +169,100 @@ class NonLinSys:
                 )
 
                 # calculate the Lagrange remainder (second-order error)
-                err_lagr = np.zeros(self.dim, dtype=float)
+                err_lagrange = np.zeros(self.dim, dtype=float)
 
                 for i in range(self.dim):
                     abs_hx, abs_hu = abs(hx[i]), abs(hu[i])
                     hx_ = np.maximum(abs_hx.inf, abs_hx.sup)
                     hu_ = np.maximum(abs_hu.inf, abs_hu.sup)
-                    err_lagr[i] = 0.5 * (dx @ hx_ @ dx + du @ hu_ @ du)
+                    err_lagrange[i] = 0.5 * (dx @ hx_ @ dx + du @ hu_ @ du)
 
-                v_err_dyn = Zonotope(0 * err_lagr.reshape(-1), np.diag(err_lagr))
-                return err_lagr, v_err_dyn
-            elif op.tensor_order == 3:
+                v_err_dyn = Zonotope(
+                    0 * err_lagrange.reshape(-1), np.diag(err_lagrange)
+                )
+                return err_lagrange, v_err_dyn
+            elif option.tensor_order == 3:
                 raise NotImplementedError  # TODO
             else:
                 raise Exception("unsupported tensor order")
 
-        def _lin_reach(self, r_init: Reachable.Element, op: NonLinSys.OptionOld):
-            # linearize the nonlinear system
-            lin_sys, lin_op = self._linearize(op, r_init.set)
-            # translate r_init by linearization point
-            r_delta = r_init.set + (-self._run_time.lin_err_p["x"])
-            # compute reachable set of linearized  system
-            r, _ = lin_sys.reach_init(r_delta, lin_op)
+        def __linear_reach(self, r: Set, option):
+            lin_sys, lin_op = self.__linearize(r.geo, option)
+            r_delta = r.geo - option.lin_err_px
+            r_ti, r_tp = lin_sys.reach_init(r_delta, lin_op)
+            perf_ind_cur, perf_ind = np.inf, 0
+            applied_err, abstract_err, v_err_dyn = None, r.err, None
 
-            # compute reachable set of the abstracted system including the abstraction
-            # error using the selected algorithm
+            while perf_ind_cur > 1 and perf_ind <= 1:
+                # estimate the abstraction error
+                applied_err = 1.1 * abstract_err
+                v_err = Zonotope(0 * applied_err, np.diag(applied_err))
+                r_all_err = lin_sys.error_solution(lin_op, v_err)
 
-            if op.algo == "lin_rem":
-                raise NotImplementedError
-            else:
-                # loop until the actual abstraction error is smaller than the estimated
-                # linearization error
-                r_tp, r_ti = r.tp, r.ti
-                perf_ind_cur, perf_ind = np.inf, 0
-                applied_err, abstr_err, v_err_dyn = None, r_init.err, None
+                # compute the abstraction error using the conservative linearization
+                # approach described in [1]
+                if option.algorithm == ALGORITHM.LINEAR:
+                    # compute overall reachable set including linearization error
+                    r_max = r_ti + r_all_err
+                    # compute linearization error
+                    true_err, v_err_dyn = self.__abstract_err_lin(r_max, option)
+                elif option.algorithm == ALGORITHM.POLYNOMIAL:
+                    raise NotImplementedError
+                else:
+                    raise NotImplementedError
 
-                while perf_ind_cur > 1 and perf_ind <= 1:
-                    # estimate the abstraction error
-                    applied_err = 1.1 * abstr_err
-                    v_err = Zonotope(0 * applied_err, np.diag(applied_err))
-                    r_all_err = lin_sys.error_solution(lin_op, v_err)
+                # compare linearization error with the maximum allowed error
+                perf_ind_cur = np.max(true_err / applied_err)
+                perf_ind = np.max(true_err / option.max_err)
+                abstract_err = true_err
+            # translate reachable sets by linearization point
+            r_ti += option.lin_err_px
+            r_tp += option.lin_err_px
 
-                    # compute the abstraction error using the conservative linearization
-                    # approach described in [1]
-                    if op.algo == "lin":
-                        # compute overall reachable set including linearization error
-                        r_max = r_ti + r_all_err
-                        # compute linearization error
-                        true_err, v_err_dyn = self._abst_err_lin(op, r_max)
-                    else:
-                        raise NotImplementedError  # TODO
+            # compute the reachable set due to the linearization error
+            r_err = lin_sys.error_solution(lin_op, v_err_dyn)
 
-                    # compare linearization error with the maximum allowed error
-                    perf_ind_cur = np.max(true_err / applied_err)
-                    perf_ind = np.max(true_err / op.max_err)
-                    abstr_err = true_err
-
-                # translate reachable sets by linearization point
-                r_ti += self._run_time.lin_err_p["x"]
-                r_tp += self._run_time.lin_err_p["x"]
-
-                # compute the reachable set due to the linearization error
-                r_err = lin_sys.error_solution(lin_op, v_err_dyn)
-
-                # add the abstraction error to the reachable sets
-                r_ti += r_err
-                r_tp += r_err
+            # add the abstraction error to the reachable sets
+            r_ti += r_err
+            r_tp += r_err
             # determine the best dimension to split the set in order to reduce the
             # linearization error
             dim_for_split = []
             if perf_ind > 1:
                 raise NotImplementedError  # TODO
             # store the linearization error
-            return r_ti, Reachable.Element(r_tp, abstr_err), dim_for_split
+            return r_ti, Set(r_tp, abstract_err), dim_for_split
 
-        def _post(self, r: [Reachable.Element], op: NonLinSys.OptionOld):
-            """
-            computes the reachable continuous set for one time step of a nonlinear system
-            by over approximate linearization
-            :param r:
-            :param op:
-            :return:
-            """
-
-            next_ti, next_tp, next_r0 = self._reach_init(r, op)
-
-            # reduce zonotopes
-            for i in range(len(next_tp)):
-                if not next_tp[i].set.is_empty:
-                    next_tp[i].set.reduce(op.reduction_method, op.zonotope_order)
-                    next_ti[i].reduce(op.reduction_method, op.zonotope_order)
-
-            # delete redundant reachable sets
-            # TODO
-
-            return next_ti, next_tp, next_r0
-
-        def _reach_init(
-            self, r_init: [Reachable.Element], op: NonLinSys.OptionOld
-        ) -> ([Geometry], [Reachable.Element], [Reachable.Element]):
-            # loop over all parallel initial sets
-            r_ti, r_tp, r0 = [], [], []
-            for i in range(len(r_init)):
-                temp_r_ti, temp_r_tp, dim_for_split = self._lin_reach(r_init[i], op)
-
+        def __reach_init(self, r0: [Set], option):
+            r_ti, r_tp, r = [], [], []
+            for i in range(len(r0)):
+                temp_r_ti, temp_r_tp, dims = self.__linear_reach(r0[i], option)
                 # check if initial set has to be split
-                if len(dim_for_split) <= 0:
+                if len(dims) <= 0:
                     r_tp.append(temp_r_tp)
-                    r_tp[-1].pre = i
                     r_ti.append(temp_r_ti)
-                    r0.append(r_init[i])
+                    r.append(r0[i])
                 else:
                     raise NotImplementedError  # TODO
 
-            # store the result
-            return r_ti, r_tp, r0
+                # store the result
+            return r_ti, r_tp, r
 
-        def _reach_over_standard(self, op: NonLinSys.OptionOld) -> Reachable.Result:
-            # obtain factors for initial state and input solution time step
-            i = np.arange(1, op.taylor_terms + 2)
-            op.factors = np.power(op.step_size, i) / factorial(i)
-            # set current time
-            op.cur_t = op.t_start
-            # init containers for storing the results
-            ti_set, ti_time, tp_set, tp_time = [], [], [], []
+        def __post(self, r: [Set], option: NonLinSys.Option.Base):
+            next_ti, next_tp, next_r0 = self.__reach_init(r, option)
 
-            # init reachable set computation
-            next_ti, next_tp, next_r0 = self._reach_init(op.r_init, op)
+            for i in range(len(next_tp)):
+                if not next_tp[i].geo.is_empty:
+                    next_tp[i].geo.reduce()
+                    next_ti[i].reduce()
 
-            time_pts = np.linspace(op.t_start, op.t_end, op.steps, endpoint=True)
+            return next_ti, next_tp, next_r0
 
-            # loop over all reachability steps
-            for i in range(op.steps - 1):
-                # save reachable set
-                ti_set.append(next_ti)
-                ti_time.append(time_pts[i : i + 2])
-                tp_set.append(next_tp)
-                tp_time.append(time_pts[i + 1])
-
-                # check specification
-                if op.specs is not None:
-                    raise NotImplementedError  # TODO
-
-                # increment time
-                op.cur_t = time_pts[i + 1]
-
-                # compute next reachable set
-                next_ti, next_tp, next_r0 = self._post(next_tp, op)
-
-            # check specification
-            if op.specs is not None:
+        def reach(self, option: NonLinSys.Option.Base):
+            assert option.validation(self.dim)  # ensure valid options
+            if option.algorithm == ALGORITHM.LINEAR:
+                return self.__reach_over_linear(option)
+            elif option.algorithm == ALGORITHM.POLYNOMIAL:
                 raise NotImplementedError
-
-            # save the last reachable set in cell structure
-            return Reachable.Result(
-                ti_set, tp_set, np.vstack(ti_time), np.array(tp_time)
-            )
-
-        def _reach_over_poly(self, op: NonLinSys.OptionOld) -> Reachable.Result:
-            raise NotImplementedError  # TODO
-
-            # =============================================== public method
-
-        def reach(self, op: NonLinSys.OptionOld) -> Reachable.Result:
-            assert op.validate(self.dim)
-            if op.algo == "lin":
-                return self._reach_over_standard(op)
-            elif op.algo == "poly":
-                return self._reach_over_poly(op)
             else:
                 raise NotImplementedError
-
-        def simulate(self, op: NonLinSys.OptionOld) -> Simulation.Result:
-            raise NotImplementedError

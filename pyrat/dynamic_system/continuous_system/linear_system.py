@@ -1,36 +1,58 @@
 from __future__ import annotations
-
-import copy
-from dataclasses import dataclass
-
+from abc import ABC, abstractmethod
 import numpy as np
+from enum import IntEnum
+from .continuous_system import ContSys
+from pyrat.model import Model
+from pyrat.misc import Set
+from pyrat.geometry import Geometry, IntervalMatrix, Zonotope, cvt2
+from dataclasses import dataclass
 from scipy.linalg import expm
 
-from pyrat.geometry import Geometry, Interval, IntervalMatrix, Zonotope, cvt2
-from pyrat.misc import Reachable, Simulation
-from .continuous_system import ContSys, Option
+
+class ALGORITHM(IntEnum):
+    EUCLIDEAN = 0
+    KRYLOV = 1
 
 
 class LinSys:
-    @dataclass
-    class Option(Option):
-        algo: str = "euclidean"
-        origin_contained: bool = False
-        taylor_terms = 0
-        factors: np.ndarray = None
-        is_rv: bool = False
-        reduction_method: str = Zonotope.MethodReduce.GIRARD
-        zonotope_order: int = 50
-        rhom: Geometry.Base = None
-        rhom_tp: Geometry.Base = None
-        rv: Geometry.Base = None
-        r_par: Geometry.Base = None
-        r_trans: Geometry.Base = None
+    class Option:
+        @dataclass
+        class Base(ContSys.Option.Base):
+            algorithm: ALGORITHM = ALGORITHM.EUCLIDEAN
+            u_trans: np.ndarray = None
+            factors: np.ndarray = None
 
-        def validate(self) -> bool:
-            raise NotImplementedError
+            @abstractmethod
+            def validation(self):
+                return NotImplemented
 
-    class Sys(ContSys):
+        @dataclass
+        class Euclidean(Base):
+            taylor_powers = None
+            taylor_err = None
+            taylor_f = None
+            taylor_input_f = None
+            taylor_v = None
+            taylor_rv = None
+            taylor_r_trans = None
+            taylor_input_corr = None
+            taylor_ea_int = None
+            taylor_ea_t = None
+            is_rv = None
+            origin_contained = None
+
+            def validation(self):
+                # TODO
+                return False
+
+        @dataclass
+        class KRYLOV(Base):
+            def validation(self):
+                # TODO
+                return False
+
+    class Entity(ContSys.Entity):
         def __init__(
             self,
             xa,
@@ -46,92 +68,76 @@ class LinSys:
             self._xc = xc
             self._ud = ud
             self._k = k
-            self._taylor = {}
 
-        # =============================================== operator
-        def __str__(self):
-            raise NotImplementedError
-
-        # =============================================== property
         @property
         def dim(self) -> int:
             return self._xa.shape[1]
 
-        # =============================================== private method
-        def _exponential(self, op: LinSys.Option):
+        def __str__(self):
+            raise NotImplementedError
+
+        def __exponential(self, option: LinSys.Option.Euclidean):
             xa_abs = abs(self._xa)
             xa_power = [self._xa]
             xa_power_abs = [xa_abs]
             m = np.eye(self.dim, dtype=float)
             # compute powers for each term and sum of these
-            for i in range(op.taylor_terms):
+            for i in range(option.taylor_terms):
                 # compute powers
                 xa_power.append(xa_power[i] @ self._xa)
                 xa_power_abs.append(xa_power_abs[i] @ xa_abs)
-                m += xa_power_abs[i] * op.factors[i]
+                m += xa_power_abs[i] * option.factors[i]
             # determine error due the finite taylor series, see Prop.(2) in [1]
-            w = expm(xa_abs * op.step_size) - m
+            w = expm(xa_abs * option.step_size) - m
             # compute absolute value of w for numerical stability
             w = abs(w)
             e = IntervalMatrix(-w, w)
             # write to object structure
-            self._taylor["powers"] = xa_power
-            self._taylor["err"] = e
+            option.taylor_powers = xa_power
+            option.taylor_err = e
 
-        def _computer_time_interval_err(self, op: LinSys.Option):
-            xa_power = self._taylor["powers"]
-            rby_fac = op.factors
-            dim = self.dim
+        def __compute_time_interval_err(self, option: LinSys.Option.Euclidean):
             # initialize asum
-            asum_pos = np.zeros((dim, dim), dtype=float)
-            asum_neg = np.zeros((dim, dim), dtype=float)
+            asum_pos = np.zeros((self.dim, self.dim), dtype=float)
+            asum_neg = np.zeros((self.dim, self.dim), dtype=float)
 
-            for i in range(1, op.taylor_terms):
+            for i in range(1, option.taylor_terms):
                 # compute factor
                 exp1, exp2 = -(i + 1) / i, -1 / i
-                factor = ((i + 1) ** exp1 - (i + 1) ** exp2) * rby_fac[i]
+                factor = ((i + 1) ** exp1 - (i + 1) ** exp2) * option.factors[i]
                 # init apos, aneg
-                apos = np.zeros((dim, dim), dtype=float)
-                aneg = np.zeros((dim, dim), dtype=float)
+                apos = np.zeros((self.dim, self.dim), dtype=float)
+                aneg = np.zeros((self.dim, self.dim), dtype=float)
                 # obtain positive and negative parts
-                pos_ind = xa_power[i] > 0
-                neg_ind = xa_power[i] < 0
-                apos[pos_ind] = xa_power[i][pos_ind]
-                aneg[neg_ind] = xa_power[i][neg_ind]
+                pos_ind = option.taylor_powers[i] > 0
+                neg_ind = option.taylor_powers[i] < 0
+                apos[pos_ind] = option.taylor_powers[i][pos_ind]
+                aneg[neg_ind] = option.taylor_powers[i][neg_ind]
                 # compute powers; factor is always negative
                 asum_pos += factor * aneg
                 asum_neg += factor * apos
             # instantiate interval matrix
             asum = IntervalMatrix(asum_neg, asum_pos)
             # write to object structure
-            self._taylor["F"] = asum + self._taylor["err"]
+            option.taylor_f = asum + option.taylor_err
 
-        def _input_tie(self, op: LinSys.Option):
-            """
-            time interval error; computes the error done by the linear assumption of the
-            constant input solution
-            :param op: options for the computation
-            :return:
-            """
-
-            xa_power = self._taylor["powers"]
-            dim = self.dim
+        def __input_tie(self, option: LinSys.Option.Euclidean):
             # initialize asum
-            asum_pos = np.zeros((dim, dim), dtype=float)
-            asum_neg = np.zeros((dim, dim), dtype=float)
+            asum_pos = np.zeros((self.dim, self.dim), dtype=float)
+            asum_neg = np.zeros((self.dim, self.dim), dtype=float)
 
-            for i in range(1, op.taylor_terms + 1):
+            for i in range(1, option.taylor_terms + 1):
                 # compute factor
                 exp1, exp2 = -(i + 1) / i, -1 / i
-                factor = ((i + 1) ** exp1 - (i + 1) ** exp2) * op.factors[i]
+                factor = ((i + 1) ** exp1 - (i + 1) ** exp2) * option.factors[i]
                 # init apos, aneg
-                apos = np.zeros((dim, dim), dtype=float)
-                aneg = np.zeros((dim, dim), dtype=float)
+                apos = np.zeros((self.dim, self.dim), dtype=float)
+                aneg = np.zeros((self.dim, self.dim), dtype=float)
                 # obtain positive and negative parts
-                pos_ind = xa_power[i - 1] > 0
-                neg_ind = xa_power[i - 1] < 0
-                apos[pos_ind] = xa_power[i - 1][pos_ind]
-                aneg[neg_ind] = xa_power[i - 1][neg_ind]
+                pos_ind = option.taylor_powers[i - 1] > 0
+                neg_ind = option.taylor_powers[i - 1] < 0
+                apos[pos_ind] = option.taylor_powers[i - 1][pos_ind]
+                aneg[neg_ind] = option.taylor_powers[i - 1][neg_ind]
                 # compute powers; factor is always negative
                 asum_pos += factor * aneg
                 asum_neg += factor * apos
@@ -139,150 +145,107 @@ class LinSys:
             asum = IntervalMatrix(asum_neg, asum_pos)
             # compute error due to finite taylor series according to interval document
             # "Input Error Bounds in Reachability Analysis"
-            e_input = self._taylor["err"] * op.step_size
+            e_input = option.taylor_err * option.step_size
             # write to object structure
-            self._taylor["input_f"] = asum + e_input
+            option.taylor_input_f = asum + e_input
 
-        def _input_solution(self, op: LinSys.Option):
-            """
-            compute the bloating due to the input
-            :param op: options for the linear reachable computation
-            :return:
-            """
-            v = op.u if self._ub is None else self._ub @ op.u
+        def __input_solution(self, option: LinSys.Option.Euclidean):
+            v = option.u if self._ub is None else self._ub @ option.u
             # compute vTrans
-            op.is_rv = True
+            option.is_rv = True
             if np.all(v.c == 0) and v.z.shape[1] == 1:
-                op.is_rv = False
-            v_trans = op.u_trans if self._ub is None else self._ub @ op.u
+                option.is_rv = False
+            v_trans = option.u_trans if self._ub is None else self._ub @ option.u
 
             input_solv, input_corr = None, None
-            if op.is_rv:
+            if option.is_rv:
                 # init v_sum
-                v_sum = op.step_size * v
-                a_sum = op.step_size * np.eye(self.dim)
+                v_sum = option.step_size * v
+                a_sum = option.step_size * np.eye(self.dim)
                 # compute higher order terms
-                for i in range(op.taylor_terms):
-                    v_sum += self._taylor["powers"][i] @ (op.factors[i + 1] * v)
-                    a_sum += self._taylor["powers"][i] * op.factors[i + 1]
+                for i in range(option.taylor_terms):
+                    v_sum += option.taylor_powers[i] @ (option.factors[i + 1] * v)
+                    a_sum += option.taylor_powers[i] * option.factors[i + 1]
 
                 # compute overall solution
-                input_solv = v_sum + self._taylor["err"] * op.step_size * v
+                input_solv = v_sum + option.taylor_err * option.step_size * v
             else:
                 # only a_sum, since v == origin(0)
-                a_sum = op.step_size * np.eye(self.dim)
+                a_sum = option.step_size * np.eye(self.dim)
                 # compute higher order terms
-                for i in range(op.taylor_terms):
+                for i in range(option.taylor_terms):
                     # compute sum
-                    a_sum += self._taylor["powers"][i] * op.factors[i + 1]
+                    a_sum += option.taylor_powers[i] * option.factors[i + 1]
 
             # compute solution due to constant input
-            ea_int = a_sum + self._taylor["err"] * op.step_size
+            ea_int = a_sum + option.taylor_err * option.step_size
             input_solv_trans = ea_int * cvt2(v_trans, Geometry.TYPE.ZONOTOPE)
             # compute additional uncertainty if origin is not contained in input set
-            if op.origin_contained:
+            if option.origin_contained:
                 raise NotImplementedError  # TODO
             else:
                 # compute inputF
-                self._input_tie(op)
-                input_corr = self._taylor["input_f"] * cvt2(
+                self.__input_tie(option)
+                input_corr = option.taylor_input_f * cvt2(
                     v_trans, Geometry.TYPE.ZONOTOPE
                 )
 
             # write to object structure
-            self._taylor["v"] = v
-            if op.is_rv and input_solv.z.sum().astype(bool):  # need refine ???
-                self._taylor["rv"] = input_solv
+            option.taylor_v = v
+            if option.is_rv and input_solv.z.sum().astype(bool):  # need refine ???
+                option.taylor_rv = input_solv
             else:
-                self._taylor["rv"] = Zonotope(
-                    np.zeros(self.dim), np.zeros((self.dim, 0))
-                )
+                option.taylor_rv = Zonotope.zero(self.dim)
 
             if input_solv_trans.z.sum().astype(bool):
-                self._taylor["r_trans"] = input_solv_trans
+                option.taylor_r_trans = input_solv_trans
             else:
-                self._taylor["rv"] = Zonotope(
-                    np.zeros(self.dim), np.zeros((self.dim, 0))
-                )
+                option.taylor_rv = Zonotope.zero(self.dim)
 
-            self._taylor["input_corr"] = input_corr
-            self._taylor["ea_int"] = ea_int
+            option.taylor_input_corr = input_corr
+            option.taylor_ea_int = ea_int
 
-        def _reach_init_euclidean(self, r: Geometry.Base, op: LinSys.Option):
-            # compute exponential matrix
-            self._exponential(op)
-            # compute time interval error
-            self._computer_time_interval_err(op)
-            # compute reachable set due to input
-            self._input_solution(op)
+        def __reach_init_euclidean(
+            self, r: Geometry.Base, option: LinSys.Option.Euclidean
+        ):
+            self.__exponential(option)
+            self.__compute_time_interval_err(option)
+            self.__input_solution(option)
+            option.taylor_ea_t = expm(self._xa * option.step_size)
+            rhom_tp = option.taylor_ea_t @ r + option.taylor_r_trans
+            rhom = r.enclose(rhom_tp) + option.taylor_f * r + option.taylor_input_corr
+            rhom = rhom.reduce()
+            rhom_tp = rhom_tp.reduce()
+            rv = option.taylor_rv.reduce()
 
-            # compute reachable set of first time interval
-            self._taylor["ea_t"] = expm(self._xa * op.step_size)
-
-            r_trans = self._taylor["r_trans"]
-
-            # first time step homogeneous solution
-            rhom_tp = self._taylor["ea_t"] @ r + r_trans
-            rhom = (
-                r.enclose(rhom_tp) + self._taylor["F"] * r + self._taylor["input_corr"]
-            )
-
-            # reduce zonotope
-            rhom = rhom.reduce(op.reduction_method, op.zonotope_order)
-
-            rhom_tp = rhom_tp.reduce(op.reduction_method, op.zonotope_order)
-            rv = self._taylor["rv"].reduce(op.reduction_method, op.zonotope_order)
-
-            # save homogeneous and particulate solution
-            ret_op = copy.deepcopy(op)
-            ret_op.rhom = rhom
-            ret_op.rhom_tp = rhom_tp
-            ret_op.r_aux = rv
-            ret_op.r_par = rv
-            ret_op.r_trans = self._taylor["r_trans"]
-
-            # total solution
-            r_total = rhom + rv
+            r_total_ti = rhom + rv
             r_total_tp = rhom_tp + rv
 
-            # write results to reachable set struct r_first
-            r = Reachable.Result(r_total, r_total_tp)
-            return r, ret_op
+            return r_total_ti, r_total_tp
 
-        # =============================================== public method
-        def error_solution(self, op: LinSys.Option, v_dyn: Geometry.Base, v_stat=None):
-            """
-            computes teh solution due to the linearization error
-            :param op: options for the computation
-            :param v_dyn: set of admissible errors (dynamic)
-            :return:
-            """
-            err_stat = (
-                0 if v_stat is None else self._taylor["ea_int"] * v_stat
-            )  # possible matrix multiplication
-            # init asum
-            asum = op.step_size * v_dyn
+        def error_solution(
+            self, option: LinSys.Option.Euclidean, v_dyn: Geometry.Base, v_stat=None
+        ):
+            err_stat = 0 if v_stat is None else option.taylor_ea_int * v_stat
+            asum = option.step_size * v_dyn
 
-            for i in range(op.taylor_terms):
+            for i in range(option.taylor_terms):
                 # compute powers
-                asum += op.factors[i + 1] * self._taylor["powers"][i] @ v_dyn
+                asum += option.factors[i + 1] * option.taylor_powers[i] @ v_dyn
 
             # get error due to finite taylor series
-            f = self._taylor["err"] * v_dyn * op.step_size
+            f = option.taylor_err * v_dyn * option.step_size
 
             # compute error solution (dyn + stat)
             return asum + f + err_stat
 
-        def reach_init(self, r_init: Geometry.Base, op: LinSys.Option):
-            if op.algo == "euclidean":
-                return self._reach_init_euclidean(r_init, op)
+        def reach_init(self, r0: [Set], option):
+            if option.algorithm == ALGORITHM.EUCLIDEAN:
+                return self.__reach_init_euclidean(r0, option)
+            elif option.algorithm == ALGORITHM.KRYLOV:
+                raise NotImplementedError
             else:
                 raise NotImplementedError
 
-        def reach(self, op: LinSys.Option) -> Reachable.Result:
-            assert op.validate()
-
-            raise NotImplementedError
-
-        def simulate(self, op) -> Simulation.Result:
+        def reach(self, option: ContSys.Option.Base):
             raise NotImplementedError
