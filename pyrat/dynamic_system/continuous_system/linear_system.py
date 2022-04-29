@@ -223,6 +223,29 @@ class LinSys:
 
             return r_total_ti, r_total_tp
 
+        def delta_reach(self, r: Geometry.Base, option: LinSys.Option.Euclidean):
+            rhom_tp_delta = (
+                option.taylor_ea_t - np.eye(self.dim)
+            ) @ r + option.taylor_r_trans
+
+            if r.type == Geometry.TYPE.ZONOTOPE:
+                o = Zonotope.zero(self.dim, 0)
+                rhom = (
+                    o.enclose(rhom_tp_delta)
+                    + option.taylor_f * r
+                    + option.taylor_input_corr
+                )
+            elif r.type == Geometry.TYPE.POLY_ZONOTOPE:
+                raise NotImplementedError
+            else:
+                raise NotImplementedError
+            # reduce zonotope
+            rhom = rhom.reduce()
+            rv = option.taylor_rv.reduce()
+
+            # final result
+            return rhom + rv
+
         def error_solution(
             self, option: LinSys.Option.Euclidean, v_dyn: Geometry.Base, v_stat=None
         ):

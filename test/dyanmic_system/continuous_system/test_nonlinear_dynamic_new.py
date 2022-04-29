@@ -11,10 +11,10 @@ def test_tank6Eq():
 
     # setting for the computation
     option = NonLinSys.Option.Linear()
-    option.t_end = 400
-    option.steps = 400
+    option.t_end = 800
+    option.steps = 150
     option.tensor_order = 2
-    option.r0 = [Zonotope([2, 4, 4, 2, 10, 4], np.eye(6) * 0.2)]
+    option.r0 = [Zonotope([2, 4, 4, 2, 10, 4], np.eye(6) * 0)]
     option.u = Zonotope([0], [[0.005]])
     option.u_trans = np.zeros(1)
     option.taylor_terms = 4

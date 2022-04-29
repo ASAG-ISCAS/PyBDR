@@ -6,9 +6,11 @@ from enum import IntEnum
 
 import numpy as np
 from scipy.special import factorial
+from sympy import derive_by_array, ImmutableDenseNDimArray, lambdify
 
-from pyrat.geometry import Geometry
+from pyrat.geometry import Geometry, Zonotope, cvt2, Interval, IntervalMatrix
 from pyrat.misc import Set, Reachable
+from pyrat.model import Model
 
 
 class ContSys:
@@ -46,8 +48,82 @@ class ContSys:
                 raise NotImplementedError
 
     class Entity(ABC):
-        def __init__(self):
-            raise NotImplementedError
+        def __init__(self, model: Model):
+            assert 1 <= len(model.vars) <= 2  # f(x) may be a good alternative
+            self._model = model
+            self._jaco = None
+            self._hess = None
+            self._series = {0: {"symbolic": self._model.f}}  # f^{0}(x) = f(x)
+            self.__init_symbolic()
+
+        # =====================================================================
+        def __evaluate(self, xs: tuple, order: int, mod: str):
+            def __take_derivative(d: int):
+                if order - 1 not in self._series:
+                    raise NotImplementedError
+                else:
+                    raise NotImplementedError
+                    # derivative = np.asarray(
+                    #     derive_by_array(self._series[order - 1]["symobolic"],)
+                    # )
+                raise NotImplementedError
+
+            if order not in self._series:
+                __take_derivative(order)
+                return self.__evaluate(xs, order, mod)
+            else:
+                if mod not in self._series[order]:
+                    raise NotImplementedError
+                else:
+                    raise NotImplementedError
+
+        # =====================================================================
+        def __init_symbolic(self):
+            def _take_derivative(f, x):
+                d = np.asarray(derive_by_array(f, x))
+                return np.moveaxis(d, 0, -2)
+
+            self._jaco, self._hess = [], []
+            for var in self._model.vars:
+                j = _take_derivative(self._model.f, var)
+                h = _take_derivative(j, var)
+                j = j.squeeze(axis=-1)
+                h = h.squeeze(axis=-1)
+                self._jaco.append(ImmutableDenseNDimArray(j))
+                self._hess.append(ImmutableDenseNDimArray(h))
+
+        def _evaluate(self, xs: tuple, mod: str = "numpy"):
+            f = lambdify(self._model.vars, self._model.f, mod)
+            return np.squeeze(f(*xs))
+
+        def _jacobian(self, xs: tuple, mod: str = "numpy"):
+            def _eval_jacob(jc):
+                f = lambdify(self._model.vars, jc, mod)
+                return f(*xs)
+
+            return [_eval_jacob(j) for j in self._jaco]
+
+        def _hessian(self, xs: tuple, ops: dict):
+            """
+            NOTE: only support interval matrix currently, TODO refine this part
+            """
+
+            def _eval_hessian_interval(he):
+                def __eval_element(x):
+                    if x.is_number:
+                        return Interval(float(x), float(x))
+                    else:
+                        f = lambdify(self._model.vars, x, ops)
+                        return f(*xs)
+
+                v = np.vectorize(__eval_element)(he)
+                inf = np.vectorize(lambda x: x.inf)(v)
+                sup = np.vectorize(lambda x: x.sup)(v)
+                return [
+                    IntervalMatrix(inf[idx], sup[idx]) for idx in range(he.shape[0])
+                ]
+
+            return [_eval_hessian_interval(h) for h in self._hess]
 
         @abstractmethod
         def __str__(self):
@@ -59,7 +135,17 @@ class ContSys:
         def __post(self, r: [Set], option):
             return NotImplemented
 
-        def __reach_over_linear(self, option) -> Reachable.Result:
+        def __pre_stat_err(self, r_delta, option: ContSys.Option.Base):
+            r_red = cvt2(r_delta, Geometry.TYPE.ZONOTOPE).reduce()
+            # extend teh sets byt the input sets
+            u_stat = Zonotope.zero(option.u.dim)
+            z = r_red.card_prod(u_stat)
+            z_delta = r_delta.card_prod(u_stat)
+            # compute hessian
+
+            raise NotImplementedError
+
+        def __reach_over_standard(self, option) -> Reachable.Result:
             # obtain factors for initial state and input solution time step
             i = np.arange(1, option.taylor_terms + 2)
             option.factors = np.power(option.step_size, i) / factorial(i)

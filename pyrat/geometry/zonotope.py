@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.typing import ArrayLike
-
+from scipy.linalg import block_diag
 import pyrat.util.functional.auxiliary as aux
 from .geometry import Geometry
 
@@ -328,3 +328,11 @@ class Zonotope(Geometry.Base):
 
     def boundary(self, max_dist: float, element: Geometry.TYPE):
         raise NotImplementedError
+
+    def card_prod(self, other):
+        if isinstance(other, Zonotope):
+            c = np.concatenate([self.c, other.c])
+            gen = block_diag(self.gen, other.gen)
+            return Zonotope(c, gen)
+        else:
+            raise NotImplementedError

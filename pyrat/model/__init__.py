@@ -6,9 +6,11 @@ from .rand_model import RandModel
 from .ltv import LTV
 from .genetic_model import GeneticModel
 from .p53_small import P53Small
+from .model_new import ModelNEW
 
 __all__ = [
     "Model",
+    "ModelNEW",
     "Tank6Eq",
     "VanDerPol",
     "LaubLoomis",

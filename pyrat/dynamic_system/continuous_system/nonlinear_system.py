@@ -54,6 +54,7 @@ class NonLinSys:
 
         @dataclass
         class Polynomial(Base):
+            algorithm: ALGORITHM = ALGORITHM.POLYNOMIAL
             tensor_order: int = 3
 
             def validation(self, dim: int):
@@ -63,60 +64,6 @@ class NonLinSys:
                 return True
 
     class Entity(ContSys.Entity):
-        def __init__(self, model: Model):
-            assert 1 <= len(model.vars) <= 2  # only support f(x) or f(x,u) as input
-            self._model = model
-            self._jaco = None
-            self._hess = None
-            self.__init_symbolic()  # init symbolic jacobian and hessian
-
-        def __init_symbolic(self):
-            def _take_derivative(f, x):
-                d = np.asarray(derive_by_array(f, x))
-                return np.moveaxis(d, 0, -2)
-
-            self._jaco, self._hess = [], []
-            for var in self._model.vars:
-                j = _take_derivative(self._model.f, var)
-                h = _take_derivative(j, var)
-                j = j.squeeze(axis=-1)
-                h = h.squeeze(axis=-1)
-                self._jaco.append(ImmutableDenseNDimArray(j))
-                self._hess.append(ImmutableDenseNDimArray(h))
-
-        def _evaluate(self, xs: tuple, mod: str = "numpy"):
-            f = lambdify(self._model.vars, self._model.f, mod)
-            return np.squeeze(f(*xs))
-
-        def _jacobian(self, xs: tuple, mod: str = "numpy"):
-            def _eval_jacob(jc):
-                f = lambdify(self._model.vars, jc, mod)
-                return f(*xs)
-
-            return [_eval_jacob(j) for j in self._jaco]
-
-        def _hessian(self, xs: tuple, ops: dict):
-            """
-            NOTE: only support interval matrix currently
-            """
-
-            def _eval_hessian_interval(he):
-                def __eval_element(x):
-                    if x.is_number:
-                        return Interval(float(x), float(x))
-                    else:
-                        f = lambdify(self._model.vars, x, ops)
-                        return f(*xs)
-
-                v = np.vectorize(__eval_element)(he)
-                inf = np.vectorize(lambda x: x.inf)(v)
-                sup = np.vectorize(lambda x: x.sup)(v)
-                return [
-                    IntervalMatrix(inf[idx], sup[idx]) for idx in range(he.shape[0])
-                ]
-
-            return [_eval_hessian_interval(h) for h in self._hess]
-
         def __str__(self):
             raise NotImplementedError
 
@@ -177,9 +124,7 @@ class NonLinSys:
                     hu_ = np.maximum(abs_hu.inf, abs_hu.sup)
                     err_lagrange[i] = 0.5 * (dx @ hx_ @ dx + du @ hu_ @ du)
 
-                v_err_dyn = Zonotope(
-                    0 * err_lagrange.reshape(-1), np.diag(err_lagrange)
-                )
+                v_err_dyn = Zonotope(np.zeros(self.dim), np.diag(err_lagrange))
                 return err_lagrange, v_err_dyn
             elif option.tensor_order == 3:
                 raise NotImplementedError  # TODO
@@ -190,6 +135,15 @@ class NonLinSys:
             lin_sys, lin_op = self.__linearize(r.geo, option)
             r_delta = r.geo - option.lin_err_px
             r_ti, r_tp = lin_sys.reach_init(r_delta, lin_op)
+
+            if option.algorithm == ALGORITHM.POLYNOMIAL:
+                r_diff = lin_sys.delta_reach(r_delta, lin_op)
+                if option.tensor_order > 2:
+                    self.__pre_stat_err(r_delta, option)
+                    raise NotImplementedError
+
+                raise NotImplementedError
+
             perf_ind_cur, perf_ind = np.inf, 0
             applied_err, abstract_err, v_err_dyn = None, r.err, None
 
@@ -261,8 +215,8 @@ class NonLinSys:
         def reach(self, option: NonLinSys.Option.Base):
             assert option.validation(self.dim)  # ensure valid options
             if option.algorithm == ALGORITHM.LINEAR:
-                return self.__reach_over_linear(option)
+                return self.__reach_over_standard(option)
             elif option.algorithm == ALGORITHM.POLYNOMIAL:
-                raise NotImplementedError
+                return self.__reach_over_standard(option)
             else:
                 raise NotImplementedError
