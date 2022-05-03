@@ -1,18 +1,28 @@
 from __future__ import annotations
 
-from numbers import Real
-from typing import TYPE_CHECKING
 import numpy as np
-from enum import IntEnum
-from .geometry import Geometry
+from numbers import Real
+from numpy.typing import ArrayLike
 import pyrat.util.functional.auxiliary as aux
+from .geometry import Geometry
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .zonotope import Zonotope
 
 
-class Polytope(Geometry.Base):
-    def __init__(self):
-        raise NotImplementedError
+class IntervalTensor(Geometry.Base):
+    def __init__(self, inf: ArrayLike, sup: ArrayLike):
+        inf = inf if isinstance(inf, np.ndarray) else np.asarray(inf, dtype=float)
+        sup = sup if isinstance(sup, np.ndarray) else np.asarray(sup, dtype=float)
+        assert inf.shape == sup.shape
+        assert np.all(inf <= sup)
+        self._inf = inf
+        self._sup = sup
+        self._type = Geometry.TYPE.INTERVAL_TENSOR
 
-    # =============================================== property
+        # =============================================== property
+
     @property
     def c(self) -> np.ndarray:
         raise NotImplementedError

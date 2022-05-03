@@ -2,6 +2,7 @@ import numbers
 
 import numpy as np
 from scipy.sparse import coo_matrix
+import time
 
 
 def is_empty(arr: (np.ndarray, coo_matrix)) -> bool:
@@ -90,3 +91,13 @@ def mask_condition(m: coo_matrix, inr_mask: np.ndarray) -> coo_matrix:
     row = m.row[inr_mask]
     col = m.col[inr_mask]
     return coo_matrix((data, (row, col)), shape=m.shape, dtype=bool)
+
+
+def performance_counter_start():
+    return time.perf_counter_ns()
+
+
+def performance_counter(start: time.perf_counter_ns(), event: str):
+    end = time.perf_counter_ns()
+    print(event + " cost: {}s".format((end - start) * 1e-9))
+    return end

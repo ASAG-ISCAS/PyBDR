@@ -131,7 +131,10 @@ class PolyZonotope(Geometry.Base):
         raise NotImplementedError
 
     # =============================================== public method
-    def reduce(self, method: str, order: int):
+    def enclose(self, other):
+        raise NotImplementedError
+
+    def reduce(self):
         raise NotImplementedError
 
     def proj(self, dims):

@@ -103,9 +103,9 @@ class ContSys:
 
             return [_eval_jacob(j) for j in self._jaco]
 
-        def _hessian(self, xs: tuple, ops: dict):
+        def _hessian(self, xs: tuple, mod: str = "numpy"):
             """
-            NOTE: only support interval matrix currently, TODO refine this part
+            NOTE: only support interval matrix currently and numpy
             """
 
             def _eval_hessian_interval(he):
@@ -113,7 +113,7 @@ class ContSys:
                     if x.is_number:
                         return Interval(float(x), float(x))
                     else:
-                        f = lambdify(self._model.vars, x, ops)
+                        f = lambdify(self._model.vars, x, Interval.functional())
                         return f(*xs)
 
                 v = np.vectorize(__eval_element)(he)
@@ -123,7 +123,19 @@ class ContSys:
                     IntervalMatrix(inf[idx], sup[idx]) for idx in range(he.shape[0])
                 ]
 
-            return [_eval_hessian_interval(h) for h in self._hess]
+            def _eval_hessian_numpy(he):
+                f = lambdify(self._model.vars, he, "numpy")
+                return np.asarray(f(*xs)).squeeze()
+
+            def _eval(he):
+                if mod == "numpy":
+                    return _eval_hessian_numpy(he)
+                elif mod == "inteval":
+                    return _eval_hessian_interval(he)
+                else:
+                    raise NotImplementedError
+
+            return [_eval(h) for h in self._hess]
 
         @abstractmethod
         def __str__(self):
@@ -135,15 +147,25 @@ class ContSys:
         def __post(self, r: [Set], option):
             return NotImplemented
 
-        def __pre_stat_err(self, r_delta, option: ContSys.Option.Base):
+        def __pre_stat_err(self, r_delta, option):
             r_red = cvt2(r_delta, Geometry.TYPE.ZONOTOPE).reduce()
             # extend teh sets byt the input sets
             u_stat = Zonotope.zero(option.u.dim)
             z = r_red.card_prod(u_stat)
             z_delta = r_delta.card_prod(u_stat)
             # compute hessian
+            h = self._hessian((option.lin_err_px, option.lin_err_pu), "numpy")
+            t, ind3, zd3 = None, None, None
 
-            raise NotImplementedError
+            # calculate the quadratic map == static second order error
+            err_stat_sec = 0.5 * z.quad_map(h)
+            err_stat = None
+            # third order tensor
+            if option.tensor_order >= 4:
+                raise NotImplementedError
+            else:
+                err_stat = err_stat_sec
+            return h, z_delta, err_stat.reduce(), t, ind3, zd3
 
         def __reach_over_standard(self, option) -> Reachable.Result:
             # obtain factors for initial state and input solution time step

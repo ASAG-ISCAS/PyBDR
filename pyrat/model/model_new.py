@@ -1,9 +1,10 @@
+import inspect
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 import numpy as np
 import sympy
-from sympy import symbols, Matrix
+from sympy import symbols, Matrix, derive_by_array, lambdify, ImmutableDenseNDimArray
 
 
 @dataclass
@@ -14,6 +15,7 @@ class ModelNEW(ABC):
     dim: int = -1
     __inr_x = None
     __inr_f = None
+    __inr_series = {}
 
     def __validation(self):
         univariate = isinstance(self.vars[0], sympy.Symbol)
@@ -35,9 +37,41 @@ class ModelNEW(ABC):
                     )
                 )
                 self.__inr_f = self.__inr_f.subs(d)
-
-    def __evaluate(self):
-        raise NotImplementedError  # TODO
+        self.__inr_series[0] = {"symbolic": self.__inr_f}
 
     def __post_init__(self):
         self.__validation()
+
+    def __derivative(self, order: int, mod: str):
+        return self.__inr_series[order][mod]
+
+    def __take_derivative(self, order: int):
+        if order - 1 not in self.__inr_series:
+            self.__take_derivative(order - 1)
+        d = derive_by_array(self.__derivative(order - 1, "symbolic"), self.__inr_x)
+        d = np.asarray(d)
+        self.__inr_series[order] = {"symbolic": np.moveaxis(d, 0, -2)}
+
+    def evaluate(self, xs: tuple, mod: str, order: int, functional: dict = None):
+        assert order >= 0
+        if order not in self.__inr_series:
+            self.__take_derivative(order)
+        if mod not in self.__inr_series[order]:
+            d = self.__derivative(order, "symbolic")
+            d = d if order == 0 else d.squeeze(axis=-1)
+            d = ImmutableDenseNDimArray(d)
+            modules = [mod] if functional is None else functional
+            self.__inr_series[order][mod] = lambdify(self.__inr_x, d, modules)
+
+        def _eval_numpy():
+            return np.asarray(self.__inr_series[order][mod](*np.concatenate(xs)))
+
+        def _eval_interval():
+            raise NotImplementedError
+
+        if mod == "numpy":
+            return _eval_numpy()
+        elif mod == "interval":
+            raise NotImplementedError
+        else:
+            raise NotImplementedError

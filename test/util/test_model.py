@@ -1,3 +1,7 @@
+import inspect
+
+import numpy as np
+
 from pyrat.model import ModelNEW
 from sympy import *
 
@@ -24,6 +28,9 @@ def test_fx():
 
 
 def test_fxu():
+    import pyrat.util.functional.auxiliary as aux
+    from pyrat.geometry import Interval
+
     def f(x, u):
         # parameters
         k0, k1, g = 0.015, 0.01, 9.81
@@ -40,5 +47,19 @@ def test_fxu():
 
     xu = symbols(("x:6", "u:1"))
     model = ModelNEW(f(*xu), xu)
-    print()
-    print(model)
+
+    x, u = np.random.rand(6), np.random.rand(1)
+    start = aux.performance_counter_start()
+    temp0 = model.evaluate((x, u), "numpy", 3)
+    start = aux.performance_counter(start, "temp0")
+    temp1 = model.evaluate((x, u), "numpy", 2)
+    start = aux.performance_counter(start, "temp1")
+    temp2 = model.evaluate((x, u), "numpy", 3)
+    start = aux.performance_counter(start, "temp2")
+
+    ix, iu = Interval.rand(7), Interval.rand(1)
+    temp3 = model.evaluate((ix), "interval", 1, functional=Interval.functional())
+    print(temp3)
+
+    print(temp0.shape)
+    print(temp1.shape)

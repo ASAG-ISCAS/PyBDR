@@ -10,9 +10,10 @@ class Geometry:
     class TYPE(IntEnum):
         INTERVAL = 0
         INTERVAL_MATRIX = 1
-        ZONOTOPE = 2
-        POLYTOPE = 3
-        POLY_ZONOTOPE = 4
+        INTERVAL_TENSOR = 2
+        ZONOTOPE = 3
+        POLYTOPE = 4
+        POLY_ZONOTOPE = 5
 
     class Base(ABC):
         __array_ufunc__ = None

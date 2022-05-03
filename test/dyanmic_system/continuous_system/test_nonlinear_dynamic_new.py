@@ -1,3 +1,5 @@
+import inspect
+
 import numpy as np
 from pyrat.dynamic_system import NonLinSys
 from pyrat.model import *

@@ -131,21 +131,43 @@ class NonLinSys:
             else:
                 raise Exception("unsupported tensor order")
 
+        def __abstract_err_poly(
+            self, option, r_all, r_diff, h, zd, verr_stat, t, ind3, zd3
+        ):
+            # compute interval of reachable set
+            dx = cvt2(r_all, Geometry.TYPE.INTERVAL)
+            total_int_x = dx + option.lin_err_px
+            # compute intervals of input
+            du = cvt2(option.u, Geometry.TYPE.INTERVAL)
+            total_int_u = du + option.lin_err_pu
+
+            # compute zonotope of state and input
+            r_red_diff = cvt2(r_diff, Geometry.TYPE.ZONOTOPE).reduce()
+            z_diff = r_red_diff.card_prod(option.u)
+
+            # second order error
+            err_dyn_sec = 0.5 * (
+                zd.quad_map(h, z_diff) + z_diff.quad_map(h, zd) + z_diff.quad_map(h)
+            )
+
+            if option.tensor_order == 3:
+                # TODO
+                raise NotImplementedError
+            else:
+                raise NotImplementedError
+
         def __linear_reach(self, r: Set, option):
             lin_sys, lin_op = self.__linearize(r.geo, option)
             r_delta = r.geo - option.lin_err_px
             r_ti, r_tp = lin_sys.reach_init(r_delta, lin_op)
-
+            h, zd, err_stat, t, ind3, zd3 = None, None, 0, None, None, None
             if option.algorithm == ALGORITHM.POLYNOMIAL:
                 r_diff = lin_sys.delta_reach(r_delta, lin_op)
                 if option.tensor_order > 2:
-                    self.__pre_stat_err(r_delta, option)
-                    raise NotImplementedError
-
-                raise NotImplementedError
+                    h, zd, err_stat, t, ind3, zd3 = self.__pre_stat_err(r_delta, option)
 
             perf_ind_cur, perf_ind = np.inf, 0
-            applied_err, abstract_err, v_err_dyn = None, r.err, None
+            applied_err, abstract_err, v_err_dyn, v_err_stat = None, r.err, None, None
 
             while perf_ind_cur > 1 and perf_ind <= 1:
                 # estimate the abstraction error
@@ -161,7 +183,10 @@ class NonLinSys:
                     # compute linearization error
                     true_err, v_err_dyn = self.__abstract_err_lin(r_max, option)
                 elif option.algorithm == ALGORITHM.POLYNOMIAL:
-                    raise NotImplementedError
+                    r_max = r_delta + cvt2(r_diff, Geometry.TYPE.ZONOTOPE) + r_all_err
+                    true_err, v_err_dyn, v_err_stat = self.__abstract_err_poly(
+                        option, r_max, r_diff + r_all_err, h, zd, err_stat, t, ind3, zd3
+                    )
                 else:
                     raise NotImplementedError
 

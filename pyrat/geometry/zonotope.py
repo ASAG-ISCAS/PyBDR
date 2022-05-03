@@ -333,6 +333,49 @@ class Zonotope(Geometry.Base):
         if isinstance(other, Zonotope):
             c = np.concatenate([self.c, other.c])
             gen = block_diag(self.gen, other.gen)
-            return Zonotope(c, gen)
+            z = Zonotope(c, gen)
+            z.remove_zero_gen()
+            return z
         else:
             raise NotImplementedError
+
+    def quad_map(self, q: [np.ndarray], rz=None):
+        def _xTQx():
+            dim_q = q[0].shape[0]
+            c = np.zeros(dim_q)
+            gen_num = int(0.5 * (self.gen_num**2 + self.gen_num)) + self.gen_num
+            gens = self.gen_num
+            gen = np.zeros((dim_q, gen_num))
+
+            z = self.z
+
+            # count empty matrices
+            q_noz = np.zeros(dim_q, dtype=bool)
+
+            # for each dimension, compute generator elements
+            for i in range(dim_q):
+                q_noz[i] = np.any([np.any(iq[i]) for iq in q])
+                if q_noz[i]:
+                    # pure quadratic evaluation
+                    qi = block_diag(*[iq[i] for iq in q])
+                    quad_mat = z.T @ qi @ z
+                    # faster method diag elements
+                    gen[i, :gens] = 0.5 * np.diag(quad_mat[1 : gens + 1, 1 : gens + 1])
+                    # center
+                    c[i] = quad_mat[0, 0] + np.sum(gen[i, 0:gens])
+                    # off-diagonal elements added, pick via logical indexing
+                    quad_mat_off_diag = quad_mat + quad_mat.T
+                    k_ind = np.tril(np.ones((gens + 1, gens + 1), dtype=bool), -1)
+                    gen[i, gens:] = quad_mat_off_diag[k_ind]
+
+            # generate new zonotope
+            if np.sum(q_noz) <= 1:
+                return Zonotope(c, np.sum(abs(gen), axis=1).reshape((-1, 1)))
+            else:
+                raise NotImplementedError
+
+        def _x1TQx2():
+            # TODO
+            raise NotImplementedError
+
+        return _xTQx() if rz is None else _x1TQx2()
