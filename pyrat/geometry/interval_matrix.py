@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # for type hint
     from .zonotope import Zonotope
+    from .interval import Interval
 
 
 class IntervalMatrix(Geometry.Base):
@@ -43,6 +44,12 @@ class IntervalMatrix(Geometry.Base):
     @property
     def is_empty(self) -> bool:
         return aux.is_empty(self.inf) or aux.is_empty(self.sup)
+
+    @property
+    def is_zero(self) -> bool:
+        return np.all(abs(self.sup - self.inf) <= np.finfo(float).eps) and np.all(
+            abs(self.sup) <= np.finfo(float).eps
+        )
 
     @property
     def vertices(self) -> np.ndarray:
@@ -123,13 +130,34 @@ class IntervalMatrix(Geometry.Base):
             inf, sup = np.minimum(infm, supm), np.maximum(infm, supm)
             return IntervalMatrix(inf, sup)
 
+        def __mul_interval_matrix(rhs: IntervalMatrix):
+            bd = np.stack(
+                [
+                    self.inf * rhs.inf,
+                    self.inf * rhs.sup,
+                    self.sup * rhs.inf,
+                    self.sup * rhs.sup,
+                ]
+            )
+            inf, sup = np.min(bd, axis=0), np.max(bd, axis=0)
+            return IntervalMatrix(inf, sup)
+
         if isinstance(other, Real):
             return __mul_real(other)
         elif isinstance(other, Geometry.Base):
             if other.type == Geometry.TYPE.ZONOTOPE:
                 return NotImplemented
+            elif other.type == Geometry.TYPE.INTERVAL_MATRIX:
+                return __mul_interval_matrix(other)
             else:
                 raise NotImplementedError
+        else:
+            raise NotImplementedError
+
+    def __rmul__(self, other):
+        if isinstance(other, Geometry.Base):
+            if other.type == Geometry.TYPE.INTERVAL:
+                return NotImplemented
         else:
             raise NotImplementedError
 

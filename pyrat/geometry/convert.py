@@ -8,7 +8,9 @@ from .zonotope import Zonotope
 
 
 def _interval2zonotope(source: Interval):
-    raise NotImplementedError  # TODO
+    c = source.c
+    gen = np.diag(source.rad)
+    return Zonotope(c, gen)
 
 
 def _zonotope2interval(source: Zonotope):

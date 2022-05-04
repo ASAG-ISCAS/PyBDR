@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from dataclasses import dataclass
+from enum import IntEnum
+
 import numpy as np
-from sympy import derive_by_array, ImmutableDenseNDimArray, lambdify
-from pyrat.model import Model
-from pyrat.geometry import Geometry, Interval, IntervalMatrix, Zonotope, cvt2
-from pyrat.misc import Reachable, Set
+
+from pyrat.geometry import Geometry, Interval, Zonotope, cvt2
+from pyrat.misc import Set
 from .continuous_system import ContSys
 from .linear_system import LinSys
-from enum import IntEnum
 
 
 class ALGORITHM(IntEnum):
@@ -61,6 +61,7 @@ class NonLinSys:
                 assert self._validate_time_related()
                 assert self._validate_inputs()
                 assert self._validate_misc(dim)
+                assert 3 <= self.tensor_order <= 7
                 return True
 
     class Entity(ContSys.Entity):
@@ -111,9 +112,7 @@ class NonLinSys:
                 du = np.maximum(abs(ihu.inf), abs(ihu.sup))
 
                 # evaluate the hessian matrix with the selected range-bounding technique
-                hx, hu = self._hessian(
-                    (total_int_x, total_int_u), Interval.functional()
-                )
+                hx, hu = self._hessian((total_int_x, total_int_u), "interval")
 
                 # calculate the Lagrange remainder (second-order error)
                 err_lagrange = np.zeros(self.dim, dtype=float)
@@ -151,10 +150,36 @@ class NonLinSys:
             )
 
             if option.tensor_order == 3:
-                # TODO
-                raise NotImplementedError
+                tx, tu = self._third_order((total_int_x, total_int_u), mod="interval")
+
+                # calculate the lagrange remainder term
+                err_dyn_third = Interval.zero(self.dim)
+
+                # error relates to tx
+                for row, col in tx[0]:
+                    err_dyn_third[row] += dx @ tx[1][row][col] @ dx * dx[col]
+
+                # error relates to tu
+                for row, col in tu[0]:
+                    err_dyn_third[row] += du @ tu[1][row][col] @ du * du[col]
+
+                err_dyn_third *= 1 / 6
+                err_dyn_third = cvt2(err_dyn_third, Geometry.TYPE.ZONOTOPE)
+
+                # no terms of order >=4, max 3 for now
+                remainder = Zonotope.zero(self.dim, 1)
+
             else:
                 raise NotImplementedError
+            verr_dyn = err_dyn_sec + err_dyn_third + remainder
+            verr_dyn = verr_dyn.reduce()
+
+            err_ih_abs = abs(
+                cvt2(verr_dyn, Geometry.TYPE.INTERVAL)
+                + cvt2(verr_stat, Geometry.TYPE.INTERVAL)
+            )
+            true_err = err_ih_abs.sup
+            return true_err, verr_dyn, verr_stat
 
         def __linear_reach(self, r: Set, option):
             lin_sys, lin_op = self.__linearize(r.geo, option)
@@ -194,6 +219,10 @@ class NonLinSys:
                 perf_ind_cur = np.max(true_err / applied_err)
                 perf_ind = np.max(true_err / option.max_err)
                 abstract_err = true_err
+
+                # exception for set explosion
+                if np.any(abstract_err > 1e100):
+                    raise Exception("Set Explosion")
             # translate reachable sets by linearization point
             r_ti += option.lin_err_px
             r_tp += option.lin_err_px

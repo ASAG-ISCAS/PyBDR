@@ -5,9 +5,12 @@ from numbers import Real
 
 import numpy as np
 from numpy.typing import ArrayLike
-
+from typing import TYPE_CHECKING
 import pyrat.util.functional.auxiliary as aux
 from .geometry import Geometry
+
+if TYPE_CHECKING:
+    from .interval_matrix import IntervalMatrix  # for type hint, easy coding
 
 
 class Interval(Geometry.Base):
@@ -47,9 +50,20 @@ class Interval(Geometry.Base):
         return aux.is_empty(self.inf) or aux.is_empty(self.sup)
 
     @property
+    def is_zero(self) -> bool:
+        return np.all(abs(self.sup - self.inf) <= np.finfo(float).eps) and np.all(
+            abs(self.sup) <= np.finfo(float).eps
+        )
+
+    @property
     def c(self) -> np.ndarray:
         assert not self.is_empty
         return (self.inf + self.sup) * 0.5
+
+    @property
+    def rad(self) -> np.ndarray:
+        assert not self.is_empty
+        return (self.sup - self.inf) * 0.5
 
     @property
     def bd(self) -> np.ndarray:
@@ -129,8 +143,34 @@ class Interval(Geometry.Base):
             self._sup[key] = value
 
     def __matmul__(self, other):
+        def __matmul_interval_matrix(rhs: IntervalMatrix):
+            inf = np.repeat(self.inf.reshape((-1, 1)), rhs.inf.shape[1], axis=1)
+            sup = np.repeat(self.sup.reshape((-1, 1)), rhs.inf.shape[1], axis=1)
+            bd = np.stack(
+                [
+                    inf * rhs.inf,
+                    inf * rhs.sup,
+                    sup * rhs.inf,
+                    sup * rhs.sup,
+                ]
+            )
+            inf, sup = np.min(bd, axis=0).sum(axis=0), np.max(bd, axis=0).sum(axis=0)
+            return Interval(inf, sup)
+
+        def __matmul_interval(rhs: Interval):
+            b = self * rhs
+            inf, sup = b.inf.sum(), b.sup.sum()
+            return Interval(inf, sup)
+
         if isinstance(other, Real):
             return self * other
+        elif isinstance(other, Geometry.Base):
+            if other.type == Geometry.TYPE.INTERVAL_MATRIX:
+                return __matmul_interval_matrix(other)
+            elif other.type == Geometry.TYPE.INTERVAL:
+                return __matmul_interval(other)
+            else:
+                raise NotImplementedError
         else:
             raise NotImplementedError
 
@@ -166,6 +206,10 @@ class Interval(Geometry.Base):
                 return __mul_interval(other)
             elif other.type == Geometry.TYPE.ZONOTOPE:
                 return other * self
+            elif other.type == Geometry.TYPE.INTERVAL_MATRIX:
+                raise NotImplementedError
+            else:
+                raise NotImplementedError
         else:
             raise NotImplementedError("Invalid rhs operand")
 
@@ -377,6 +421,9 @@ class Interval(Geometry.Base):
         else:
             raise NotImplementedError
 
+    def enclose(self, other):
+        raise NotImplementedError
+
     def grid(self, max_dist: float) -> np.ndarray:
         def __ll2arr(ll, fill_value: float):
             lens = [lst.shape[0] for lst in ll]
@@ -416,3 +463,7 @@ class Interval(Geometry.Base):
     def rand(dim: int):
         bd = np.sort(np.random.rand(dim, 2), axis=1)
         return Interval(bd[:, 0], bd[:, 1])
+
+    @staticmethod
+    def zero(dim: int):
+        return Interval(np.zeros(dim), np.zeros(dim))

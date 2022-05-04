@@ -339,7 +339,7 @@ class Zonotope(Geometry.Base):
         else:
             raise NotImplementedError
 
-    def quad_map(self, q: [np.ndarray], rz=None):
+    def quad_map(self, q: [np.ndarray], rz: Zonotope = None):
         def _xTQx():
             dim_q = q[0].shape[0]
             c = np.zeros(dim_q)
@@ -375,7 +375,29 @@ class Zonotope(Geometry.Base):
                 raise NotImplementedError
 
         def _x1TQx2():
-            # TODO
-            raise NotImplementedError
+            z_mat1 = self.z
+            z_mat2 = rz.z
+            dim_q = q[0].shape[0]
+
+            # init solution (center + generator matrix)
+            z = np.zeros((dim_q, z_mat1.shape[1] * z_mat2.shape[1]))
+
+            # count empty matrices
+            q_noz = np.zeros(dim_q, dtype=bool)
+
+            # for each dimension, compute center + generator elements
+            for i in range(dim_q):
+                q_noz[i] = np.any([np.any(iq[i]) for iq in q])
+                if q_noz[i]:
+                    # pure quadratic evaluation
+                    qi = block_diag(*[iq[i] for iq in q])
+                    quad_mat = z_mat1.T @ qi @ z_mat2
+                    z[i] = quad_mat.reshape(-1)
+
+            # generate new zonotope
+            if np.sum(q_noz) <= 1:
+                return Zonotope(z[:, 0], np.sum(abs(z[:, 1:]), axis=1).reshape((-1, 1)))
+            else:
+                raise NotImplementedError
 
         return _xTQx() if rz is None else _x1TQx2()

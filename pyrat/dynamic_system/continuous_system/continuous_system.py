@@ -53,44 +53,25 @@ class ContSys:
             self._model = model
             self._jaco = None
             self._hess = None
-            self._series = {0: {"symbolic": self._model.f}}  # f^{0}(x) = f(x)
+            self._third = None
             self.__init_symbolic()
 
-        # =====================================================================
-        def __evaluate(self, xs: tuple, order: int, mod: str):
-            def __take_derivative(d: int):
-                if order - 1 not in self._series:
-                    raise NotImplementedError
-                else:
-                    raise NotImplementedError
-                    # derivative = np.asarray(
-                    #     derive_by_array(self._series[order - 1]["symobolic"],)
-                    # )
-                raise NotImplementedError
-
-            if order not in self._series:
-                __take_derivative(order)
-                return self.__evaluate(xs, order, mod)
-            else:
-                if mod not in self._series[order]:
-                    raise NotImplementedError
-                else:
-                    raise NotImplementedError
-
-        # =====================================================================
         def __init_symbolic(self):
             def _take_derivative(f, x):
                 d = np.asarray(derive_by_array(f, x))
                 return np.moveaxis(d, 0, -2)
 
-            self._jaco, self._hess = [], []
+            self._jaco, self._hess, self._third = [], [], []
             for var in self._model.vars:
                 j = _take_derivative(self._model.f, var)
                 h = _take_derivative(j, var)
+                t = _take_derivative(h, var)
                 j = j.squeeze(axis=-1)
                 h = h.squeeze(axis=-1)
+                t = t.squeeze(axis=-1)
                 self._jaco.append(ImmutableDenseNDimArray(j))
                 self._hess.append(ImmutableDenseNDimArray(h))
+                self._third.append(ImmutableDenseNDimArray(t))
 
         def _evaluate(self, xs: tuple, mod: str = "numpy"):
             f = lambdify(self._model.vars, self._model.f, mod)
@@ -130,12 +111,51 @@ class ContSys:
             def _eval(he):
                 if mod == "numpy":
                     return _eval_hessian_numpy(he)
-                elif mod == "inteval":
+                elif mod == "interval":
                     return _eval_hessian_interval(he)
                 else:
                     raise NotImplementedError
 
             return [_eval(h) for h in self._hess]
+
+        def _third_order(self, xs: tuple, mod: str = "numpy"):
+            """
+            NOTE: only support interval and numpy currently
+            """
+
+            def _eval_third_interval(te):
+                def __eval_element(x):
+                    if x.is_number:
+                        return Interval(float(x), float(x))
+                    else:
+                        f = lambdify(self._model.vars, x, Interval.functional())
+                        return f(*xs)
+
+                v = np.vectorize(__eval_element)(te)
+                inf = np.vectorize(lambda x: x.inf)(v)
+                sup = np.vectorize(lambda x: x.sup)(v)
+
+                ret = []
+                for row in range(te.shape[0]):
+                    row_ret = []
+                    for col in range(te.shape[1]):
+                        row_ret.append(IntervalMatrix(inf[row][col], sup[row][col]))
+                    ret.append(row_ret)
+                ind = np.argwhere(np.vectorize(lambda x: not x.is_zero)(ret))
+                return ind, np.asarray(ret)
+
+            def _eval_third_numpy(te):
+                raise NotImplementedError
+
+            def _eval(te):
+                if mod == "numpy":
+                    return _eval_third_numpy(te)
+                elif mod == "interval":
+                    return _eval_third_interval(te)
+                else:
+                    raise NotImplementedError
+
+            return [_eval(te) for te in self._third]
 
         @abstractmethod
         def __str__(self):
