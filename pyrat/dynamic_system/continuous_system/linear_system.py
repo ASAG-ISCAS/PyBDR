@@ -214,9 +214,9 @@ class LinSys:
             option.taylor_ea_t = expm(self._xa * option.step_size)
             rhom_tp = option.taylor_ea_t @ r + option.taylor_r_trans
             rhom = r.enclose(rhom_tp) + option.taylor_f * r + option.taylor_input_corr
-            rhom = rhom.reduce()
-            rhom_tp = rhom_tp.reduce()
-            rv = option.taylor_rv.reduce()
+            rhom = rhom.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
+            rhom_tp = rhom_tp.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
+            rv = option.taylor_rv.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
 
             r_total_ti = rhom + rv
             r_total_tp = rhom_tp + rv
@@ -240,8 +240,10 @@ class LinSys:
             else:
                 raise NotImplementedError
             # reduce zonotope
-            rhom = rhom.reduce()
-            rv = option.taylor_rv.reduce()
+            rhom = rhom.reduce(Zonotope.REDUCE_METHOD, Zonotope.INTERMEDIATE_ORDER)
+            rv = option.taylor_rv.reduce(
+                Zonotope.REDUCE_METHOD, Zonotope.INTERMEDIATE_ORDER
+            )
 
             # final result
             return rhom + rv

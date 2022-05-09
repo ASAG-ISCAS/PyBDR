@@ -20,6 +20,8 @@ def test_vanDerPol():
 
     # setting for using Zonotope
     Zonotope.ORDER = 50
+    Zonotope.INTERMEDIATE_ORDER = 50
+    Zonotope.ERROR_ORDER = 20
 
     results = system.reach(option)
     vis2d(results, [0, 1])

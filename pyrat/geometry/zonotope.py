@@ -22,6 +22,8 @@ class Zonotope(Geometry.Base):
 
     REDUCE_METHOD = METHOD.REDUCE.GIRARD
     ORDER = 50
+    ERROR_ORDER = 20
+    INTERMEDIATE_ORDER = 50
 
     def __init__(self, c: ArrayLike, gen: ArrayLike):
         c = c if isinstance(c, np.ndarray) else np.array(c, dtype=float)
@@ -307,7 +309,7 @@ class Zonotope(Geometry.Base):
         else:
             raise NotImplementedError
 
-    def reduce(self):
+    def reduce(self, method: REDUCE_METHOD, order: int):
         def __reduce_girard():
             # pick generators to reduce
             gur, gr = self._picked_gen()

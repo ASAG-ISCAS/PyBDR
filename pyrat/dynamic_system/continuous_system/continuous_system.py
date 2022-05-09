@@ -168,7 +168,9 @@ class ContSys:
             return NotImplemented
 
         def __pre_stat_err(self, r_delta, option):
-            r_red = cvt2(r_delta, Geometry.TYPE.ZONOTOPE).reduce()
+            r_red = cvt2(r_delta, Geometry.TYPE.ZONOTOPE).reduce(
+                Zonotope.REDUCE_METHOD, Zonotope.ERROR_ORDER
+            )
             # extend teh sets byt the input sets
             u_stat = Zonotope.zero(option.u.dim)
             z = r_red.card_prod(u_stat)
@@ -185,7 +187,17 @@ class ContSys:
                 raise NotImplementedError
             else:
                 err_stat = err_stat_sec
-            return h, z_delta, err_stat.reduce(), t, ind3, zd3
+                err_stat = err_stat.reduce(
+                    Zonotope.REDUCE_METHOD, Zonotope.INTERMEDIATE_ORDER
+                )
+            return (
+                h,
+                z_delta,
+                err_stat,
+                t,
+                ind3,
+                zd3,
+            )
 
         def __reach_over_standard(self, option) -> Reachable.Result:
             # obtain factors for initial state and input solution time step

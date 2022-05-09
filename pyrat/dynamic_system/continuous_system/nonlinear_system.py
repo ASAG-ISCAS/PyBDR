@@ -141,7 +141,9 @@ class NonLinSys:
             total_int_u = du + option.lin_err_pu
 
             # compute zonotope of state and input
-            r_red_diff = cvt2(r_diff, Geometry.TYPE.ZONOTOPE).reduce()
+            r_red_diff = cvt2(r_diff, Geometry.TYPE.ZONOTOPE).reduce(
+                Zonotope.REDUCE_METHOD, Zonotope.ERROR_ORDER
+            )
             z_diff = r_red_diff.card_prod(option.u)
 
             # second order error
@@ -172,7 +174,9 @@ class NonLinSys:
             else:
                 raise NotImplementedError
             verr_dyn = err_dyn_sec + err_dyn_third + remainder
-            verr_dyn = verr_dyn.reduce()
+            verr_dyn = verr_dyn.reduce(
+                Zonotope.REDUCE_METHOD, Zonotope.INTERMEDIATE_ORDER
+            )
 
             err_ih_abs = abs(
                 cvt2(verr_dyn, Geometry.TYPE.INTERVAL)
@@ -216,7 +220,9 @@ class NonLinSys:
                     raise NotImplementedError
 
                 # compare linearization error with the maximum allowed error
-                perf_ind_cur = np.max(true_err / applied_err)
+                temp = true_err / applied_err
+                temp[np.isnan(temp)] = -np.inf
+                perf_ind_cur = np.max(temp)
                 perf_ind = np.max(true_err / option.max_err)
                 abstract_err = true_err
 
@@ -228,7 +234,7 @@ class NonLinSys:
             r_tp += option.lin_err_px
 
             # compute the reachable set due to the linearization error
-            r_err = lin_sys.error_solution(lin_op, v_err_dyn)
+            r_err = lin_sys.error_solution(lin_op, v_err_dyn, v_err_stat)
 
             # add the abstraction error to the reachable sets
             r_ti += r_err
@@ -261,8 +267,8 @@ class NonLinSys:
 
             for i in range(len(next_tp)):
                 if not next_tp[i].geo.is_empty:
-                    next_tp[i].geo.reduce()
-                    next_ti[i].reduce()
+                    next_tp[i].geo.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
+                    next_ti[i].reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
 
             return next_ti, next_tp, next_r0
 
