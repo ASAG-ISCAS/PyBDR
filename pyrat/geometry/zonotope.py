@@ -374,7 +374,9 @@ class Zonotope(Geometry.Base):
             if np.sum(q_noz) <= 1:
                 return Zonotope(c, np.sum(abs(gen), axis=1).reshape((-1, 1)))
             else:
-                raise NotImplementedError
+                z = Zonotope(c, gen)
+                z.remove_zero_gen()
+                return z
 
         def _x1TQx2():
             z_mat1 = self.z
@@ -400,6 +402,8 @@ class Zonotope(Geometry.Base):
             if np.sum(q_noz) <= 1:
                 return Zonotope(z[:, 0], np.sum(abs(z[:, 1:]), axis=1).reshape((-1, 1)))
             else:
-                raise NotImplementedError
+                zono = Zonotope(z[:, 0], z[:, 1:])
+                zono.remove_zero_gen()
+                return zono
 
         return _xTQx() if rz is None else _x1TQx2()

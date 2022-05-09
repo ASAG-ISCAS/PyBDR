@@ -38,7 +38,7 @@ def test_tank6Eq():
     option.steps = 100
     option.tensor_order = 2
     option.taylor_terms = 4
-    option.r0 = [Zonotope([2, 4, 4, 2, 10, 4], np.eye(6) * 0)]
+    option.r0 = [Zonotope([2, 4, 4, 2, 10, 4], np.eye(6) * 0.2)]
     option.u = Zonotope([0], [[0.005]])
     option.u = Zonotope.zero(1, 1)
     option.u_trans = np.zeros(1)
