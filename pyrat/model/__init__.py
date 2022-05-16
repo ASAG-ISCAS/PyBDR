@@ -7,6 +7,7 @@ from .ltv import LTV
 from .genetic_model import GeneticModel
 from .p53_small import P53Small
 from .model_new import ModelNEW
+from .synchronous_machine import SynchronousMachine
 
 __all__ = [
     "Model",
@@ -18,4 +19,5 @@ __all__ = [
     "LTV",
     "GeneticModel",
     "P53Small",
+    "SynchronousMachine",
 ]

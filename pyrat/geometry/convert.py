@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import numpy as np
+import pypoman
 
 from .geometry import Geometry
 from .interval import Interval
 from .zonotope import Zonotope
+from .polytope import Polytope
 
 
 def _interval2zonotope(source: Interval):
@@ -27,9 +29,25 @@ def _zonotope2interval(source: Zonotope):
     return Interval(left_limit, right_limit)
 
 
+def _vertices2interval(source: np.ndarray):
+    assert source.ndim == 2
+    inf = np.min(source, axis=0)
+    sup = np.max(source, axis=0)
+    return Interval(inf, sup)
+
+
+def _vertices2polytope(source: np.ndarray):
+    a, b = pypoman.compute_polytope_halfspaces(source)
+    return Polytope(a, b)
+
+
 def cvt2(source, target: Geometry.TYPE):
     if source is None or source.type == target:
         return source
+    elif isinstance(source, np.ndarray) and target == Geometry.TYPE.INTERVAL:
+        return _vertices2interval(source)
+    elif isinstance(source, np.ndarray) and target == Geometry.TYPE.POLYTOPE:
+        return _vertices2polytope(source)
     elif source.type == Geometry.TYPE.INTERVAL and target == Geometry.TYPE.ZONOTOPE:
         return _interval2zonotope(source)
     elif source.type == Geometry.TYPE.ZONOTOPE and target == Geometry.TYPE.INTERVAL:

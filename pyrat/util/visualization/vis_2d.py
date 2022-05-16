@@ -56,6 +56,17 @@ def vis2dGeo(geos: [Geometry.Base], dims: list, width=800, height=800):
                     edgecolor="blue",
                 )
             )
+        elif obj.type == Geometry.TYPE.POLYTOPE:
+            ax.add_patch(
+                Polygon(
+                    obj.polygon(dims),
+                    closed=True,
+                    alpha=0.7,
+                    fill=True,
+                    linewidth=0.5,
+                    edgecolor="blue",
+                )
+            )
         else:
             raise NotImplementedError
 
@@ -63,6 +74,7 @@ def vis2dGeo(geos: [Geometry.Base], dims: list, width=800, height=800):
         __add_patch(geo)
 
     ax.autoscale_view()
+    ax.axis("equal")
     ax.set_xlabel("x" + str(dims[0]))
     ax.set_ylabel("x" + str(dims[1]))
 

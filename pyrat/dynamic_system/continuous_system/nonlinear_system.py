@@ -15,6 +15,7 @@ from .linear_system import LinSys
 class ALGORITHM(IntEnum):
     LINEAR = 1
     POLYNOMIAL = 2
+    BACK_UNDER = 3
 
 
 class NonLinSys:
@@ -62,6 +63,21 @@ class NonLinSys:
                 assert self._validate_inputs()
                 assert self._validate_misc(dim)
                 assert 3 <= self.tensor_order <= 7
+                return True
+
+        @dataclass
+        class BackUnder(Base):
+            algorithm: ALGORITHM = ALGORITHM.BACK_UNDER
+            algorithm_boundary: ALGORITHM = ALGORITHM.LINEAR
+            epsilon_m: float = np.inf  # for boundary sampling
+            epsilon: float = np.inf  # for backward verification
+
+            def validation(self, dim: int):
+                assert self._validate_time_related()
+                assert self._validate_inputs()
+                assert self._validate_misc(dim)
+                assert not np.isinf(self.epsilon) and self.epsilon >= 0
+                assert not np.isinf(self.epsilon_m) and self.epsilon_m > 0
                 return True
 
     class Entity(ContSys.Entity):
@@ -278,5 +294,7 @@ class NonLinSys:
                 return self.__reach_over_standard(option)
             elif option.algorithm == ALGORITHM.POLYNOMIAL:
                 return self.__reach_over_standard(option)
+            elif option.algorithm == ALGORITHM.BACK_UNDER:
+                return self.__reach_under_standard(option)
             else:
                 raise NotImplementedError

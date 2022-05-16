@@ -232,6 +232,32 @@ class ContSys:
                 ti_set, tp_set, np.vstack(ti_time), np.array(tp_time)
             )
 
+        def __boundary_back(self, u, option) -> [Geometry.Base]:
+            raise NotImplementedError
+
+        def __contraction(self, omega, o):
+            raise NotImplementedError
+
+        def __reach_under_standard(self, option) -> Reachable.Result:
+            # init containers for storing the results
+            ti_set, ti_time = [], []
+            time_pts = np.linspace(option.t_start, option.t_end, option.steps)
+            u = option.r0
+            ti_set.append(u)
+            ti_time.append(time_pts[-1])
+
+            # loop over all backward steps
+            for i in range(option.steps - 1):
+                # save backward reachable sets
+                omega = self.__boundary_back(u, option)
+                o = cvt2(omega, Geometry.TYPE.POLYTOPE)
+
+                # backward the time
+                option.cur_t = time_pts[-i - 1]
+                raise NotImplementedError
+
+            raise NotImplementedError
+
         @abstractmethod
         def reach(self, option: ContSys.Option.Base):
             raise NotImplementedError

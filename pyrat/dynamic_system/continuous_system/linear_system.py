@@ -25,6 +25,7 @@ class LinSys:
 
             @abstractmethod
             def validation(self):
+                # TODO
                 return NotImplemented
 
         @dataclass
