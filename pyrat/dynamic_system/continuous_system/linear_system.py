@@ -5,7 +5,8 @@ from enum import IntEnum
 from .continuous_system import ContSys
 from pyrat.model import Model
 from pyrat.misc import Set
-from pyrat.geometry import Geometry, IntervalMatrix, Zonotope, cvt2
+from pyrat.geometry import Geometry, IntervalMatrix, Zonotope
+from pyrat.geometry.operation import cvt2
 from dataclasses import dataclass
 from scipy.linalg import expm
 
@@ -73,6 +74,30 @@ class LinSys:
         @property
         def dim(self) -> int:
             return self._xa.shape[1]
+
+        @property
+        def xa(self) -> np.ndarray:
+            return self._xa
+
+        @property
+        def ub(self) -> np.ndarray:
+            return self._ub
+
+        @property
+        def c(self) -> float:
+            return self._c
+
+        @property
+        def xc(self) -> np.ndarray:
+            return self._xc
+
+        @property
+        def ud(self) -> np.ndarray:
+            return self._ud
+
+        @property
+        def k(self) -> float:
+            return self._k
 
         def __str__(self):
             raise NotImplementedError

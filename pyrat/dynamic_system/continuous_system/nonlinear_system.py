@@ -6,7 +6,8 @@ from enum import IntEnum
 
 import numpy as np
 
-from pyrat.geometry import Geometry, Interval, Zonotope, cvt2
+from pyrat.geometry import Geometry, Interval, Zonotope
+from pyrat.geometry.operation import cvt2
 from pyrat.misc import Set
 from .continuous_system import ContSys
 from .linear_system import LinSys
@@ -88,12 +89,12 @@ class NonLinSys:
         def dim(self):
             return self._model.dim
 
-        def __linearize(self, r: Geometry.Base, option: NonLinSys.Option.Linear):
+        def linearize_old(self, r: Geometry.Base, option):
             option.lin_err_pu = option.u_trans if option.u is not None else None
-            f0_pre = self._evaluate((r.c, option.lin_err_pu))
+            f0_pre = self.evaluate((r.c, option.lin_err_pu))
             option.lin_err_px = r.c + f0_pre * 0.5 * option.step_size
-            option.lin_err_f0 = self._evaluate((option.lin_err_px, option.lin_err_pu))
-            a, b = self._jacobian((option.lin_err_px, option.lin_err_pu))
+            option.lin_err_f0 = self.evaluate((option.lin_err_px, option.lin_err_pu))
+            a, b = self.jacobian((option.lin_err_px, option.lin_err_pu))
             assert not (np.any(np.isnan(a))) or np.any(np.isnan(b))
             lin_sys = LinSys.Entity(xa=a)
             lin_op = LinSys.Option.Euclidean(
@@ -128,7 +129,7 @@ class NonLinSys:
                 du = np.maximum(abs(ihu.inf), abs(ihu.sup))
 
                 # evaluate the hessian matrix with the selected range-bounding technique
-                hx, hu = self._hessian((total_int_x, total_int_u), "interval")
+                hx, hu = self.hessian((total_int_x, total_int_u), "interval")
 
                 # calculate the Lagrange remainder (second-order error)
                 err_lagrange = np.zeros(self.dim, dtype=float)
@@ -168,7 +169,7 @@ class NonLinSys:
             )
 
             if option.tensor_order == 3:
-                tx, tu = self._third_order((total_int_x, total_int_u), mod="interval")
+                tx, tu = self.third_order((total_int_x, total_int_u), mod="interval")
 
                 # calculate the lagrange remainder term
                 err_dyn_third = Interval.zero(self.dim)
@@ -202,8 +203,8 @@ class NonLinSys:
             return true_err, verr_dyn, verr_stat
 
         def __linear_reach(self, r: Set, option):
-            lin_sys, lin_op = self.__linearize(r.geo, option)
-            r_delta = r.geo - option.lin_err_px
+            lin_sys, lin_op = self.linearize_old(r.geometry, option)
+            r_delta = r.geometry - option.lin_err_px
             r_ti, r_tp = lin_sys.reach_init(r_delta, lin_op)
             h, zd, err_stat, t, ind3, zd3 = None, None, 0, None, None, None
             if option.algorithm == ALGORITHM.POLYNOMIAL:
@@ -282,8 +283,8 @@ class NonLinSys:
             next_ti, next_tp, next_r0 = self.__reach_init(r, option)
 
             for i in range(len(next_tp)):
-                if not next_tp[i].geo.is_empty:
-                    next_tp[i].geo.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
+                if not next_tp[i].geometry.is_empty:
+                    next_tp[i].geometry.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
                     next_ti[i].reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
 
             return next_ti, next_tp, next_r0

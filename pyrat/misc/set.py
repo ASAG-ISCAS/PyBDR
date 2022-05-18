@@ -14,9 +14,9 @@ class Set:
         providing the approximating error
     """
 
-    geo: Geometry.Base = None
+    geometry: Geometry.Base = None
     err: np.ndarray = None
 
     def __post_init__(self):
-        if self.geo is not None and self.err is None:
-            self.err = np.zeros(self.geo.dim, dtype=float)
+        if self.geometry is not None and self.err is None:
+            self.err = np.zeros(self.geometry.dim, dtype=float)

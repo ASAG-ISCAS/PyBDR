@@ -6,7 +6,6 @@ from .zonotope import Zonotope
 from .poly_zonotope import PolyZonotope
 from .polytope import Polytope
 from .geometry import Geometry
-from .convert import cvt2
 
 __all__ = [
     "Geometry",
@@ -17,5 +16,4 @@ __all__ = [
     "IntervalMatrix",
     "Zonotope",
     "TaylorModel",
-    "cvt2",
 ]

@@ -8,7 +8,8 @@ import numpy as np
 from scipy.special import factorial
 from sympy import derive_by_array, ImmutableDenseNDimArray, lambdify
 
-from pyrat.geometry import Geometry, Zonotope, cvt2, Interval, IntervalMatrix
+from pyrat.geometry import Geometry, Zonotope, Interval, IntervalMatrix
+from pyrat.geometry.operation import cvt2
 from pyrat.misc import Set, Reachable
 from pyrat.model import Model
 
@@ -73,18 +74,18 @@ class ContSys:
                 self._hess.append(ImmutableDenseNDimArray(h))
                 self._third.append(ImmutableDenseNDimArray(t))
 
-        def _evaluate(self, xs: tuple, mod: str = "numpy"):
+        def evaluate(self, xs: tuple, mod: str = "numpy"):
             f = lambdify(self._model.vars, self._model.f, mod)
             return np.squeeze(f(*xs))
 
-        def _jacobian(self, xs: tuple, mod: str = "numpy"):
+        def jacobian(self, xs: tuple, mod: str = "numpy"):
             def _eval_jacob(jc):
                 f = lambdify(self._model.vars, jc, mod)
                 return f(*xs)
 
             return [_eval_jacob(j) for j in self._jaco]
 
-        def _hessian(self, xs: tuple, mod: str = "numpy"):
+        def hessian(self, xs: tuple, mod: str = "numpy"):
             """
             NOTE: only support interval matrix currently and numpy
             """
@@ -118,7 +119,7 @@ class ContSys:
 
             return [_eval(h) for h in self._hess]
 
-        def _third_order(self, xs: tuple, mod: str = "numpy"):
+        def third_order(self, xs: tuple, mod: str = "numpy"):
             """
             NOTE: only support interval and numpy currently
             """
@@ -176,7 +177,7 @@ class ContSys:
             z = r_red.card_prod(u_stat)
             z_delta = r_delta.card_prod(u_stat)
             # compute hessian
-            h = self._hessian((option.lin_err_px, option.lin_err_pu), "numpy")
+            h = self.hessian((option.lin_err_px, option.lin_err_pu), "numpy")
             t, ind3, zd3 = None, None, None
 
             # calculate the quadratic map == static second order error
@@ -241,13 +242,13 @@ class ContSys:
         def __reach_under_standard(self, option) -> Reachable.Result:
             # init containers for storing the results
             ti_set, ti_time = [], []
-            time_pts = np.linspace(option.t_start, option.t_end, option.steps)
+            time_pts = np.linspace(option.t_start, option.t_end, option.steps_num)
             u = option.r0
             ti_set.append(u)
             ti_time.append(time_pts[-1])
 
             # loop over all backward steps
-            for i in range(option.steps - 1):
+            for i in range(option.steps_num - 1):
                 # save backward reachable sets
                 omega = self.__boundary_back(u, option)
                 o = cvt2(omega, Geometry.TYPE.POLYTOPE)

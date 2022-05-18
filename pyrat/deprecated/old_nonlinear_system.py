@@ -188,7 +188,7 @@ class NonLinearSystem:
             # init reachable set computation
             r_next, opt = self._init_reach_over(p.r0, opt)
             # loop over all steps
-            for i in range(1, opt.steps):
+            for i in range(1, opt.steps_num):
                 # TODO
                 raise NotImplementedError
 

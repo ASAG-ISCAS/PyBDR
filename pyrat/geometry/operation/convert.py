@@ -3,10 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pypoman
 
-from .geometry import Geometry
-from .interval import Interval
-from .zonotope import Zonotope
-from .polytope import Polytope
+from pyrat.geometry import *
 
 
 def _interval2zonotope(source: Interval):

@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from itertools import chain
 from numbers import Real
+from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.typing import ArrayLike
-from typing import TYPE_CHECKING
+
 import pyrat.util.functional.auxiliary as aux
 from .geometry import Geometry
 
@@ -112,6 +113,22 @@ class Interval(Geometry.Base):
         sup[nn_idx] = abs(self.inf[nn_idx])
         sup[nn_idx] = abs(self.sup[nn_idx])
         return Interval(inf, sup)
+
+    @staticmethod
+    def sin(x: Interval):
+
+        inf, sup = x.inf, x.sup
+
+        ind = x.sup - x.inf >= 2 * np.pi
+        inf[ind] = -1
+        sup[ind] = 1
+
+        inf = np.mod(inf, 2 * np.pi)
+        sup = np.mod(sup, 2 * np.pi)
+
+        # TODO
+
+        raise NotImplementedError
 
     def __len__(self):
         raise NotImplementedError
@@ -236,7 +253,7 @@ class Interval(Geometry.Base):
 
     def __sub__(self, other):
 
-        if isinstance(other, Real):
+        if isinstance(other, (Real, np.ndarray)):
             return Interval(self.inf - other, self.sup - other)
         elif isinstance(other, Geometry.Base):
             if other.type == Geometry.TYPE.INTERVAL:

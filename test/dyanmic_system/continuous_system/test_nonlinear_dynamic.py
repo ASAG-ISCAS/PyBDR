@@ -22,7 +22,7 @@ def test_tank6Eq():
     """
     option = NonLinSys.OptionOld()
     option.t_end = 400
-    option.steps = 100
+    option.steps_num = 100
     option.taylor_terms = 4
     option.zonotope_order = 50
     option.algo = "lin"
@@ -63,7 +63,7 @@ def test_vanDerPol():
     """
     option = NonLinSys.OptionOld()
     option.t_end = 13
-    option.steps = 701
+    option.steps_num = 701
     option.taylor_terms = 4
     option.zonotope_order = 50
     option.algo = "lin"
@@ -100,7 +100,7 @@ def test_vanDerPol_PolyZonotope():
     """
     option = NonLinSys.OptionOld()
     option.t_end = 6.74
-    option.steps = 1349
+    option.steps_num = 1349
     option.zonotope_order = 50
     option.algo = "poly"
     option.tensor_order = 3
@@ -137,7 +137,7 @@ def test_laubLoomis():
     """
     option = NonLinSys.OptionOld()
     option.t_end = 20
-    option.steps = 500
+    option.steps_num = 500
     option.taylor_terms = 20
     option.zonotope_order = 50
     option.algo = "lin"
@@ -180,7 +180,7 @@ def test_linear_model():
     """
     option = NonLinSys.OptionOld()
     option.t_end = 50
-    option.steps = 100
+    option.steps_num = 100
     option.taylor_terms = 4
     option.zonotope_order = 50
     option.algo = "lin"
@@ -221,7 +221,7 @@ def test_ltv():
     """
     option = NonLinSys.OptionOld()
     option.t_end = 5
-    option.steps = 500
+    option.steps_num = 500
     option.taylor_terms = 4
     option.zonotope_order = 50
     option.algo = "lin"
@@ -260,7 +260,7 @@ def test_genetic():
     """
     option = NonLinSys.OptionOld()
     option.t_end = 3
-    option.steps = 500
+    option.steps_num = 500
     option.taylor_terms = 4
     option.zonotope_order = 50
     option.algo = "lin"
@@ -302,7 +302,7 @@ def test_p53_small():
     """
     option = NonLinSys.OptionOld()
     option.t_end = 10
-    option.steps = 500
+    option.steps_num = 500
     option.taylor_terms = 4
     option.zonotope_order = 50
     option.algo = "lin"

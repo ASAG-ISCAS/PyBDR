@@ -148,7 +148,7 @@ class NonLinSys:
             # linearization point p.x of the state is the center of the last reachable
             # set R translated by 0.5*delta_t*f0
             f0_pre = self._evaluate((r.c, p["u"]))
-            p["x"] = r.c + f0_pre * 0.5 * op.step_size
+            p["x"] = r.c + f0_pre * 0.5 * op.step
             # substitute p into the system equation to obtain the constraint input
             f0 = self._evaluate((p["x"], p["u"]))
             # substitute p into the jacobian with respect to x and u to obtain the
@@ -163,7 +163,7 @@ class NonLinSys:
             lin_op.u_trans = op.u_trans
             lin_op.taylor_terms = op.taylor_terms
             lin_op.factors = op.factors
-            lin_op.step_size = op.step_size
+            lin_op.step_size = op.step
             lin_op.zonotope_order = op.zonotope_order
             lin_op.cur_t = op.cur_t
             # --------------------------------------- # TODO shall refine this part, like unify the option???
@@ -327,7 +327,7 @@ class NonLinSys:
         def _reach_over_standard(self, op: NonLinSys.OptionOld) -> Reachable.Result:
             # obtain factors for initial state and input solution time step
             i = np.arange(1, op.taylor_terms + 2)
-            op.factors = np.power(op.step_size, i) / factorial(i)
+            op.factors = np.power(op.step, i) / factorial(i)
             # set current time
             op.cur_t = op.t_start
             # init containers for storing the results
@@ -336,10 +336,10 @@ class NonLinSys:
             # init reachable set computation
             next_ti, next_tp, next_r0 = self._reach_init(op.r_init, op)
 
-            time_pts = np.linspace(op.t_start, op.t_end, op.steps, endpoint=True)
+            time_pts = np.linspace(op.t_start, op.t_end, op.steps_num, endpoint=True)
 
             # loop over all reachability steps
-            for i in range(op.steps - 1):
+            for i in range(op.steps_num - 1):
                 # save reachable set
                 ti_set.append(next_ti)
                 ti_time.append(time_pts[i : i + 2])
