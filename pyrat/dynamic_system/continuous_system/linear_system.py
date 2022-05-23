@@ -1,9 +1,8 @@
 from __future__ import annotations
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 import numpy as np
 from enum import IntEnum
 from .continuous_system import ContSys
-from pyrat.model import Model
 from pyrat.misc import Set
 from pyrat.geometry import Geometry, IntervalMatrix, Zonotope
 from pyrat.geometry.operation import cvt2

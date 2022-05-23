@@ -10,8 +10,10 @@ from numpy.typing import ArrayLike
 import pyrat.util.functional.auxiliary as aux
 from .geometry import Geometry
 
+
 if TYPE_CHECKING:
     from .interval_matrix import IntervalMatrix  # for type hint, easy coding
+    from .zonotope import Zonotope
 
 
 class Interval(Geometry.Base):
@@ -93,13 +95,44 @@ class Interval(Geometry.Base):
     def functional(cls):
         return {
             "__add__": cls.__add__,
+            "__sub__": cls.__sub__,
             "__mul__": cls.__mul__,
             "__matmul__": cls.__matmul__,
+            "sin": cls.sin,
         }
 
     # =============================================== operators
     def __contains__(self, item):
-        raise NotImplementedError
+        def __contains_pts(pts: np.ndarray):
+            assert pts.ndim == 1 or pts.ndim == 2
+            if pts.ndim == 1:
+                if pts.shape[0] != self.dim:
+                    return False
+                return (self.inf <= pts) & (self.sup >= pts)
+            if pts.ndim == 2:
+                if pts.shape[1] != self.dim:
+                    return np.full(pts.shape[0], False, dtype=bool)
+                return (self.inf <= pts[:]) & (self.sup >= pts[:])
+
+        def __contains_interval(other: Interval):
+            if self.dim != other.dim:
+                return False
+            return np.all(self.inf <= other.inf) and np.all(self.sup >= other.sup)
+
+        def __contains_zonotope(other: Zonotope):
+            from .operation.convert import cvt2
+
+            return other in cvt2(self, Geometry.TYPE.POLYTOPE)
+
+        if isinstance(item, np.ndarray):
+            return __contains_pts(item)
+        elif isinstance(item, Geometry.Base):
+            if item.type == Geometry.TYPE.INTERVAL:
+                return __contains_interval(item)
+            elif item.type == Geometry.TYPE.ZONOTOPE:
+                return __contains_zonotope(item)
+            else:
+                raise NotImplementedError
 
     def __str__(self):
         return self.info
@@ -126,9 +159,74 @@ class Interval(Geometry.Base):
         inf = np.mod(inf, 2 * np.pi)
         sup = np.mod(sup, 2 * np.pi)
 
-        # TODO
+        # inf in [0,pi/2]
+        ind0 = (sup - inf) <= 2 * np.pi
+        ind1 = inf <= 0.5 * np.pi
+        ind2 = sup <= 0.5 * np.pi
+        ind3 = sup <= 1.5 * np.pi
+        ind4 = sup < inf
 
-        raise NotImplementedError
+        ind = ind0 & ind1 & ind4
+        inf[ind] = -1
+        sup[ind] = 1
+
+        ind = ind0 & ind1 & ind2 & (np.logical_not(ind4))
+        inf[ind] = np.sin(inf[ind])
+        sup[ind] = np.sin(sup[ind])
+
+        ind = ind0 & ind1 & np.logical_not(ind2) & ind3
+        inf[ind] = np.minimum(np.sin(inf[ind]), np.sin(sup[ind]))
+        sup[ind] = 1
+
+        ind = ind0 & ind1 & np.logical_not(ind4)
+        inf[ind] = -1
+        sup[ind] = 1
+
+        # inf in [pi/2,3/2*pi]
+        ind1 = np.logical_not(ind1)
+        ind2 = inf <= 1.5 * np.pi
+        ind3 = sup > 0.5 * np.pi
+        ind4 = sup <= 1.5 * np.pi
+        ind5 = sup < inf
+
+        ind = ind0 & ind1 & ind2 & ind3 & ind5
+        inf[ind] = -1
+        sup[ind] = 1
+
+        ind = ind0 & ind1 & ind2 & np.logical_not(ind3)
+        inf[ind] = -1
+        sup[ind] = np.maximum(np.sin(inf[ind]), np.sin(sup[ind]))
+
+        ind = ind0 & ind1 & ind2 & ind3 & ind4 & ind5
+        inf[ind] = np.sin(inf[ind])
+        sup[ind] = np.sin(sup[ind])
+
+        ind = ind0 & ind1 & ind2 & np.logical_not(ind4) & np.logical_not(ind5)
+        inf[ind] = -1
+        sup[ind] = np.maximum(np.sin(inf[ind]), np.sin(sup[ind]))
+
+        # inf in [3/2*pi,2*pi]
+
+        ind1 = inf > 1.5 * np.pi
+        ind2 = inf <= 2 * np.pi
+
+        ind = ind0 & ind1 & ind2 & np.logical_not(ind4) & ind5
+        inf[ind] = -1
+        sup[ind] = 1
+
+        ind = ind0 & ind1 & ind2 & np.logical_not(ind3)
+        inf[ind] = np.sin(inf[ind])
+        sup[ind] = np.sin(sup[ind])
+
+        ind = ind0 & ind1 & ind2 & ind3 & ind4
+        inf[ind] = np.minimum(np.sin(inf[ind]), np.sin(sup[ind]))
+        sup[ind] = 1
+
+        ind = ind0 & ind1 & ind2 & np.logical_not(ind4) & np.logical_not(ind5)
+        inf[ind] = np.sin(inf[ind])
+        sup[ind] = np.sin(sup[ind])
+
+        return Interval(inf, sup)
 
     def __len__(self):
         raise NotImplementedError
@@ -252,7 +350,6 @@ class Interval(Geometry.Base):
         raise NotImplementedError
 
     def __sub__(self, other):
-
         if isinstance(other, (Real, np.ndarray)):
             return Interval(self.inf - other, self.sup - other)
         elif isinstance(other, Geometry.Base):

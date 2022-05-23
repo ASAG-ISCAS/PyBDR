@@ -61,11 +61,36 @@ class Zonotope(Geometry.Base):
 
     @property
     def vertices(self) -> np.ndarray:
+        def __vertices_convex_hull():
+            from scipy.spatial import ConvexHull
+
+            # first vertex is the center of the zonotope
+            v = self.c.reshape((-1, 1))
+
+            # generate further potential vertices
+            for i in range(self.gen_num):
+                trans = self.gen[:, i].reshape((-1, 1)).repeat(v.shape[1], axis=1)
+                v = np.concatenate([v + trans, v - trans], axis=1)
+
+                # remove inner points
+                if i >= self.dim:
+                    hull = ConvexHull(v.transpose())
+                    v = v[:, hull.vertices]
+                # else, do nothing
+
+            return v.transpose()
+
+        def __vertices_polytope():
+            from .operation import cvt2
+
+            self._vertices = cvt2(self, Geometry.TYPE.POLYTOPE).vertices
+
         if self._vertices is None:
             if self.dim == 2:
                 self._vertices = self.polygon()
             else:
-                raise NotImplementedError
+                return __vertices_convex_hull()
+
         return self._vertices
 
     @property
@@ -85,6 +110,9 @@ class Zonotope(Geometry.Base):
 
     # =============================================== operator
     def __contains__(self, item):
+        from .operation import cvt2
+
+        # TODO
         raise NotImplementedError
 
     def __str__(self):
@@ -407,3 +435,24 @@ class Zonotope(Geometry.Base):
                 return zono
 
         return _xTQx() if rz is None else _x1TQx2()
+
+    def support_func(self, dir: np.ndarray, type: str = "u"):
+        """
+        calculates the upper or lower bound of this zonotope along given direction
+        :param type: type of the calculation, "u" for upper bound, "l" for lower bound
+        :param dir: given direction in numpy ndarray format
+        :return:
+
+        # TODO speed up this function !!!!!!!!!!
+        """
+        proj_zono = dir @ self
+        c, g = proj_zono.c, proj_zono.gen
+        if type == "u":
+            val = c + np.sum(abs(g))
+            fac = np.sign(g)
+        elif type == "l":
+            val = c - np.sum(abs(g))
+            fac = -np.sign(g)
+        else:
+            raise NotImplementedError
+        return self.c + self.gen * fac, val, fac

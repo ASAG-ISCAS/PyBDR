@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pypoman.polyhedron
 
 import pyrat.util.functional.auxiliary as aux
 from .geometry import Geometry
+
+if TYPE_CHECKING:
+    from .zonotope import Zonotope
 
 
 class Polytope(Geometry.Base):
@@ -66,7 +71,38 @@ class Polytope(Geometry.Base):
     # =============================================== operator
 
     def __contains__(self, item):
-        raise NotImplementedError
+        def __contains_pts(pts: np.ndarray):
+            assert pts.ndim == 1 or pts.ndim == 2
+            if pts.ndim == 1:
+                if self.dim != pts.shape[0]:
+                    return False
+                return self._a @ pts <= self._b
+            elif pts.ndim == 2:
+                if self.dim != pts.shape[1]:
+                    return np.full(pts.shape[0], False, dtype=bool)
+                return self._a[None, :, :] @ pts[:, :, None] <= self._b
+            else:
+                raise NotImplementedError
+
+        def __contains_zonotope(other: Zonotope):
+            # check all half spaces bounding this given zonotope
+            for i in range(self._a.shape[0]):
+                _, b, _ = other.support_func(self._a[i].reshape((1, -1)), "u")
+                if b > self._b[i]:
+                    return False
+            return True
+
+        if isinstance(item, np.ndarray):
+            return __contains_pts(item)
+        elif isinstance(item, Geometry.Base):
+            if item.type == Geometry.TYPE.INTERVAL:
+                # TODO
+                raise NotImplementedError
+            elif item.type == Geometry.TYPE.POLYTOPE:
+                # TODO
+                raise NotImplementedError
+            elif item.type == Geometry.TYPE.ZONOTOPE:
+                return __contains_zonotope(item)
 
     def __str__(self):
         raise NotImplementedError

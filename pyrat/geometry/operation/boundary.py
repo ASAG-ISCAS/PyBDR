@@ -1,7 +1,7 @@
 import numpy as np
 from itertools import chain
 from pyrat.geometry import *
-from pyrat.geometry.operation import cvt2
+from .convert import cvt2
 
 
 def __interval2interval(src: Interval, r: float):

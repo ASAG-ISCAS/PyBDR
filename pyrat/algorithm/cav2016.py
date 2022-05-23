@@ -14,7 +14,7 @@ import numpy as np
 
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Geometry
-from pyrat.geometry.operation import boundary, cvt2
+from pyrat.geometry.operation import cvt2, boundary
 from pyrat.misc import Reachable, Set
 from .algorithm import Algorithm
 from .cdc2008 import CDC2008

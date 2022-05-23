@@ -7,11 +7,10 @@ Althoff, M. (2013, April). Reachability analysis of nonlinear systems using cons
 """
 
 from __future__ import annotations
-from dataclasses import dataclass
 import numpy as np
 from scipy.special import factorial
 from pyrat.dynamic_system import NonLinSys
-from pyrat.geometry import Geometry, Zonotope, PolyZonotope, Interval
+from pyrat.geometry import Geometry, Zonotope, Interval
 from pyrat.geometry.operation import cvt2
 from pyrat.misc import Set, Reachable
 from .algorithm import Algorithm
@@ -34,6 +33,8 @@ class HSCC2013:
             self.max_err = (
                 np.full(dim, np.inf) if self.max_err is None else self.max_err
             )
+            i = np.arange(1, self.taylor_terms + 2)
+            self.factors = np.power(self.step, i) / factorial(i)
             assert 3 <= self.tensor_order <= 7
             return True
 
@@ -122,7 +123,7 @@ class HSCC2013:
         return true_err, verr_dyn, verr_stat
 
     @classmethod
-    def linear_reach(cls, sys: NonLinSys.Entity, r: Set, opt: Options):
+    def poly_reach(cls, sys: NonLinSys.Entity, r: Set, opt: Options):
         lin_sys, lin_opt = CDC2008.linearize(sys, r.geometry, opt)
         r_delta = r.geometry - opt.lin_err_x
         r_ti, r_tp = HSCC2011.reach_one_step(lin_sys, r_delta, lin_opt)
@@ -174,7 +175,7 @@ class HSCC2013:
     def reach_one_step(cls, sys: NonLinSys.Entity, r0: [Set], opt: Options):
         r_ti, r_tp = [], []
         for i in range(len(r0)):
-            temp_r_ti, temp_r_tp, dims = cls.linear_reach(sys, r0[i], opt)
+            temp_r_ti, temp_r_tp, dims = cls.poly_reach(sys, r0[i], opt)
             # check if initial set has to be split
             if len(dims) <= 0:
                 r_ti.append(temp_r_ti)
@@ -187,8 +188,6 @@ class HSCC2013:
     @classmethod
     def reach(cls, sys: NonLinSys.Entity, opt: Options):
         assert opt.validation(sys.dim)
-        i = np.arange(1, opt.taylor_terms + 2)
-        opt.factors = np.power(opt.step, i) / factorial(i)
         # init containers for storing the results
         time_pts = np.linspace(opt.t_start, opt.t_end, opt.steps_num)
         ti_set, ti_time, tp_set, tp_time = [], [], [opt.r0], [time_pts[0]]

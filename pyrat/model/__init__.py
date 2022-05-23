@@ -8,6 +8,7 @@ from .genetic_model import GeneticModel
 from .p53_small import P53Small
 from .model_new import ModelNEW
 from .synchronous_machine import SynchronousMachine
+from .computer_based_ode import ComputerBasedODE
 
 __all__ = [
     "Model",
@@ -20,4 +21,5 @@ __all__ = [
     "GeneticModel",
     "P53Small",
     "SynchronousMachine",
+    "ComputerBasedODE",
 ]

@@ -6,6 +6,7 @@ from .zonotope import Zonotope
 from .poly_zonotope import PolyZonotope
 from .polytope import Polytope
 from .geometry import Geometry
+from .operation import *
 
 __all__ = [
     "Geometry",
