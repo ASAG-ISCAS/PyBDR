@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 
-
 from pyrat.geometry import Geometry
 from pyrat.misc import Reachable
 
@@ -13,7 +12,7 @@ def vis2d(r: Reachable.Result, dims: list, width=800, height=800):
 
     def vis_element(g: Geometry.Base):
         g = g.proj(dims)
-        p = plt.Polygon(
+        p = Polygon(
             g.polygon(),
             closed=True,
             alpha=1,
@@ -67,6 +66,17 @@ def vis2dGeo(geos: [Geometry.Base], dims: list, width=800, height=800):
                     edgecolor="blue",
                 )
             )
+        elif obj.type == Geometry.TYPE.ZONOTOPE:
+            g = obj.proj(dims)
+            p = Polygon(
+                g.polygon(),
+                closed=True,
+                alpha=1,
+                fill=False,
+                linewidth=0.5,
+                edgecolor="blue",
+            )
+            ax.add_patch(p)
         else:
             raise NotImplementedError
 

@@ -1,7 +1,6 @@
+import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Polygon
-from matplotlib.collections import PatchCollection
-import matplotlib.pyplot as plt
 
 # Fixing random state for reproducibility
 np.random.seed(19680801)
@@ -16,8 +15,10 @@ patches = []
 
 
 for i in range(N):
-    polygon = Polygon(np.random.rand(N, 2) * 1000, closed=True, alpha=0.7, fill=False)
-    ax.add_patch(polygon)
+    pts = np.array([[0, 0], [2, 1], [1, 1]])
+    # polygon = Polygon(pts, closed=False, alpha=0.7, fill=True, linewidth=10)
+    plt.plot(pts[:, 0], pts[:, 1])
+    # ax.add_patch(polygon)
     # patches.append(polygon)
 
 # colors = 100 * np.random.rand(len(patches))

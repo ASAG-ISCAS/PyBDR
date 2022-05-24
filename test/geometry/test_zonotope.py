@@ -1,8 +1,8 @@
 import numpy as np
 
 from pyrat.geometry import Geometry, Zonotope, Interval, IntervalMatrix
-from pyrat.geometry import cvt2
-from pyrat.util.visualization import vis2d_old
+from pyrat.geometry.operation import cvt2
+from pyrat.util.visualization import vis2dGeo
 
 
 def test_np_function():
@@ -89,7 +89,7 @@ def test_polygon():
 def test_vis_2d():
     data = np.array([[0, -2, 3, -7, 9], [0, -9, 6, -8, -5]])
     z = Zonotope(data[:, 0], data[:, 1:])
-    vis2d_old([z.c.reshape((-1, 2)), z.polygon(), z])
+    vis2dGeo([z], [0, 1])
 
 
 def test_enclose():
