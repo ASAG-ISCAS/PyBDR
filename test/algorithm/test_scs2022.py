@@ -39,7 +39,7 @@ def vis(trajectory, reachable_sets, dims, width=800, height=800):
 
     # visualize the RA region
     x, y = np.ogrid[-1:1:100j, -1:1:100j]
-    ax.contour(x.ravel(), y.ravel(), vx0(y, x), [0])
+    ax.contour(x.ravel(), y.ravel(), vx0(y, x), [-0.05, 0, 0.2])
 
     # misc
     ax.autoscale_view()
@@ -84,7 +84,7 @@ def test_computer_based_model():
     options.vx = lambda x: vx0(x[0], x[1])
     options.distance = distance
     # for sampling controller function
-    options.p = p0
+    options.p = p1
     options.n = 3
     options.low = -1
     options.up = 1
