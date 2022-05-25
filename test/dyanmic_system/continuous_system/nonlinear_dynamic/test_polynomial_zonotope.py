@@ -12,7 +12,7 @@ def test_vanDerPol():
     option = NonLinSys.Option.Polynomial()
     option.t_end = 6.74
     option.steps = 1348
-    option.taylor_terms = 4
+    option.taylor_terms = 8
     option.tensor_order = 3
     option.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
     option.u = Zonotope.zero(1, 1)
