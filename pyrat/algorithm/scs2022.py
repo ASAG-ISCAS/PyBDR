@@ -13,7 +13,7 @@ import numpy as np
 from sympy import *
 
 from pyrat.dynamic_system import NonLinSys
-from pyrat.geometry import Zonotope
+from pyrat.geometry import Zonotope, Interval
 from pyrat.misc import Set
 from pyrat.model import Model
 from .cdc2008 import CDC2008
@@ -28,9 +28,9 @@ class SCS2022:
         step: float = 0  # step size
         max_steps: int = 1e3  # max steps for the computation
         invalid_p: bool = False  # if hard to get some valid p by randomly sampling
+        distance: Callable[[np.ndarray], np.ndarray] = None  # for evaluate distance
         # for potential dynamic model
         dim: int = 0  # dimension of the model
-
         # for p sampling
         p: Callable[[np.ndarray, np.ndarray], float] = None
         n: int = 5
@@ -64,9 +64,51 @@ class SCS2022:
         return next_x
 
     @classmethod
-    def distance(cls, p: np.ndarray, target):
+    def distance(cls, pts: np.ndarray, opt: Options) -> np.ndarray:
+        if opt.distance is not None:
+            return opt.distance(pts)  # if define custom distance function
+        # else we approximate this distance
+        def contains_boundary(box: Interval):
+            # check if this box intersecting with target region
+            result = opt.target(box)
+            if result.inf[0] <= 0 and result.sup[0] >= 0:
+                return True
+            return False
+
+        def need_split(box: Interval, tolerance: float):
+            d = box.sup - box.inf
+            dim = np.where(d > tolerance)[0]
+            if dim.shape[0] > 0:
+                return dim[0]
+            return -1
+
+        tol, level = 1, 0
+        c = pts.sum(axis=0) / pts.shape[0]
+        cell = Interval(c - 2**level, c + 2**level)
+        while not contains_boundary(cell):
+            level += 1
+            cell = Interval(c - 2**level, c + 2**level)
+
+        # refine the space iteratively according to the tolerance
+        active_cells = {cell}
+        valid_cell = []
+        while active_cells:
+            cur_cell = active_cells.pop()
+            if contains_boundary(cur_cell):
+                dim = need_split(cur_cell, tol)
+                if dim < 0:
+                    valid_cell.append(cur_cell)
+                else:
+                    sub_cells = cur_cell.split(dim)
+                    for sub_cell in sub_cells:
+                        active_cells.add(sub_cell)
+
+        # get points from valid cells
+        pts = np.concatenate([cell.vertices for cell in valid_cell], axis=1)
+        # approximate the distance by the shortest distance to these points
+
         # about our case, target region is bounded by a circle
-        d = p - np.array([0, 0.5])
+        d = pts - np.array([0, 0.5])
         # return 0
         return np.linalg.norm(d, ord=2) + np.sqrt(0.1)
 
@@ -75,11 +117,13 @@ class SCS2022:
         # sampling potential valid ps
         params = np.random.rand(opt.max_attempts, opt.n)
         params = params * (opt.up - opt.low) + opt.low
-        next_xs = [
-            cls.simulation(f, opt.cur_x, lambda x: opt.p(x, param), opt)
-            for param in params
-        ]
-        dists = [cls.distance(next_x, opt.target) for next_x in next_xs]
+        next_xs = np.vstack(
+            [
+                cls.simulation(f, opt.cur_x, lambda x: opt.p(x, param), opt)
+                for param in params
+            ]
+        )
+        dists = cls.distance(next_xs, opt)
         # get the index of potential p according to potential distance to the target
         indices = np.argsort(dists)
         for idx in indices:  # check every potential p
@@ -121,7 +165,7 @@ class SCS2022:
         r_ti, r_tp = CDC2008.reach_one_step(system, r0, verif_opt)
         # check if r_ti inside the RA set according to the value function
         for vertex in r_ti[0].vertices:
-            if opt.vx(vertex) > 0:
+            if opt.vx(vertex) <= 0:
                 return False, None
         return True, r_tp[0].geometry
 
@@ -154,7 +198,7 @@ class SCS2022:
         return next_r
 
     @classmethod
-    def synthesis(cls, f, opt: Options):
+    def run(cls, f, opt: Options):
         assert opt.validation()
 
         x = [opt.x0]

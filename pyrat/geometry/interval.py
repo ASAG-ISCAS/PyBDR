@@ -10,7 +10,6 @@ from numpy.typing import ArrayLike
 import pyrat.util.functional.auxiliary as aux
 from .geometry import Geometry
 
-
 if TYPE_CHECKING:
     from .interval_matrix import IntervalMatrix  # for type hint, easy coding
     from .zonotope import Zonotope
@@ -567,6 +566,18 @@ class Interval(Geometry.Base):
         ext_idx = np.array(np.meshgrid(*idx_list)).T.reshape((-1, len(idx_list)))
         aux_idx = np.tile(np.arange(self.dim), ext_idx.shape[0])
         return segs[aux_idx, ext_idx.reshape(-1)].reshape((-1, self.dim, 2))
+
+    def split(self, dim: int):
+        """
+        split this interval into two intervals along specified dimension
+        :param dim:
+        :return:
+        """
+        inf, sup = self.inf, self.sup
+        c = (self.inf[dim] + self.sup[dim]) * 0.5
+        inf[dim] = c
+        sup[dim] = c
+        return Interval(self.inf, sup), Interval(inf, self.sup)
 
     # =============================================== static method
     @staticmethod

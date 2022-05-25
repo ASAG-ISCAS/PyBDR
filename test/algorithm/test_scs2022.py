@@ -6,7 +6,7 @@ from matplotlib.patches import Polygon, Circle
 
 from pyrat.algorithm import SCS2022
 from pyrat.geometry import Zonotope
-from pyrat.util.visualization import vis2dGeo
+from .value_function import vx0
 
 
 def vis(trajectory, reachable_sets, dims, width=800, height=800):
@@ -37,6 +37,10 @@ def vis(trajectory, reachable_sets, dims, width=800, height=800):
     # visualize the target region
     ax.add_patch(Circle([0, 0.5], radius=np.sqrt(0.1), color="g", fill=False))
 
+    # visualize the RA region
+    x, y = np.ogrid[-1:1:100j, -1:1:100j]
+    ax.contour(x.ravel(), y.ravel(), vx0(y, x), [0])
+
     # misc
     ax.autoscale_view()
     ax.axis("equal")
@@ -60,8 +64,16 @@ def test_computer_based_model():
 
         return dxdt
 
-    def p(x: np.ndarray, params: np.ndarray) -> float:
+    def p0(x: np.ndarray, params: np.ndarray) -> float:
         return params[0] * x[0] ** 2 + params[1] * x[1] + 3 * params[2] * x[0] * x[1]
+
+    def p1(x: np.ndarray, params: np.ndarray) -> float:
+        return params[0]
+
+    def distance(pts: np.ndarray) -> np.ndarray:
+        # target region is bounded by a circle, so distance can get exactly as
+        diffs = pts - np.array([0, 0.5])[None, :]
+        return np.linalg.norm(diffs, ord=2, axis=1) + np.sqrt(0.1)
 
     # settings for the controller synthesis
     options = SCS2022.Options()
@@ -69,18 +81,19 @@ def test_computer_based_model():
     options.step = 0.01
     options.dim = 2
     options.target = lambda x: 10 * x[0] ** 2 + 10 * (x[1] - 0.5) ** 2 - 1
-    options.vx = lambda x: x[0] ** 2 + x[1] ** 2 - 1
+    options.vx = lambda x: vx0(x[0], x[1])
+    options.distance = distance
     # for sampling controller function
-    options.p = p
+    options.p = p0
     options.n = 3
-    options.low = -10
-    options.up = 10
+    options.low = -1
+    options.up = 1
 
     # zonotope settings
     Zonotope.ORDER = 50
     Zonotope.REDUCE_METHOD = Zonotope.METHOD.REDUCE.GIRARD
 
     # synthesis the controller
-    tj, rs = SCS2022.synthesis(f, options)
+    tj, rs = SCS2022.run(f, options)
     tj = np.vstack(tj)
     vis(tj, rs, [0, 1])
