@@ -35,7 +35,7 @@ def vis(trajectory, reachable_sets, dims, width=800, height=800):
     ax.add_patch(Circle([0, 0], radius=1, color="black", fill=False))
 
     # visualize the target region
-    ax.add_patch(Circle([0, 0.5], radius=np.sqrt(0.1), color="g", fill=False))
+    ax.add_patch(Circle([0, 0.6], radius=np.sqrt(0.1), color="g", fill=False))
 
     # visualize the RA region
     x, y = np.ogrid[-1:1:100j, -1:1:100j]
@@ -80,7 +80,7 @@ def test_computer_based_model():
     options.x0 = np.array([-0.1, -0.9])
     options.step = 0.01
     options.dim = 2
-    options.target = lambda x: 10 * x[0] ** 2 + 10 * (x[1] - 0.5) ** 2 - 1
+    options.target = lambda x: 10 * x[0] ** 2 + 10 * (x[1] - 0.6) ** 2 - 1
     options.vx = lambda x: vx0(x[0], x[1])
     options.distance = distance
     # for sampling controller function
