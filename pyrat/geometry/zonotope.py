@@ -455,4 +455,4 @@ class Zonotope(Geometry.Base):
             fac = -np.sign(g)
         else:
             raise NotImplementedError
-        return self.c + self.gen * fac, val, fac
+        return val

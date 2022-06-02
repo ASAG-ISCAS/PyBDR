@@ -15,7 +15,7 @@ import numpy as np
 from scipy.linalg import block_diag
 
 from pyrat.dynamic_system import NonLinSys
-from pyrat.geometry import Geometry, Polytope
+from pyrat.geometry import Geometry, Polytope, Zonotope
 from pyrat.geometry.operation import cvt2, boundary
 from pyrat.misc import Reachable
 from .algorithm import Algorithm
@@ -79,7 +79,7 @@ class CAV2016:
             assert prob.status == "optimal"  # ensure valid solution for LP problem
             bj.append(x.value[-1])
         bu = np.min(bj)
-        return Polytope(o.a, o.b + bu)
+        return Polytope(o.a, o.b + bu), bu
 
     @classmethod
     def contraction_try(cls, omega, o, opt: Options):
@@ -116,38 +116,64 @@ class CAV2016:
         raise NotImplementedError
 
     @classmethod
-    def verification(cls, pre_u, cur_u):
-        # TODO
+    def get_d(cls, o: Polytope):  # polytope before contraction
+        x = cp.Variable(o.dim + 1)
+        c = np.zeros(o.dim + 1)
+        c[-1] = 1
+
+        constraints = []
+        a = np.zeros((o.a.shape[0], x.shape[0]))
+        a[:, :-1] = o.a
+        a[:, -1] = -1
+        constraints.append(a @ x - o.b <= 0)
+
+        cost = c @ x
+        prob = cp.Problem(cp.Minimize(cost), constraints)
+        prob.solve()
+        assert prob.status == "optimal"  # ensure valid solution for LP
+        return x.value[-1]  # which is d
+
+    @classmethod
+    def verification(cls, o, u_back, sys, bu, epsilon, opt: CDC2008.Options):
+        r0 = Zonotope(u_back.c, np.eye(u_back.c.shape[0]) * 0.1)
+        opt.r0 = [r0]
+        rs = CDC2008.reach(sys, opt)
+        sx = rs.tp[-1][-1].geometry
+        is_inside = sx in o
+        d = cls.get_d(o)
+        if abs(bu / d) > epsilon or not is_inside:
+            return False
         return True
 
     @classmethod
     def one_step_backward(cls, u, sys, opt: Options, opt_back: CDC2008.Options):
+        sys.reverse()  # reverse the system for backward computation
         omega = cls.boundary_back(sys, u, opt.epsilon_m, opt_back)
         o = cls.polytope(omega)
-        cur_u = cls.contraction(omega, o, opt)
-        if not cls.verification(u, cur_u):
+        u_back, bu = cls.contraction(omega, o, opt)
+        sys.reverse()  # reverse the system for forward computation
+        if not cls.verification(o, u_back, sys, bu, opt.epsilon, opt_back):
             return None, False
-        return cur_u, True
+        return u_back, True
 
     @classmethod
     def reach(cls, sys: NonLinSys.Entity, opt: Options, opt_back: CDC2008.Options):
         assert opt.validation(sys.dim)
         assert opt_back.validation(sys.dim)
-        sys.reverse()  # reverse the system for backward computation
-        ti_set, ti_time = [], []
+        tp_set, tp_time = [], []
         time_pts = np.linspace(opt.t_start, opt.t_end, opt.steps_num)
         u = opt.r0
-        ti_set.append(u)
-        ti_time.append(time_pts[-1])
+        tp_set.append(u)
+        tp_time.append(time_pts[-1])
 
         # loop over all backward steps
         while opt.step_idx >= 0:
             u, is_valid = cls.one_step_backward(u, sys, opt, opt_back)
             opt.step_idx -= 1
             if is_valid:
-                ti_set.append(u)
-                ti_time.append(time_pts[-opt.step_idx - 1])
+                tp_set.append(u)
+                tp_time.append(time_pts[-opt.step_idx - 1])
             else:
                 break
 
-        return Reachable.Result(ti_set, [])
+        return Reachable.Result([], tp_set)

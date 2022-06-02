@@ -95,7 +95,7 @@ class Polytope(Geometry.Base):
         def __contains_zonotope(other: Zonotope):
             # check all half spaces bounding this given zonotope
             for i in range(self._a.shape[0]):
-                _, b, _ = other.support_func(self._a[i].reshape((1, -1)), "u")
+                b = other.support_func(self._a[i].reshape((1, -1)), "u")
                 if b > self._b[i]:
                     return False
             return True

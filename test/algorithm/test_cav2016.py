@@ -36,4 +36,4 @@ def test_synchronous_machine():
     results = CAV2016.reach(system, options, options_back_one_step)
 
     # visualize the results
-    vis2d(results, [0, 1])
+    vis2dGeo(results.tp, [0, 1])
