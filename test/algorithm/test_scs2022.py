@@ -39,7 +39,7 @@ def vis(trajectory, reachable_sets, dims, width=800, height=800):
 
     # visualize the RA region
     x, y = np.ogrid[-1:1:100j, -1:1:100j]
-    ax.contour(x.ravel(), y.ravel(), vx0(y, x), [-0.05, 0, 0.2])
+    ax.contour(x.ravel(), y.ravel(), vx0(y,x), [-0.06, 0, 0.2])
 
     # misc
     ax.autoscale_view()
@@ -77,7 +77,7 @@ def test_computer_based_model():
 
     # settings for the controller synthesis
     options = SCS2022.Options()
-    options.x0 = np.array([-0.1, -0.9])
+    options.x0 = np.array([0.2, -0.9])
     options.step = 0.01
     options.dim = 2
     options.target = lambda x: 10 * x[0] ** 2 + 10 * (x[1] - 0.6) ** 2 - 1

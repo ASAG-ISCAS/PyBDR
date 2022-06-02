@@ -16,3 +16,4 @@ class ReachAvoid(Model):
     f = _f(vars)
     name = "ReachAvoid"
     dim = f.rows
+   

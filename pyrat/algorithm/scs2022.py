@@ -33,7 +33,7 @@ class SCS2022:
         dim: int = 0  # dimension of the model
         # for p sampling
         p: Callable[[np.ndarray, np.ndarray], float] = None
-        n: int = 5
+        n: int = 0
         max_attempts: int = 30
         low: float = -10
         up: float = 10
