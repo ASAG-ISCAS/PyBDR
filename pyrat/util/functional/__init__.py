@@ -1,6 +1,7 @@
 from .auxiliary import *
 from .solver import *
 from .kd_tree import *
+from .csp_solver import *
 
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "kdtree",
     "knn_query",
     "rnn_query",
+    "CSPSolver",
 ]

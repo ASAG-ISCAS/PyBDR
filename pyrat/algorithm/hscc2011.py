@@ -205,7 +205,11 @@ class HSCC2011:
         cls.input_solution(sys, opt)
         opt.taylor_ea_t = expm(sys.xa * opt.step)
         r_hom_tp = opt.taylor_ea_t @ r + opt.taylor_r_trans
-        r_hom = r.enclose(r_hom_tp) + opt.taylor_f * r + opt.taylor_input_corr
+        r_hom = (
+            r.enclose(r_hom_tp)
+            + opt.taylor_f * cvt2(r, Geometry.TYPE.ZONOTOPE)
+            + opt.taylor_input_corr
+        )
         r_hom = r_hom.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
         r_hom_tp = r_hom_tp.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
         rv = opt.taylor_rv.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)

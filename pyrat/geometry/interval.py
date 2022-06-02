@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 from itertools import chain
 from numbers import Real
 from typing import TYPE_CHECKING
@@ -32,6 +33,7 @@ class Interval(Geometry.Base):
         assert np.all(inf <= sup)
         self._inf = inf
         self._sup = sup
+        self._vertices = None
         self._type = Geometry.TYPE.INTERVAL
 
     # =============================================== property
@@ -69,11 +71,16 @@ class Interval(Geometry.Base):
 
     @property
     def bd(self) -> np.ndarray:
-        return np.vstack([self.inf, self.sup])
+        return np.vstack([self.inf, self.sup]).T
 
     @property
     def vertices(self) -> np.ndarray:
-        raise NotImplementedError
+        if self._vertices is None:
+            col = np.asarray(list(itertools.product(np.arange(2), repeat=self.dim)))
+            row = np.tile(np.arange(self.dim), col.shape[0])
+            self._vertices = self.bd[row, col.reshape(-1)].reshape((-1, self.dim))
+
+        return self._vertices
 
     @property
     def info(self):
@@ -289,7 +296,24 @@ class Interval(Geometry.Base):
             raise NotImplementedError
 
     def __rmatmul__(self, other):
-        raise NotImplementedError("Use 'other@interval' instead")
+        def __rmatmul_array(lhs: np.ndarray):
+            from .interval_matrix import IntervalMatrix
+
+            inf, sup = np.zeros((lhs.shape[0], self.dim)), np.zeros(
+                (lhs.shape[0], self.dim)
+            )
+            for i in range(lhs.shape[0]):
+                factor = np.repeat(lhs[i, :].reshape((-1, 1)), self.dim, axis=1)
+                b = factor * self
+                inf[i] = np.sum(b.inf, axis=0)
+                sup[i] = np.sum(b.sup, axis=0)
+
+            return IntervalMatrix(inf, sup)
+
+        if isinstance(other, np.ndarray):
+            return __rmatmul_array(other)
+        else:
+            raise NotImplementedError
 
     def __imatmul__(self, other):
         return self @ other
@@ -307,13 +331,23 @@ class Interval(Geometry.Base):
             inf, sup = np.min(bd, axis=0), np.max(bd, axis=0)
             return Interval(inf, sup)
 
-        def __mul_array_like(rhs: ArrayLike):
+        def __mul_real(rhs: Real):
             rhs = np.array(rhs) if isinstance(rhs, (list, tuple)) else rhs
             infm, supm = self.inf * rhs, self.sup * rhs
             inf, sup = np.minimum(infm, supm), np.maximum(infm, supm)
             return Interval(inf, sup)
 
-        if isinstance(other, (Real, np.ndarray, list, tuple)):
+        def __mul_array_like(rhs: ArrayLike):
+            from .interval_matrix import IntervalMatrix
+
+            rhs = np.array(rhs) if isinstance(rhs, (list, tuple)) else rhs
+            infm, supm = self.inf * rhs, self.sup * rhs
+            inf, sup = np.minimum(infm, supm), np.maximum(infm, supm)
+            return IntervalMatrix(inf, sup)
+
+        if isinstance(other, Real):
+            return __mul_real(other)
+        elif isinstance(other, (np.ndarray, list, tuple)):
             return __mul_array_like(other)
         elif isinstance(other, Geometry.Base):
             if other.type == Geometry.TYPE.INTERVAL:
@@ -329,6 +363,21 @@ class Interval(Geometry.Base):
 
     def __rmul__(self, other):
         return self * other
+
+        def __rmul_array(lhs: np.ndarray):
+            from .interval_matrix import IntervalMatrix
+
+            infm, supm = self.inf * lhs, self.sup * lhs
+            inf, sup = np.minimum(infm, supm), np.maximum(infm, supm)
+
+            print(inf)
+            print(sup)
+            return IntervalMatrix(inf, sup)
+
+        if isinstance(other, np.ndarray):
+            return __rmul_array(other)
+        else:
+            raise NotImplementedError
 
     def __imul__(self, other):
         return self * other
@@ -363,7 +412,7 @@ class Interval(Geometry.Base):
         raise NotImplementedError
 
     def __isub__(self, other):
-        raise NotImplementedError
+        return self - other
 
     def __truediv__(self, other):
         def __t_real(rhs: Real):
@@ -573,7 +622,7 @@ class Interval(Geometry.Base):
         :param dim:
         :return:
         """
-        inf, sup = self.inf, self.sup
+        inf, sup = self.inf.copy(), self.sup.copy()
         c = (self.inf[dim] + self.sup[dim]) * 0.5
         inf[dim] = c
         sup[dim] = c

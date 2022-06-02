@@ -10,12 +10,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import cvxpy as cp
 import numpy as np
+from scipy.linalg import block_diag
 
 from pyrat.dynamic_system import NonLinSys
-from pyrat.geometry import Geometry
+from pyrat.geometry import Geometry, Polytope
 from pyrat.geometry.operation import cvt2, boundary
-from pyrat.misc import Reachable, Set
+from pyrat.misc import Reachable
 from .algorithm import Algorithm
 from .cdc2008 import CDC2008
 
@@ -36,19 +38,80 @@ class CAV2016:
     @classmethod
     def boundary_back(cls, sys: NonLinSys.Entity, u, epsilon, opt: CDC2008.Options):
         bounds = boundary(u, epsilon, Geometry.TYPE.ZONOTOPE)
-        r0 = [Set(cvt2(bd, Geometry.TYPE.ZONOTOPE)) for bd in bounds]
-        r_ti, r_tp = CDC2008.reach_one_step(sys, r0, opt)
-
-        # TODO
-        raise NotImplementedError
+        r0 = [cvt2(bd, Geometry.TYPE.ZONOTOPE) for bd in bounds]
+        opt.r0 = r0
+        rs = CDC2008.reach(sys, opt)
+        return [cvt2(zono.geometry, Geometry.TYPE.INTERVAL) for zono in rs.tp[-1]]
 
     @classmethod
     def polytope(cls, omega):
-        # TODO
-        raise NotImplementedError
+        # get vertices of these input geometry objects
+        pts = np.concatenate([interval.vertices for interval in omega], axis=0)
+        # get polytope from these points
+        return cvt2(pts, Geometry.TYPE.POLYTOPE)
 
     @classmethod
     def contraction(cls, omega, o, opt: Options):
+        num_box = len(omega)
+        bj = []
+        for i in range(num_box):
+            x = cp.Variable(o.dim + 1)
+            c = np.zeros(o.dim + 1)
+            c[-1] = 1
+
+            constraints = []
+            a = np.zeros((o.a.shape[0], x.shape[0]))
+            a[:, :-1] = o.a
+            a[:, -1] = -1
+            constraints.append(a @ x - o.b <= 0)
+            lb = np.zeros(omega[i].inf.shape[0] + 1)
+            lb[:-1] = omega[i].inf
+            lb[-1] = -1e15
+            ub = np.zeros(omega[i].sup.shape[0] + 1)
+            ub[:-1] = omega[i].sup
+            ub[-1] = 0
+            constraints.append(lb <= x)
+            constraints.append(x <= ub)
+
+            cost = c @ x
+            prob = cp.Problem(cp.Minimize(cost), constraints)
+            prob.solve()
+            assert prob.status == "optimal"  # ensure valid solution for LP problem
+            bj.append(x.value[-1])
+        bu = np.min(bj)
+        return Polytope(o.a, o.b + bu)
+
+    @classmethod
+    def contraction_try(cls, omega, o, opt: Options):
+        # do linear programming simultaneously
+        num_box = len(omega)
+        x = cp.Variable(num_box * o.dim + num_box)
+        constraints = []
+        # add constraints Ax+C<=B
+        a = np.zeros((o.a.shape[0] * num_box, x.shape[0]))
+        temp0 = a[:, :-num_box]
+        temp1 = block_diag(*[o.a for i in range(num_box)])
+        print(temp1.shape)
+        print(temp0.shape)
+        a[:, :-num_box] = block_diag(*[o.a for i in range(num_box)])
+        constraints.append(a @ x <= np.repeat(o.b, num_box))
+        # add constraints x in Ij
+        bd = np.full((x.shape[0], 2), -np.inf)
+        bd[:-num_box, 0] = np.concatenate([interval.inf for interval in omega])
+        bd[:-num_box, 1] = np.concatenate([interval.sup for interval in omega])
+        bd[-num_box:1] = 0
+        constraints.append(bd[:, 0] <= x)
+        constraints.append(x <= bd[:, 1])
+        assert np.all(bd[:, 0] <= bd[:, 1])
+        # minimize c'x with x=[xj0 xj1 ... b0 b1 b2 ... b_{mk}] == sum of bj
+        c = np.zeros(x.shape[0])
+        c[-num_box:] = 1
+        cost = c @ x
+        prob = cp.Problem(cp.Minimize(cost), constraints)
+        prob.solve(solver=cp.MOSEK, verbose=True)
+        # check the linear programming
+
+        exit(False)
         # TODO
         raise NotImplementedError
 
@@ -70,6 +133,7 @@ class CAV2016:
     def reach(cls, sys: NonLinSys.Entity, opt: Options, opt_back: CDC2008.Options):
         assert opt.validation(sys.dim)
         assert opt_back.validation(sys.dim)
+        sys.reverse()  # reverse the system for backward computation
         ti_set, ti_time = [], []
         time_pts = np.linspace(opt.t_start, opt.t_end, opt.steps_num)
         u = opt.r0
@@ -86,4 +150,4 @@ class CAV2016:
             else:
                 break
 
-        return Reachable.Result(ti_set, ti_time)
+        return Reachable.Result(ti_set, [])

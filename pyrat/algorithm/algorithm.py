@@ -20,6 +20,7 @@ class Algorithm:
             assert 0 <= self.t_start <= self.t_end
             assert 0 < self.step <= self.t_end - self.t_start
             self.steps_num = round((self.t_end - self.t_start) / self.step)
+            self.step_idx = 0
             return True
 
         def _validate_inputs(self):

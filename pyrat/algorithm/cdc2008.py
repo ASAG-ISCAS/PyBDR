@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 import numpy as np
 from scipy.special import factorial
+
 from pyrat.dynamic_system import LinSys, NonLinSys
 from pyrat.geometry import Geometry, Zonotope
 from pyrat.geometry.operation import cvt2

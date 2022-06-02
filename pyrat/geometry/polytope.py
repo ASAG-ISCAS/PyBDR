@@ -29,6 +29,14 @@ class Polytope(Geometry.Base):
 
     # =============================================== property
     @property
+    def a(self) -> np.ndarray:
+        return self._a
+
+    @property
+    def b(self) -> np.ndarray:
+        return self._b
+
+    @property
     def c(self) -> np.ndarray:
         """
         chebyshev center of this polytope
@@ -61,7 +69,7 @@ class Polytope(Geometry.Base):
         info += ">>> dimension -- constraints num\n"
         info += str(self.dim) + "\n"
         info += str(self._a.shape[0]) + "\n"
-        info = "\n ----------------- Polytope END -----------------\n"
+        info += "\n ----------------- Polytope END -----------------\n"
         return info
 
     @property
@@ -105,7 +113,7 @@ class Polytope(Geometry.Base):
                 return __contains_zonotope(item)
 
     def __str__(self):
-        raise NotImplementedError
+        return self.info
 
     def __add__(self, other):
         raise NotImplementedError
@@ -157,15 +165,36 @@ class Polytope(Geometry.Base):
 
         f = np.zeros(2)
         proj = (e, f)
-        c = np.zeros((1, self.dim))
-        d = np.zeros(1)
-        eq = (c, d)
 
-        return pypoman.project_polytope(proj, ineq, eq, method="bretl")
+        vs, _ = pypoman.projection.project_polyhedron(proj, ineq)
+        vs = np.vstack(vs)
+        center = np.sum(vs, axis=0) / vs.shape[0]
+
+        angles = np.arctan2(vs[:, 1] - center[1], vs[:, 0] - center[0])
+        angles[angles < 0] += 2 * np.pi
+        idx = np.argsort(angles)
+        return vs[idx]
 
     def proj(self, dims):
         raise NotImplementedError
 
     def boundary(self, max_dist: float, element: Geometry.TYPE):
-        # TODO
-        raise NotImplementedError
+        from pyrat.util.functional import CSPSolver
+        from pyrat.geometry import Interval, cvt2
+
+        def f(x):
+            z = Interval.zero(self._a.shape[0])
+            for i in range(self.a.shape[0]):
+                for j in range(self.a.shape[1]):
+                    z[i] += self.a[i, j] * x[j]
+                z[i] -= self._b[i]
+
+            ind0 = np.logical_and(z.inf <= 0, z.sup >= 0)
+            ind1 = z.inf > 0
+            sum = np.sum(ind0)
+            return 0 < sum and np.sum(ind1) <= 0
+
+        lb = np.min(self.vertices, axis=0) - max_dist
+        ub = np.max(self.vertices, axis=0) + max_dist
+        boxes = CSPSolver.solve(f, lb, ub, max_dist)
+        return [cvt2(box, element) for box in boxes]

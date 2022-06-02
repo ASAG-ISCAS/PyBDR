@@ -1,21 +1,32 @@
 from __future__ import annotations
 
+from enum import IntEnum
 from numbers import Real
-from typing import TYPE_CHECKING
+
 import numpy as np
 from numpy.typing import ArrayLike
-from enum import IntEnum
-from .geometry import Geometry
+
 import pyrat.util.functional.auxiliary as aux
+from .geometry import Geometry
+from .zonotope import Zonotope
+
+
+# if TYPE_CHECKING:
+#     from .zonotope import Zonotope
 
 
 class PolyZonotope(Geometry.Base):
-    class RESTRUCTURE(IntEnum):
-        REDUCE_PCA = 0
+    class METHOD:
+        class RESTRUCTURE(IntEnum):
+            REDUCE_PCA = 0
 
-    _max_depth_gen_order = 50
-    _max_poly_zono_ratio = 0.01
-    _restructure_tech: RESTRUCTURE = RESTRUCTURE.REDUCE_PCA
+        class RECUE(IntEnum):
+            GIRARD = 0
+
+    MAX_DEPTH_GEN_ORDER = 50
+    MAX_POLY_ZONO_RATIO = 0.01
+    RESTRUCTURE_METHOD = METHOD.RESTRUCTURE.REDUCE_PCA
+    REDUCE_METHOD = METHOD.RECUE.GIRARD
 
     def __init__(
         self,
@@ -96,10 +107,28 @@ class PolyZonotope(Geometry.Base):
         raise NotImplementedError
 
     def __add__(self, other):
-        raise NotImplementedError
+        def __add_zonotope(rhs: Zonotope):
+            c = self.c + rhs.c
+            gen_rst = (
+                rhs.gen
+                if self.gen_rst is None
+                else np.concatenate([self.gen_rst, rhs.gen], axis=1)
+            )
+            return PolyZonotope(c, self.gen, gen_rst, self.exp_mat)
+
+        if isinstance(other, (np.ndarray, Real)):
+            return PolyZonotope(self.c + other, self.gen, self.gen_rst, self.exp_mat)
+        elif isinstance(other, Geometry.Base):
+            if other.type == Geometry.TYPE.ZONOTOPE:
+                return __add_zonotope(other)
+        else:
+            raise NotImplementedError
 
     def __sub__(self, other):
-        raise NotImplementedError
+        if isinstance(other, (np.ndarray, Real)):
+            return self + (-other)
+        else:
+            raise NotImplementedError
 
     def __pos__(self):
         raise NotImplementedError
@@ -108,7 +137,19 @@ class PolyZonotope(Geometry.Base):
         raise NotImplementedError
 
     def __matmul__(self, other):
-        raise NotImplementedError
+        if isinstance(other, np.ndarray):
+            raise NotImplementedError(
+                "For matrix multiplication, use 'matrix@polyzonotope' instead"
+            )
+        else:
+            raise NotImplementedError
+
+    def __rmatmul__(self, other):
+        if isinstance(other, np.ndarray):
+            c = other @ self.c
+            gen = other @ self.gen
+            gen_rst = other @ self.gen_rst if self.gen_rst is not None else None
+            return PolyZonotope(c, gen, gen_rst, self.exp_mat)
 
     def __mul__(self, other):
         raise NotImplementedError
@@ -132,9 +173,61 @@ class PolyZonotope(Geometry.Base):
 
     # =============================================== public method
     def enclose(self, other):
-        raise NotImplementedError
+        def __enclose_polyzonotope(rhs: PolyZonotope):
+            if np.all(self.exp_mat.shape == rhs.exp_mat.shape) and np.all(
+                self.exp_mat == rhs.exp_mat
+            ):
+                gen = np.concatenate(
+                    [
+                        0.5 * self.gen + 0.5 * rhs.gen,
+                        0.5 * self.gen - 0.5 * rhs.gen,
+                        (0.5 * self.c - 0.5 * rhs.c).reshape((-1, 1)),
+                    ],
+                    axis=1,
+                )
+                c = 0.5 * self.c + 0.5 * rhs.c
+
+                temp = np.ones((1, self.exp_mat.shape[1]))
+                exp_mat = np.concatenate(
+                    [
+                        np.concatenate([self.exp_mat, rhs.exp_mat], axis=1),
+                        np.concatenate([0 * temp, temp], axis=1),
+                    ],
+                    axis=0,
+                )
+                temp = np.zeros((exp_mat.shape[0], 1))
+                temp[-1] = 1
+                exp_mat = np.concatenate([exp_mat, temp], axis=1)
+
+                # compute convex hull of the independent generators by using the
+                # enclose function for linear zonotopes
+                temp = np.zeros_like(self.c)
+                zono1 = Zonotope(
+                    temp,
+                    np.zeros((temp.shape[0], 1))
+                    if self.gen_rst is None
+                    else self.gen_rst,
+                )
+                zono2 = Zonotope(
+                    temp,
+                    np.zeros((temp.shape[0], 1))
+                    if rhs.gen_rst is None
+                    else rhs.gen_rst,
+                )
+
+                zono = zono1.enclose(zono2)
+                gen_rst = zono.gen
+                return PolyZonotope(c, gen, gen_rst, exp_mat)
+            else:
+                raise NotImplementedError
+
+        if isinstance(other, PolyZonotope):
+            return __enclose_polyzonotope(other)
+        else:
+            raise NotImplementedError
 
     def reduce(self):
+
         raise NotImplementedError
 
     def proj(self, dims):

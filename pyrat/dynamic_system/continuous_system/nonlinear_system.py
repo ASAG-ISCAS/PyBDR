@@ -85,6 +85,9 @@ class NonLinSys:
         def __str__(self):
             raise NotImplementedError
 
+        def reverse(self):
+            self._model.f *= -1
+
         @property
         def dim(self):
             return self._model.dim
