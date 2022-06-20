@@ -18,10 +18,10 @@ from pyrat.geometry import Geometry, Zonotope
 from pyrat.geometry.operation import cvt2
 from pyrat.misc import Set, Reachable
 from .algorithm import Algorithm
-from .hscc2011 import HSCC2011
+from .alk2011hscc import ALK2011HSCC
 
 
-class CDC2008:
+class ASB2008CDC:
     @dataclass
     class Options(Algorithm.Options):
         taylor_terms: int = 4
@@ -57,7 +57,7 @@ class CDC2008:
         a, b = sys.jacobian((opt.lin_err_x, opt.lin_err_u))
         assert not (np.any(np.isnan(a))) or np.any(np.isnan(b))
         lin_sys = LinSys.Entity(xa=a)
-        lin_opt = HSCC2011.Options()
+        lin_opt = ALK2011HSCC.Options()
         lin_opt.step = opt.step
         lin_opt.taylor_terms = opt.taylor_terms
         lin_opt.factors = opt.factors
@@ -101,7 +101,7 @@ class CDC2008:
     def linear_reach(cls, sys: NonLinSys.Entity, r: Set, opt: Options):
         lin_sys, lin_opt = cls.linearize(sys, r.geometry, opt)
         r_delta = r.geometry - opt.lin_err_x
-        r_ti, r_tp = HSCC2011.reach_one_step(lin_sys, r_delta, lin_opt)
+        r_ti, r_tp = ALK2011HSCC.reach_one_step(lin_sys, r_delta, lin_opt)
 
         perf_ind_cur, perf_ind = np.inf, 0
         applied_err, abstract_err, v_err_dyn = None, r.err, None
@@ -109,7 +109,7 @@ class CDC2008:
         while perf_ind_cur > 1 and perf_ind <= 1:
             applied_err = 1.1 * abstract_err
             v_err = Zonotope(0 * applied_err, np.diag(applied_err))
-            r_all_err = HSCC2011.error_solution(v_err, lin_opt)
+            r_all_err = ALK2011HSCC.error_solution(v_err, lin_opt)
             r_max = r_ti + r_all_err
             true_err, v_err_dyn = cls.abstract_err(sys, r_max, opt)
 
@@ -128,7 +128,7 @@ class CDC2008:
         r_tp += opt.lin_err_x
 
         # compute the reachable set due to the linearization error
-        r_err = HSCC2011.error_solution(v_err_dyn, lin_opt)
+        r_err = ALK2011HSCC.error_solution(v_err_dyn, lin_opt)
 
         # add the abstraction error to the reachable sets
         r_ti += r_err
@@ -168,7 +168,7 @@ class CDC2008:
             next_ti, next_tp = cls.reach_one_step(sys, tp_set[-1], opt)
             opt.step_idx += 1
             ti_set.append(next_ti)
-            ti_time.append(time_pts[opt.step_idx - 1 : opt.step_idx + 1])
+            ti_time.append(time_pts[opt.step_idx - 1: opt.step_idx + 1])
             tp_set.append(next_tp)
             tp_time.append(time_pts[opt.step_idx])
 

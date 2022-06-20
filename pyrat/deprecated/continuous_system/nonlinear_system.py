@@ -239,7 +239,7 @@ class NonLinSys:
             else:
                 # loop until the actual abstraction error is smaller than the estimated
                 # linearization error
-                r_tp, r_ti = r.tp, r.ti
+                r_tp, r_ti = r.tps, r.tis
                 perf_ind_cur, perf_ind = np.inf, 0
                 applied_err, abstr_err, v_err_dyn = None, r_init.err, None
 

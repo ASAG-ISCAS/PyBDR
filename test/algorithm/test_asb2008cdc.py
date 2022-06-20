@@ -1,9 +1,9 @@
 import numpy as np
-from pyrat.algorithm import CDC2008
+from pyrat.algorithm import ASB2008CDC
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Zonotope
 from pyrat.model import *
-from pyrat.util.visualization import vis2d
+from pyrat.util.visualization import plot
 
 
 def test_van_der_pol():
@@ -11,8 +11,8 @@ def test_van_der_pol():
     system = NonLinSys.Entity(VanDerPol())
 
     # settings for the computation
-    options = CDC2008.Options()
-    options.t_end = 4
+    options = ASB2008CDC.Options()
+    options.t_end = 3.5
     options.step = 0.004
     options.tensor_order = 2
     options.taylor_terms = 4
@@ -25,10 +25,15 @@ def test_van_der_pol():
     Zonotope.ORDER = 50
 
     # reachable sets computation
-    results = CDC2008.reach(system, options)
+    results = ASB2008CDC.reach(system, options)
+
+    geos = []
+    for tps in results.tps:
+        for tp in tps:
+            geos.append(tp.geometry)
 
     # visualize the results
-    vis2d(results, [0, 1])
+    plot(geos, [0, 1])
 
 
 def test_tank6eq():
@@ -36,7 +41,7 @@ def test_tank6eq():
     system = NonLinSys.Entity(Tank6Eq())
 
     # settings for the computation
-    options = CDC2008.Options()
+    options = ASB2008CDC.Options()
     options.t_end = 400
     options.step = 4
     options.tensor_order = 2
@@ -51,12 +56,17 @@ def test_tank6eq():
     Zonotope.ORDER = 50
 
     # reachable sets computation
-    results = CDC2008.reach(system, options)
+    results = ASB2008CDC.reach(system, options)
+
+    geos = []
+    for tps in results.tps:
+        for tp in tps:
+            geos.append(tp.geometry)
 
     # visualize the results
-    vis2d(results, [0, 1])
-    vis2d(results, [2, 3])
-    vis2d(results, [4, 5])
+    plot(geos, [0, 1])
+    plot(geos, [2, 3])
+    plot(geos, [4, 5])
 
 
 def test_laub_loomis():
@@ -64,12 +74,12 @@ def test_laub_loomis():
     system = NonLinSys.Entity(LaubLoomis())
 
     # settings for the computation
-    options = CDC2008.Options()
+    options = ASB2008CDC.Options()
     options.t_end = 20
     options.step = 0.04
     options.tensor_order = 2
     options.taylor_terms = 4
-    options.r0 = [Zonotope([1.2, 1.05, 1.5, 2.4, 1, 0.1, 0.45], np.eye(7) * 0)]
+    options.r0 = [Zonotope([1.2, 1.05, 1.5, 2.4, 1, 0.1, 0.45], np.eye(7) * 0.01)]
     options.u = Zonotope([0], [[0.005]])
     options.u = Zonotope.zero(1, 1)
     options.u_trans = np.zeros(1)
@@ -78,9 +88,15 @@ def test_laub_loomis():
     Zonotope.REDUCE_METHOD = Zonotope.METHOD.REDUCE.GIRARD
     Zonotope.ORDER = 50
 
-    results = CDC2008.reach(system, options)
-    vis2d(results, [0, 1])
-    vis2d(results, [2, 4])
-    vis2d(results, [5, 6])
-    vis2d(results, [1, 5])
-    vis2d(results, [4, 6])
+    results = ASB2008CDC.reach(system, options)
+
+    geos = []
+    for tps in results.tps:
+        for tp in tps:
+            geos.append(tp.geometry)
+
+    plot(geos, [0, 1])
+    plot(geos, [2, 4])
+    plot(geos, [5, 6])
+    plot(geos, [1, 5])
+    plot(geos, [4, 6])

@@ -19,7 +19,7 @@ from pyrat.geometry import Geometry, Polytope, Zonotope
 from pyrat.geometry.operation import cvt2, boundary
 from pyrat.misc import Reachable
 from .algorithm import Algorithm
-from .cdc2008 import CDC2008
+from .asb2008cdc import ASB2008CDC
 
 
 class CAV2016:
@@ -36,12 +36,12 @@ class CAV2016:
             return True
 
     @classmethod
-    def boundary_back(cls, sys: NonLinSys.Entity, u, epsilon, opt: CDC2008.Options):
+    def boundary_back(cls, sys: NonLinSys.Entity, u, epsilon, opt: ASB2008CDC.Options):
         bounds = boundary(u, epsilon, Geometry.TYPE.ZONOTOPE)
         r0 = [cvt2(bd, Geometry.TYPE.ZONOTOPE) for bd in bounds]
         opt.r0 = r0
-        rs = CDC2008.reach(sys, opt)
-        return [cvt2(zono.geometry, Geometry.TYPE.INTERVAL) for zono in rs.tp[-1]]
+        rs = ASB2008CDC.reach(sys, opt)
+        return [cvt2(zono.geometry, Geometry.TYPE.INTERVAL) for zono in rs.tps[-1]]
 
     @classmethod
     def polytope(cls, omega):
@@ -134,11 +134,11 @@ class CAV2016:
         return x.value[-1]  # which is d
 
     @classmethod
-    def verification(cls, o, u_back, sys, bu, epsilon, opt: CDC2008.Options):
+    def verification(cls, o, u_back, sys, bu, epsilon, opt: ASB2008CDC.Options):
         r0 = Zonotope(u_back.c, np.eye(u_back.c.shape[0]) * 0.1)
         opt.r0 = [r0]
-        rs = CDC2008.reach(sys, opt)
-        sx = rs.tp[-1][-1].geometry
+        rs = ASB2008CDC.reach(sys, opt)
+        sx = rs.tps[-1][-1].geometry
         is_inside = sx in o
         d = cls.get_d(o)
         if abs(bu / d) > epsilon or not is_inside:
@@ -146,7 +146,7 @@ class CAV2016:
         return True
 
     @classmethod
-    def one_step_backward(cls, u, sys, opt: Options, opt_back: CDC2008.Options):
+    def one_step_backward(cls, u, sys, opt: Options, opt_back: ASB2008CDC.Options):
         sys.reverse()  # reverse the system for backward computation
         omega = cls.boundary_back(sys, u, opt.epsilon_m, opt_back)
         o = cls.polytope(omega)
@@ -157,7 +157,7 @@ class CAV2016:
         return u_back, True
 
     @classmethod
-    def reach(cls, sys: NonLinSys.Entity, opt: Options, opt_back: CDC2008.Options):
+    def reach(cls, sys: NonLinSys.Entity, opt: Options, opt_back: ASB2008CDC.Options):
         assert opt.validation(sys.dim)
         assert opt_back.validation(sys.dim)
         tp_set, tp_time = [], []

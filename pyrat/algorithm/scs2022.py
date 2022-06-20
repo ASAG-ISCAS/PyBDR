@@ -16,7 +16,7 @@ from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Zonotope, Interval
 from pyrat.misc import Set
 from pyrat.model import Model
-from .cdc2008 import CDC2008
+from .asb2008cdc import ASB2008CDC
 
 
 class SCS2022:
@@ -156,13 +156,13 @@ class SCS2022:
         system = NonLinSys.Entity(cls.init_model(f, px, opt))
 
         # init options for verification
-        verif_opt = CDC2008.Options()
+        verif_opt = ASB2008CDC.Options()
         verif_opt.u = Zonotope.zero(1)
         verif_opt.u_trans = np.zeros(1)
         verif_opt.step = opt.step
         verif_opt.t_end = opt.step
         assert verif_opt.validation(opt.dim)
-        r_ti, r_tp = CDC2008.reach_one_step(system, r0, verif_opt)
+        r_ti, r_tp = ASB2008CDC.reach_one_step(system, r0, verif_opt)
         # check if r_ti inside the RA set according to the value function
         for vertex in r_ti[0].vertices:
             if opt.vx(vertex) <= 0:

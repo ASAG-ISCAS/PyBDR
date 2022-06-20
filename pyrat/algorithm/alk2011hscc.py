@@ -19,7 +19,7 @@ from pyrat.geometry.operation import cvt2
 from .algorithm import Algorithm
 
 
-class HSCC2011:
+class ALK2011HSCC:
     @dataclass
     class Options(Algorithm.Options):
         u_trans: np.ndarray = None

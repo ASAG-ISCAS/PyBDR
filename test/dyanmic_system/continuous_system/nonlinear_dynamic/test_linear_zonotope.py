@@ -27,8 +27,8 @@ def test_vanDerPol():
     Zonotope.ORDER = 50
 
     results = system.reach(option)
-    print(results.tp_time[-1])
-    print(results.ti_time[-1])
+    print(results.tpt[-1])
+    print(results.tit[-1])
     vis2d(results, [0, 1])
 
 

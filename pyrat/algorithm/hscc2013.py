@@ -14,8 +14,8 @@ from pyrat.geometry import Geometry, Zonotope, Interval
 from pyrat.geometry.operation import cvt2
 from pyrat.misc import Set, Reachable
 from .algorithm import Algorithm
-from .hscc2011 import HSCC2011
-from .cdc2008 import CDC2008
+from .alk2011hscc import ALK2011HSCC
+from .asb2008cdc import ASB2008CDC
 
 
 class HSCC2013:
@@ -124,10 +124,10 @@ class HSCC2013:
 
     @classmethod
     def poly_reach(cls, sys: NonLinSys.Entity, r: Set, opt: Options):
-        lin_sys, lin_opt = CDC2008.linearize(sys, r.geometry, opt)
+        lin_sys, lin_opt = ASB2008CDC.linearize(sys, r.geometry, opt)
         r_delta = r.geometry - opt.lin_err_x
-        r_ti, r_tp = HSCC2011.reach_one_step(lin_sys, r_delta, lin_opt)
-        r_diff = HSCC2011.delta_reach(lin_sys, r_delta, lin_opt)
+        r_ti, r_tp = ALK2011HSCC.reach_one_step(lin_sys, r_delta, lin_opt)
+        r_diff = ALK2011HSCC.delta_reach(lin_sys, r_delta, lin_opt)
         h, zd, err_stat, t, ind3, zd3 = cls.pre_stat_err(sys, r_delta, opt)
         perf_ind_cur, perf_ind = np.inf, 0
         applied_err, abstract_err, v_err_dyn, v_err_stat = None, r.err, None, None
@@ -135,7 +135,7 @@ class HSCC2013:
         while perf_ind_cur > 1 and perf_ind <= 1:
             applied_err = 1.1 * abstract_err
             v_err = Zonotope(0 * applied_err, np.diag(applied_err))
-            r_all_err = HSCC2011.error_solution(v_err, lin_opt)
+            r_all_err = ALK2011HSCC.error_solution(v_err, lin_opt)
             r_max = r_delta + cvt2(r_diff, Geometry.TYPE.ZONOTOPE) + r_all_err
             true_err, v_err_dyn, v_err_stat = cls.abstract_err(
                 sys, opt, r_max, r_diff + r_all_err, h, zd, err_stat, t, ind3, zd3
@@ -156,7 +156,7 @@ class HSCC2013:
         r_tp += opt.lin_err_x
 
         # compute the reachable set due to the linearization error
-        r_err = HSCC2011.error_solution(v_err_dyn, lin_opt)
+        r_err = ALK2011HSCC.error_solution(v_err_dyn, lin_opt)
 
         # add the abstraction error to the reachable sets
         r_ti += r_err

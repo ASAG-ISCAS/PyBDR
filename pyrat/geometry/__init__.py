@@ -5,6 +5,7 @@ from .interval_matrix import IntervalMatrix
 from .zonotope import Zonotope
 from .poly_zonotope import PolyZonotope
 from .polytope import Polytope
+from .sparse_polyzonotope import SPZono
 from .geometry import Geometry
 from .operation import *
 
@@ -17,4 +18,5 @@ __all__ = [
     "IntervalMatrix",
     "Zonotope",
     "TaylorModel",
+    "SPZono"
 ]

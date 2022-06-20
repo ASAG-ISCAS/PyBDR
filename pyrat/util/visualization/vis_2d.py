@@ -23,16 +23,16 @@ def vis2d(r: Reachable.Result, dims: list, width=800, height=800):
         )
         ax.add_patch(p)
 
-    if len(r.ti) >= 0:
-        vis2dGeo(r.ti, dims)
+    if len(r.tis) >= 0:
+        vis2dGeo(r.tis, dims)
         return
-        for res in r.ti:
+        for res in r.tis:
             for re in res:
                 vis_element(re)
     else:
-        vis2dGeo(r.tp, dims)
+        vis2dGeo(r.tps, dims)
         return
-        for res in r.tp:
+        for res in r.tps:
             for re in res:
                 vis_element(re)
 
