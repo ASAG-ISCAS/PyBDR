@@ -3,6 +3,7 @@ import inspect
 import numpy as np
 
 from pyrat.model import ModelNEW
+from pyrat.model import ModelRef
 from sympy import *
 
 
@@ -48,18 +49,24 @@ def test_fxu():
     xu = symbols(("x:6", "u:1"))
     model = ModelNEW(f(*xu), xu)
 
+    modelref = ModelRef(f, [6, 1])
+
     x, u = np.random.rand(6), np.random.rand(1)
+    pre_temp = modelref.evaluate((x, u), "numpy", 3, 1)
+    print(pre_temp.shape)
+    suc_temp = modelref.evaluate((x, u), "numpy", 3, 0)
+    print(suc_temp.shape)
+
     start = aux.performance_counter_start()
     temp0 = model.evaluate((x, u), "numpy", 3)
+    print(temp0.shape)
+    temp = temp0[:, :-1, :-1, :-1]
+    print(temp.shape)
+    assert np.allclose(suc_temp, temp0[:, :-1, :-1, :-1])
+    assert np.allclose(pre_temp, temp0[:, -1, -1, -1])
+
     start = aux.performance_counter(start, "temp0")
     temp1 = model.evaluate((x, u), "numpy", 2)
     start = aux.performance_counter(start, "temp1")
     temp2 = model.evaluate((x, u), "numpy", 3)
     start = aux.performance_counter(start, "temp2")
-
-    ix, iu = Interval.rand(7), Interval.rand(1)
-    temp3 = model.evaluate((ix), "interval", 1, functional=Interval.functional())
-    print(temp3)
-
-    print(temp0.shape)
-    print(temp1.shape)

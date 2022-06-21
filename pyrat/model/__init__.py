@@ -7,6 +7,7 @@ from .ltv import LTV
 from .genetic_model import GeneticModel
 from .p53_small import P53Small
 from .model_new import ModelNEW
+from .model_ref import ModelRef
 from .synchronous_machine import SynchronousMachine
 
 # from .computer_based_ode import ComputerBasedODE
@@ -14,6 +15,7 @@ from .synchronous_machine import SynchronousMachine
 __all__ = [
     "Model",
     "ModelNEW",
+    "ModelRef",
     "Tank6Eq",
     "VanDerPol",
     "LaubLoomis",
