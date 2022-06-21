@@ -65,17 +65,20 @@ class ModelRef:
         assert order >= 0 and 0 <= v < len(self.__inr_vars)
         if order not in self.__inr_series or v not in self.__inr_series[order]["sym"]:
             self.__take_derivative(order, v)
-        if mod not in self.__inr_series[order]:
-            d = self.__series(order, "sym", v)
-            d = d if order == 0 else d.squeeze(axis=-1)
-            d = ImmutableDenseNDimArray(d)
-            modules = [mod] if functional is None else functional
-            self.__inr_series[order][mod] = {v: lambdify(self.__inr_x, d, modules)}
 
         def _eval_numpy():
+            if mod not in self.__inr_series[order]:
+                d = self.__series(order, "sym", v)
+                d = d if order == 0 else d.squeeze(axis=-1)
+                d = ImmutableDenseNDimArray(d)
+                modules = [mod] if functional is None else functional
+                self.__inr_series[order][mod] = {v: lambdify(self.__inr_x, d, modules)}
             return np.asarray(self.__series(order, mod, v)(*np.concatenate(xs)))
 
         def _eval_interval():
+            temp = self.__series(order, "sym", v)
+            print(temp.shape)
+            # TODO
             raise NotImplementedError
 
         if mod == "numpy":

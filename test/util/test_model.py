@@ -64,6 +64,8 @@ def test_fxu():
     print(temp.shape)
     assert np.allclose(suc_temp, temp0[:, :-1, :-1, :-1])
     assert np.allclose(pre_temp, temp0[:, -1, -1, -1])
+    x, u = Interval.rand(6), Interval.rand(1)
+    modelref.evaluate((x, u), "interval", 3, 0)
 
     start = aux.performance_counter(start, "temp0")
     temp1 = model.evaluate((x, u), "numpy", 2)
