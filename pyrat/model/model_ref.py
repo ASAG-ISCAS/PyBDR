@@ -41,7 +41,9 @@ class ModelRef:
                 )
             )
             self.__inr_f = self.__inr_f.subs(d)
-        self.__inr_series[0] = {"sym": {v: self.__inr_f for v in range(vars_num)}}
+        self.__inr_series[0] = {
+            "sym": {v: np.asarray(self.__inr_f) for v in range(vars_num)}
+        }
 
     def __post_init__(self):
         self.__validation()
@@ -61,7 +63,7 @@ class ModelRef:
         d = np.asarray(d)
         self.__inr_series[order] = {"sym": {v: np.moveaxis(d, 0, -2)}}
 
-    def evaluate(self, xs: tuple, mod: str, order: int, v: int, functional=None):
+    def evaluate(self, xs: tuple, mod: str, order: int, v: int):
         assert order >= 0 and 0 <= v < len(self.__inr_vars)
         if order not in self.__inr_series or v not in self.__inr_series[order]["sym"]:
             self.__take_derivative(order, v)
@@ -71,15 +73,47 @@ class ModelRef:
                 d = self.__series(order, "sym", v)
                 d = d if order == 0 else d.squeeze(axis=-1)
                 d = ImmutableDenseNDimArray(d)
-                modules = [mod] if functional is None else functional
-                self.__inr_series[order][mod] = {v: lambdify(self.__inr_x, d, modules)}
+                self.__inr_series[order][mod] = {v: lambdify(self.__inr_x, d, "numpy")}
             return np.asarray(self.__series(order, mod, v)(*np.concatenate(xs)))
 
         def _eval_interval():
-            temp = self.__series(order, "sym", v)
-            print(temp.shape)
+            from pyrat.geometry import Interval
+
+            if mod not in self.__inr_series[order]:
+                d = self.__series(order, "sym", v)
+                ff = np.frompyfunc(lambda x: x.is_number, 1, 1)
+                xx = ff(d).astype(dtype=bool)
+                mask = xx == 0
+                sym_d = ImmutableDenseNDimArray(d[mask])
+                vf = lambdify(self.__inr_x, sym_d, Interval.functional())
+                self.__inr_series[order][mod] = {v: [vf, mask]}
+            d = self.__series(order, "sym", v)
+            vm = self.__series(order, mod, v)
+            lb = np.zeros_like(d, dtype=float)
+            ub = np.zeros_like(d, dtype=float)
+            # calculate interval expressions
+            vx = np.asarray(
+                vm[0](
+                    *[
+                        xs[i][j]
+                        for i in range(len(self.var_dims))
+                        for j in range(self.var_dims[i])
+                    ]
+                )
+            )
+            inff = np.frompyfunc(lambda x: x.inf, 1, 1)
+            supf = np.frompyfunc(lambda x: x.sup, 1, 1)
+            lb[vm[1]] = inff(vx)
+            ub[vm[1]] = supf(vx)
+            # set remain constant values
+            inv_mask = np.logical_not(vm[1])
+            lb[inv_mask] = d[inv_mask].astype(dtype=float)
+            ub[inv_mask] = d[inv_mask].astype(dtype=float)
+            # finally return the result as interval tensor
+            print(lb.shape)
+            print(ub.shape)
+
             # TODO
-            raise NotImplementedError
 
         if mod == "numpy":
             return _eval_numpy()

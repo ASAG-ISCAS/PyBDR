@@ -2,6 +2,7 @@ from .halfspace import HalfSpace
 from .taylor_model import TaylorModel
 from .interval import Interval
 from .interval_matrix import IntervalMatrix
+from .interval_tensor import IntervalTensor
 from .zonotope import Zonotope
 from .poly_zonotope import PolyZonotope
 from .polytope import Polytope
@@ -16,7 +17,8 @@ __all__ = [
     "PolyZonotope",
     "Interval",
     "IntervalMatrix",
+    "IntervalTensor",
     "Zonotope",
     "TaylorModel",
-    "SPZono"
+    "SPZono",
 ]

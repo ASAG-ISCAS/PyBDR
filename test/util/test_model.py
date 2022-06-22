@@ -65,9 +65,17 @@ def test_fxu():
     assert np.allclose(suc_temp, temp0[:, :-1, :-1, :-1])
     assert np.allclose(pre_temp, temp0[:, -1, -1, -1])
     x, u = Interval.rand(6), Interval.rand(1)
-    modelref.evaluate((x, u), "interval", 3, 0)
 
-    start = aux.performance_counter(start, "temp0")
+    start = aux.performance_counter(start, "modref")
+
+    modelref.evaluate((x, u), "interval", 3, 0)
+    start = aux.performance_counter(start, "modref1")
+    modelref.evaluate((x, u), "interval", 2, 0)
+    start = aux.performance_counter(start, "modref2")
+    modelref.evaluate((x, u), "interval", 2, 0)
+    start = aux.performance_counter(start, "modref3")
+    modelref.evaluate((x, u), "interval", 2, 0)
+
     temp1 = model.evaluate((x, u), "numpy", 2)
     start = aux.performance_counter(start, "temp1")
     temp2 = model.evaluate((x, u), "numpy", 3)

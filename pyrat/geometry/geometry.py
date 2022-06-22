@@ -55,10 +55,6 @@ class Geometry:
 
         # =============================================== operator
         @abstractmethod
-        def __contains__(self, item):
-            raise NotImplementedError
-
-        @abstractmethod
         def __str__(self):
             raise NotImplementedError
 
@@ -86,10 +82,6 @@ class Geometry:
         def __mul__(self, other):
             raise NotImplementedError
 
-        @abstractmethod
-        def __or__(self, other):
-            raise NotImplementedError
-
         # =============================================== class method
 
         @classmethod
@@ -114,10 +106,6 @@ class Geometry:
 
         # =============================================== public method
         def enclose(self, other):
-            raise NotImplementedError
-
-        @abstractmethod
-        def reduce(self):
             raise NotImplementedError
 
         @abstractmethod
