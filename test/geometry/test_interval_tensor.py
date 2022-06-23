@@ -2,11 +2,20 @@ import numpy as np
 
 from pyrat.geometry import IntervalTensor
 
+np.set_printoptions(precision=3, suppress=True)
+
 
 def test_interval():
     inf, sup = np.random.rand(4, 5), np.random.rand(4, 5)
+    inf[0, 0] *= -1
+    sup[0, 0] *= -1
     inf, sup = np.minimum(inf, sup), np.maximum(inf, sup)
     interval = IntervalTensor(inf, sup)
+    temp = 1 / interval
+    print()
+    print(temp.inf)
+    print(temp.sup)
+    print(1 / interval)
     print(interval.info)
     print(interval.dim)
     print(interval.inf)
@@ -14,6 +23,9 @@ def test_interval():
     print(interval.dim)
     a = np.random.rand(3, 3)
     b = np.random.rand(3)
+    print(a**b)
+    print(b**a)
+    exit(False)
     print(a @ b)
     print(b @ a)
     print(b @ b)

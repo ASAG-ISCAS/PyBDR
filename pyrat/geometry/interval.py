@@ -150,7 +150,7 @@ class Interval(Geometry.Base):
         sup[np_idx] = np.maximum(abs(self.inf[np_idx]), abs(self.sup[np_idx]))
         inf[np_idx] = 0
         sup[nn_idx] = abs(self.inf[nn_idx])
-        sup[nn_idx] = abs(self.sup[nn_idx])
+        inf[nn_idx] = abs(self.sup[nn_idx])
         return Interval(inf, sup)
 
     @staticmethod
