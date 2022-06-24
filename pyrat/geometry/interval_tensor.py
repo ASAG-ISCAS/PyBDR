@@ -74,6 +74,8 @@ class IntervalTensor(Geometry.Base):
         info = "\n ------------- Interval BEGIN ------------- \n"
         info += ">>> dimension \n"
         info += str(self.dim) + "\n"
+        info += str(self.inf) + "\n"
+        info += str(self.sup) + "\n"
         info += "\n ------------- Interval END ------------- \n"
         return info
 
@@ -126,7 +128,7 @@ class IntervalTensor(Geometry.Base):
     def __sub__(self, other):
         def _sub_interval(x: IntervalTensor):
             assert np.allclose(self.dim, x.dim)
-            return IntervalTensor(self.inf - x.inf, self.sup - x.sup)
+            return IntervalTensor(self.inf - x.sup, self.sup - x.inf)
 
         if isinstance(other, (Real, np.ndarray)):
             return IntervalTensor(self.inf - other, self.sup - other)
@@ -227,20 +229,37 @@ class IntervalTensor(Geometry.Base):
     def __matmul__(self, other):
         def _matmul_matrix(x: np.ndarray):
             posx, negx = x, np.zeros_like(x, dtype=float)
-            posx[x < 0], negx[x < 0] = 0, x[x < 0]
+            posx[x < 0] = 0
+            negx[x < 0] = x[x < 0]
             inf = self.inf @ posx + self.sup @ negx
             sup = self.sup @ posx + self.inf @ negx
             return IntervalTensor(inf, sup)
 
+        def _matmul_interval(x: IntervalTensor):
+            negx, posx = np.zeros_like(self.inf), np.zeros_like(self.inf)
+            negy, posy = self.sup, self.sup
+            negx[self.sup < 0] = self.inf
+            posx[self.inf > 0] = 0
+            # TODO
+            # possup[self.sup < 0] = 0
+            # negsup[self.sup > 0] = 0
+            # inf = neginf @ possup + posinf @ negsup
+            # sup = neginf @ negsup + posinf @ possup
+            # return IntervalTensor(inf, sup)
+            raise NotImplementedError
+
         if isinstance(other, np.ndarray):
             return _matmul_matrix(other)
+        elif isinstance(other, IntervalTensor):
+            return _matmul_interval(other)
         else:
             raise NotImplementedError
 
     def __rmatmul__(self, other):
         def _rmm_matrix(x: np.ndarray):
             posx, negx = x, np.zeros_like(x, dtype=float)
-            posx[x < 0], negx[x < 0] = 0, x[x < 0]
+            posx[x < 0] = 0
+            negx[x < 0] = x[x < 0]
             inf = posx @ self.inf + negx @ self.sup
             sup = posx @ self.sup + negx @ self.inf
             return IntervalTensor(inf, sup)
@@ -268,7 +287,7 @@ class IntervalTensor(Geometry.Base):
     def __pow__(self, power, modulo=None):
         def _pow_int(x: int):
             if x >= 0:
-                inff, supp = self.inf ** x, self.sup ** x
+                inff, supp = self.inf**x, self.sup**x
                 inf, sup = np.minimum(inff, supp), np.maximum(inff, supp)
                 if x % 2 == 0 and x != 0:
                     ind = (self._inf <= 0) & (self._sup >= 0)
@@ -279,7 +298,7 @@ class IntervalTensor(Geometry.Base):
 
         def _pow_real(x):
             if x >= 0:
-                inf, sup = self.inf ** x, self.sup ** x
+                inf, sup = self.inf**x, self.sup**x
                 ind = self._inf < 0
                 inf[ind] = np.nan
                 sup[ind] = np.nan
@@ -301,7 +320,7 @@ class IntervalTensor(Geometry.Base):
         raise NotImplementedError
 
     def __ipow__(self, other):
-        return self ** other
+        return self**other
 
     @staticmethod
     def exp(x: IntervalTensor):
@@ -405,6 +424,7 @@ class IntervalTensor(Geometry.Base):
     @staticmethod
     def rand(shape):
         inf, sup = np.random.rand(shape), np.random.rand(shape)
+        inf, sup = np.minimum(inf, sup), np.maximum(inf, sup)
         return IntervalTensor(inf, sup)
 
     # =============================================== public method

@@ -77,7 +77,7 @@ class ModelRef:
             return np.asarray(self.__series(order, mod, v)(*np.concatenate(xs)))
 
         def _eval_interval():
-            from pyrat.geometry import Interval
+            from pyrat.geometry import IntervalTensor
 
             if mod not in self.__inr_series[order]:
                 d = self.__series(order, "sym", v)
@@ -85,7 +85,7 @@ class ModelRef:
                 xx = ff(d).astype(dtype=bool)
                 mask = xx == 0
                 sym_d = ImmutableDenseNDimArray(d[mask])
-                vf = lambdify(self.__inr_x, sym_d, Interval.functional())
+                vf = lambdify(self.__inr_x, sym_d, IntervalTensor.functional())
                 self.__inr_series[order][mod] = {v: [vf, mask]}
             d = self.__series(order, "sym", v)
             vm = self.__series(order, mod, v)
@@ -110,10 +110,7 @@ class ModelRef:
             lb[inv_mask] = d[inv_mask].astype(dtype=float)
             ub[inv_mask] = d[inv_mask].astype(dtype=float)
             # finally return the result as interval tensor
-            print(lb.shape)
-            print(ub.shape)
-
-            # TODO
+            return IntervalTensor(lb, ub)
 
         if mod == "numpy":
             return _eval_numpy()

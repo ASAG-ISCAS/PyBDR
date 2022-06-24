@@ -2,50 +2,117 @@ import numpy as np
 
 from pyrat.geometry import IntervalTensor
 
-np.set_printoptions(precision=3, suppress=True)
+np.set_printoptions(precision=5, suppress=True)
+
+
+def random_interval(m, n, neg: bool = True):
+    inf, sup = np.random.rand(m, n), np.random.rand(m, n)
+    row = np.random.choice(inf.shape[0], 2)
+    col = np.random.choice(inf.shape[1], 2)
+    if neg:
+        inf[row, col] *= -1
+        sup[row, col] *= -1
+    inf, sup = np.minimum(inf, sup), np.maximum(inf, sup)
+    return IntervalTensor(inf, sup)
+
+
+def out_interval(a, name):
+    info = name + "inf=["
+    for row in range(a.inf.shape[0]):
+        info += "["
+        for col in range(a.inf.shape[1]):
+            info += str(a.inf[row][col]) + ", "
+        info += "];\n"
+    info += "];"
+    print(info)
+    info = name + "sup=["
+    for row in range(a.sup.shape[0]):
+        info += "["
+        for col in range(a.sup.shape[1]):
+            info += str(a.sup[row][col]) + ", "
+        info += "];\n"
+    info += "];"
+    print(info)
+
+
+def out_matrix(a, name):
+    info = name + "=["
+    for row in range(a.shape[0]):
+        info += "["
+        for col in range(a.shape[1]):
+            info += str(a[row][col]) + ", "
+        info += "];\n"
+    info += "];"
+    print(info)
 
 
 def test_interval():
-    inf, sup = np.random.rand(4, 5), np.random.rand(4, 5)
-    inf[0, 0] *= -1
-    sup[0, 0] *= -1
-    inf, sup = np.minimum(inf, sup), np.maximum(inf, sup)
-    interval = IntervalTensor(inf, sup)
-    temp = 1 / interval
-    print()
-    print(temp.inf)
-    print(temp.sup)
-    print(1 / interval)
-    print(interval.info)
-    print(interval.dim)
-    print(interval.inf)
-    print(interval.sup)
-    print(interval.dim)
-    a = np.random.rand(3, 3)
-    b = np.random.rand(3)
-    print(a**b)
-    print(b**a)
-    exit(False)
-    print(a @ b)
-    print(b @ a)
-    print(b @ b)
-    print(a / b)
-    print(b / a)
-    print(a * b)
-    print(b * a)
+    a = random_interval(3, 5)
+    print(a.inf)
+    print(a.sup)
 
-    c = np.random.rand(2, 4)
-    print(c @ interval)
-    print(interval @ np.random.rand(5))
-    temp = interval * interval
-    np.set_printoptions(precision=3, suppress=True)
-    print(temp)
-    print(temp.inf)
-    print(temp.sup)
-    interval = interval.T
-    print(interval)
-    e = IntervalTensor.empty(2)
-    r = IntervalTensor.rand(1)
-    print(r.is_empty)
-    print(interval.is_empty)
-    print(e.is_empty)
+
+def test_addition():
+    print()
+    a = random_interval(2, 4)
+    out_interval(a, "a")
+    b = random_interval(2, 4)
+    out_interval(b, "b")
+    print("--------------------------")
+    c = 1 + b
+    print(c)
+
+
+def test_subtraction():
+    print()
+    a = random_interval(2, 4)
+    out_interval(a, "a")
+    b = random_interval(2, 4)
+    out_interval(b, "b")
+    print("--------------------------")
+    c = 1 - b
+    print(c)
+
+
+def test_multiplication():
+    print()
+    a = random_interval(2, 4)
+    out_interval(a, "a")
+    b = random_interval(2, 4)
+    out_interval(b, "b")
+    print("--------------------------")
+    c = 1 - b
+    print(c)
+
+
+def test_division():
+    print()
+    a = random_interval(2, 4)
+    out_interval(a, "a")
+    b = random_interval(2, 4)
+    out_interval(b, "b")
+    print("--------------------------")
+    c = 1 - b
+    print(c)
+
+
+def test_matrix_multiplication_case_0():
+    print()
+    a = np.random.rand(2, 4)
+    out_matrix(a, "a")
+    b = random_interval(4, 5)
+    out_interval(b, "b")
+    print("--------------------------")
+    c = a @ b
+    print(c)
+
+
+def test_matrix_multiplication_case_1():
+    print()
+    a = random_interval(2, 4, False)
+    out_interval(a, "a")
+    b = random_interval(4, 5, False)
+    out_interval(b, "b")
+    print("--------------------------")
+    c = a @ b
+    print(c)
