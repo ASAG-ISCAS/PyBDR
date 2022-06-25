@@ -158,7 +158,7 @@ class Interval(Geometry.Base):
 
         inf, sup = x.inf, x.sup
 
-        ind = x.sup - x.inf >= 2 * np.pi
+        ind = (x.sup - x.inf) >= 2 * np.pi
         inf[ind] = -1
         sup[ind] = 1
 

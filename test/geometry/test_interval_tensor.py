@@ -92,7 +92,7 @@ def test_division():
     b = random_interval(2, 4)
     out_interval(b, "b")
     print("--------------------------")
-    c = 1 - b
+    c = 1 / b
     print(c)
 
 
@@ -109,33 +109,159 @@ def test_matrix_multiplication_case_0():
 
 def test_matrix_multiplication_case_1():
     print()
-    a = random_interval(2, 4, False)
+    a = random_interval(2, 4)
     out_interval(a, "a")
-    b = random_interval(4, 5, False)
+    b = random_interval(4, 1)
     out_interval(b, "b")
     print("--------------------------")
     c = a @ b
     print(c)
 
 
-def test_matrix():
-    a = np.random.rand(2, 2, 4, 3)
-    b = np.random.rand(3)
-    c = a @ b
-    d = np.random.rand(4) @ np.random.rand(4)
-    print(d.shape)
-    # d = np.sum(a[:, :, None] * b[None, :, :], axis=1)
-    need_squeeze = b.ndim <= 1
-    if need_squeeze:
-        b = np.expand_dims(b, -1)
-    print(b.shape)
-    print(np.expand_dims(a, -1).shape)
-    print(np.expand_dims(b, 0).shape)
-    e = np.sum(np.expand_dims(a, -1) * np.expand_dims(b, 0), axis=-2)
-    if need_squeeze:
-        e = e.squeeze()
-        print(e.shape)
-    # assert np.allclose(c, d)
-    print(c.shape)
-    print(e.shape)
-    assert np.allclose(c, e)
+def test_abs():
+    print()
+    a = random_interval(2, 4)
+    out_interval(a, "a")
+    print("--------------------------")
+    print(abs(a))
+
+
+def test_pow():
+    print()
+    a = random_interval(2, 4, False)
+    out_interval(a, "a")
+    print("--------------------------")
+    print(a ** (2.1))
+    print(1 / a)
+
+
+def test_exp():
+    print()
+    a = random_interval(2, 4, False)
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.exp(a))
+
+
+def test_log():
+    print()
+    a = random_interval(2, 4, False)
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.log(a))
+
+
+def test_sqrt():
+    print()
+    a = random_interval(2, 4, False)
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.sqrt(a))
+
+
+def test_arcsin():
+    print()
+    a = random_interval(2, 4, False)
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.arcsin(a))
+
+
+def test_arccos():
+    print()
+    a = random_interval(2, 4, False)
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.arccos(a))
+
+
+def test_arctan():
+    print()
+    a = random_interval(2, 4)
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.arctan(a))
+
+
+def test_sinh():
+    print()
+    a = random_interval(2, 4)
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.sinh(a))
+
+
+def test_cosh():
+    print()
+    a = random_interval(2, 4)
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.cosh(a))
+
+
+def test_tanh():
+    print()
+    a = random_interval(2, 4)
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.tanh(a))
+
+
+def test_arcsinh():
+    print()
+    a = random_interval(2, 4)
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.arcsinh(a))
+
+
+def test_arccosh():
+    print()
+    a = random_interval(2, 4, False) + 1
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.arccosh(a))
+
+
+def test_arctanh():
+    print()
+    a = random_interval(2, 4)
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.arctanh(a))
+
+
+def test_sin():
+    print()
+    a = random_interval(2, 4) * 10
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.sin(a))
+
+
+def test_cos():
+    print()
+    a = random_interval(2, 4) * 10
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.cos(a))
+
+
+def test_tan():
+    print()
+    a = random_interval(2, 4) * 10
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.tan(a))
+    b = IntervalTensor(5.781807046304337, 7.156265610661695)
+    print(IntervalTensor.tan(b))
+
+
+def test_cot():
+    print()
+    a = random_interval(2, 4) * 10
+    out_interval(a, "a")
+    print("--------------------------")
+    print(IntervalTensor.cot(a))
+    b = IntervalTensor(5.781807046304337, 7.156265610661695)
+    print(IntervalTensor.cot(b))

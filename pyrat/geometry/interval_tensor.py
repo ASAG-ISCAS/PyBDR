@@ -236,17 +236,23 @@ class IntervalTensor(Geometry.Base):
             return IntervalTensor(inf, sup)
 
         def _matmul_interval(x: IntervalTensor):
-            negx, posx = np.zeros_like(self.inf), np.zeros_like(self.inf)
-            negy, posy = self.sup, self.sup
-            negx[self.sup < 0] = self.inf
-            posx[self.inf > 0] = 0
-            # TODO
-            # possup[self.sup < 0] = 0
-            # negsup[self.sup > 0] = 0
-            # inf = neginf @ possup + posinf @ negsup
-            # sup = neginf @ negsup + posinf @ possup
-            # return IntervalTensor(inf, sup)
-            raise NotImplementedError
+            def mmm(la, lb, ra, rb):
+                lhs = la[..., np.newaxis] * lb[np.newaxis, ...]
+                rhs = ra[..., np.newaxis] * rb[np.newaxis, ...]
+                c = np.maximum(lhs, rhs)
+                return np.sum(c, axis=-2)
+
+            def posneg(m):
+                pos, neg = m, -m
+                pos[pos < 0] = 0
+                neg[neg < 0] = 0
+                return pos, neg
+
+            (linfp, linfn), (lsupp, lsupn) = posneg(self.inf), posneg(self.sup)
+            (rinfp, rinfn), (rsupp, rsupn) = posneg(x.inf), posneg(x.sup)
+            inf = mmm(linfp, rinfp, lsupn, rsupn) - mmm(lsupp, rinfn, linfn, rsupp)
+            sup = mmm(lsupp, rsupp, linfn, rinfn) - mmm(linfp, rsupn, lsupn, rinfp)
+            return IntervalTensor(inf, sup)
 
         if isinstance(other, np.ndarray):
             return _matmul_matrix(other)
@@ -302,6 +308,7 @@ class IntervalTensor(Geometry.Base):
                 ind = self._inf < 0
                 inf[ind] = np.nan
                 sup[ind] = np.nan
+                return IntervalTensor(inf, sup)
             else:
                 return (1 / self) ** (-x)
 
@@ -324,95 +331,269 @@ class IntervalTensor(Geometry.Base):
 
     @staticmethod
     def exp(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        return IntervalTensor(np.exp(x.inf), np.exp(x.sup))
 
     @staticmethod
     def log(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        inf, sup = np.log(x.inf), np.log(x.sup)
+
+        ind = (x.inf < 0) & (x.sup >= 0)
+        inf[ind] = np.nan
+
+        ind = x.sup < 0
+        inf[ind] = np.nan
+        sup[ind] = np.nan
+
+        return IntervalTensor(inf, sup)
 
     @staticmethod
     def sqrt(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        inf, sup = np.sqrt(x.inf), np.sqrt(x.sup)
+
+        ind = (x.inf < 0) & (x.sup >= 0)
+        inf[ind] = np.nan
+
+        ind = x.sup < 0
+        inf[ind] = np.nan
+        sup[ind] = np.nan
+
+        return IntervalTensor(inf, sup)
 
     @staticmethod
     def arcsin(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+
+        inf, sup = np.arcsin(x.inf), np.arcsin(x.sup)
+
+        ind = (x.inf >= -1) & (x.inf <= 1) & (x.sup > 1)
+        sup[ind] = np.nan
+
+        ind = (x.inf < -1) & (x.sup >= -1) & (x.sup <= 1)
+        inf[ind] = np.nan
+
+        ind = (x.inf < -1) & (x.sup > 1)
+        inf[ind] = np.nan
+        sup[ind] = np.nan
+
+        return IntervalTensor(inf, sup)
 
     @staticmethod
     def arccos(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        inf, sup = np.arccos(x.sup), np.arccos(x.inf)
+
+        ind = (x.inf >= -1) & (x.inf <= 1) & (x.sup > 1)
+        sup[ind] = np.nan
+
+        ind = (x.inf < -1) & (x.sup >= -1) & (x.sup <= 1)
+        inf[ind] = np.nan
+
+        ind = (x.inf < -1) & (x.sup > 1)
+        inf[ind] = np.nan
+        sup[ind] = np.nan
+
+        return IntervalTensor(inf, sup)
 
     @staticmethod
     def arctan(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        return IntervalTensor(np.arctan(x.inf), np.arctan(x.sup))
 
     @staticmethod
     def sinh(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        return IntervalTensor(np.sinh(x.inf), np.sinh(x.sup))
 
     @staticmethod
     def cosh(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        inf, sup = np.cosh(x.sup), np.cosh(x.inf)
+
+        ind = (x.inf <= 0) & (x.sup >= 0)
+        inf[ind] = 1
+        sup[ind] = np.cosh(np.maximum(abs(x.inf[ind]), abs(x.sup[ind])))
+
+        ind = x.inf > 0
+        inf[ind] = np.cosh(x.inf[ind])
+        sup[ind] = np.cosh(x.sup[ind])
+
+        return IntervalTensor(inf, sup)
 
     @staticmethod
     def tanh(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
-
-    @staticmethod
-    def tanh(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        return IntervalTensor(np.tanh(x.inf), np.tanh(x.sup))
 
     @staticmethod
     def arcsinh(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        return IntervalTensor(np.arcsinh(x.inf), np.arcsinh(x.sup))
 
     @staticmethod
     def arccosh(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        inf, sup = np.arccosh(x.inf), np.arccosh(x.sup)
+
+        ind = (x.inf < 1) & (x.sup >= 1)
+        inf[ind] = np.nan
+
+        ind = x.sup < 1
+        inf[ind] = np.nan
+        sup[ind] = np.nan
+
+        return IntervalTensor(inf, sup)
 
     @staticmethod
     def arctanh(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        inf, sup = np.arctanh(x.inf), np.arctanh(x.sup)
+
+        ind = (x.inf > -1) & (x.inf < 1) & (x.sup >= 1)
+        sup[ind] = np.nan
+
+        ind = (x.inf <= -1) & (x.sup > -1) & (x.sup < 1)
+        inf[ind] = np.nan
+
+        ind = (x.inf <= -1) & (x.sup >= 1)
+        inf[ind] = np.nan
+        sup[ind] = np.nan
+
+        return IntervalTensor(inf, sup)
 
     # =============================================== periodic functions
     @staticmethod
     def sin(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        ind0 = (x.sup - x.inf) >= 2 * np.pi  # xsup -xinf >= 2*pi
+        yinf, ysup = np.mod(x.inf, np.pi * 2), np.mod(x.sup, np.pi * 2)
+
+        ind1 = yinf < np.pi * 0.5  # yinf in R1
+        ind2 = ysup < np.pi * 0.5  # ysup in R1
+        ind3 = np.logical_not(ind1) & (yinf < np.pi * 1.5)  # yinf in R2
+        ind4 = np.logical_not(ind2) & (ysup < np.pi * 1.5)  # ysup in R2
+        ind5 = yinf >= np.pi * 1.5  # yinf in R3
+        ind6 = ysup >= np.pi * 1.5  # ysup in R3
+        ind7 = yinf > ysup  # yinf > ysup
+        ind8 = np.logical_not(ind7)  # yinf <=ysup
+
+        inf, sup = x.inf, x.sup
+
+        ind = (ind1 & ind2 & ind8) | (ind5 & ind2) | (ind5 & ind6 & ind8)
+        inf[ind] = np.sin(yinf[ind])
+        sup[ind] = np.sin(ysup[ind])
+
+        ind = (ind1 & ind4) | (ind5 & ind4)
+        inf[ind] = np.minimum(np.sin(yinf[ind]), np.sin(ysup[ind]))
+        sup[ind] = 1
+
+        ind = (ind3 & ind2) | (ind3 & ind6)
+        inf[ind] = -1
+        sup[ind] = np.maximum(np.sin(yinf[ind]), np.sin(ysup[ind]))
+
+        ind = ind3 & ind4 & ind8
+        inf[ind] = np.sin(ysup[ind])
+        sup[ind] = np.sin(yinf[ind])
+
+        ind = (
+            ind0
+            | (ind1 & ind2 & ind7)
+            | (ind1 & ind6)
+            | (ind3 & ind4 & ind7)
+            | (ind5 & ind6 & ind7)
+        )
+        inf[ind] = -1
+        sup[ind] = 1
+
+        return IntervalTensor(inf, sup)
 
     @staticmethod
     def cos(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        ind0 = (x.sup - x.inf) >= 2 * np.pi  # xsup -xinf >= 2*pi
+        yinf, ysup = np.mod(x.inf, np.pi * 2), np.mod(x.sup, np.pi * 2)
+
+        ind1 = yinf < np.pi  # yinf in R1
+        ind2 = ysup < np.pi  # ysup in R1
+        ind3 = np.logical_not(ind1)  # yinf in R2
+        ind4 = np.logical_not(ind2)  # ysup in R2
+        ind5 = yinf > ysup  # yinf > ysup
+        ind6 = np.logical_not(ind5)  # yinf <= ysup
+
+        inf, sup = x.inf, x.sup
+
+        ind = ind3 & ind4 & ind6
+        inf[ind] = np.cos(yinf[ind])
+        sup[ind] = np.cos(ysup[ind])
+
+        ind = ind3 & ind2
+        inf[ind] = np.minimum(np.cos(yinf[ind]), np.cos(ysup[ind]))
+        sup[ind] = 1
+
+        ind = ind1 & ind4
+        inf[ind] = -1
+        sup[ind] = np.maximum(np.cos(yinf[ind]), np.cos(ysup[ind]))
+
+        ind = ind1 & ind2 & ind6
+        inf[ind] = np.cos(ysup[ind])
+        sup[ind] = np.cos(yinf[ind])
+
+        ind = ind0 | (ind1 & ind2 & ind5) | (ind3 & ind4 & ind5)
+        inf[ind] = -1
+        sup[ind] = 1
+
+        return IntervalTensor(inf, sup)
 
     @staticmethod
     def tan(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        ind0 = (x.sup - x.inf) >= np.pi  # xsup -xinf >= pi
+        zinf, zsup = np.mod(x.inf, np.pi), np.mod(x.sup, np.pi)
+
+        ind1 = zinf < np.pi * 0.5  # zinf in R1
+        ind2 = zsup < np.pi * 0.5  # zsup in R1
+        ind3 = np.logical_not(ind1)  # zinf in R2
+        ind4 = np.logical_not(ind2)  # zsup in R2
+        ind5 = zinf > zsup  # zinf > zsup
+        ind6 = np.logical_not(ind5)  # zinf <= zsup
+
+        inf, sup = x.inf, x.sup
+
+        # different from ref ??? TODO need check
+        ind = (ind1 & ind2 & ind6) | (ind3 & ind4 & ind6) | ind3 & (ind6 | ind2)
+        inf[ind] = np.tan(zinf[ind])
+        sup[ind] = np.tan(zsup[ind])
+
+        ind = ind0 | (ind1 & ind2 & ind5) | (ind3 & ind4 & ind5) | (ind1 & ind4)
+        inf[ind] = -np.inf
+        sup[ind] = np.inf
+
+        return IntervalTensor(inf, sup)
 
     @staticmethod
     def cot(x: IntervalTensor):
-        # TODO
-        raise NotImplementedError
+        # TODO need check
+        ind0 = (x.sup - x.inf) >= np.pi  # xsup -xinf >= pi
+        zinf, zsup = np.mod(x.inf, np.pi), np.mod(x.sup, np.pi)
+
+        inf, sup = x.inf, x.sup
+
+        ind = zinf <= zsup
+        inf[ind] = 1 / np.tan(zsup[ind])
+        sup[ind] = 1 / np.tan(zinf[ind])
+
+        ind = ind0 | (zinf > zsup)
+        inf[ind] = -np.inf
+        sup[ind] = np.inf
+
+        return IntervalTensor(inf, sup)
 
     # =============================================== class method
     @classmethod
     def functional(cls):
         return {
+            "exp": cls.exp,
+            "log": cls.log,
+            "sqrt": cls.sqrt,
+            "arcsin": cls.arcsin,
+            "arccos": cls.arccos,
+            "arctan": cls.arctan,
+            "sinh": cls.sinh,
+            "cosh": cls.cosh,
+            "tanh": cls.tanh,
+            "arcsinh": cls.arcsinh,
+            "arccosh": cls.arccosh,
+            "arctanh": cls.arctanh,
             "sin": cls.sin,
+            "cos": cls.cos,
+            "tan": cls.tan,
         }
 
     # =============================================== static method
