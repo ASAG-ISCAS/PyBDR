@@ -116,3 +116,26 @@ def test_matrix_multiplication_case_1():
     print("--------------------------")
     c = a @ b
     print(c)
+
+
+def test_matrix():
+    a = np.random.rand(2, 2, 4, 3)
+    b = np.random.rand(3)
+    c = a @ b
+    d = np.random.rand(4) @ np.random.rand(4)
+    print(d.shape)
+    # d = np.sum(a[:, :, None] * b[None, :, :], axis=1)
+    need_squeeze = b.ndim <= 1
+    if need_squeeze:
+        b = np.expand_dims(b, -1)
+    print(b.shape)
+    print(np.expand_dims(a, -1).shape)
+    print(np.expand_dims(b, 0).shape)
+    e = np.sum(np.expand_dims(a, -1) * np.expand_dims(b, 0), axis=-2)
+    if need_squeeze:
+        e = e.squeeze()
+        print(e.shape)
+    # assert np.allclose(c, d)
+    print(c.shape)
+    print(e.shape)
+    assert np.allclose(c, e)
