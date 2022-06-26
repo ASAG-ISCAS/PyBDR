@@ -45,7 +45,7 @@ class HSCC2013:
             return True
 
     @classmethod
-    def pre_stat_err(cls, sys: NonLinSys.Entity, r_delta: Zonotope, opt: Options):
+    def pre_stat_err(cls, sys: NonLinSys, r_delta: Zonotope, opt: Options):
         r_red = cvt2(r_delta, Geometry.TYPE.ZONOTOPE).reduce(
             Zonotope.REDUCE_METHOD, Zonotope.ERROR_ORDER
         )
@@ -94,7 +94,7 @@ class HSCC2013:
             tx, tu = sys.third_order((total_int_x, total_int_u), mod="interval")
 
             # calculate the lagrange remainder term
-            err_dyn_third = Interval.zero(sys.dim)
+            err_dyn_third = Interval.zeros(sys.dim)
 
             # error relates to tx
             for row, col in tx[0]:
@@ -123,7 +123,7 @@ class HSCC2013:
         return true_err, verr_dyn, verr_stat
 
     @classmethod
-    def poly_reach(cls, sys: NonLinSys.Entity, r: Set, opt: Options):
+    def poly_reach(cls, sys: NonLinSys, r: Set, opt: Options):
         lin_sys, lin_opt = ASB2008CDC.linearize(sys, r.geometry, opt)
         r_delta = r.geometry - opt.lin_err_x
         r_ti, r_tp = ALK2011HSCC.reach_one_step(lin_sys, r_delta, lin_opt)
@@ -172,7 +172,7 @@ class HSCC2013:
         return r_ti, Set(r_tp, abstract_err), dim_for_split
 
     @classmethod
-    def reach_one_step(cls, sys: NonLinSys.Entity, r0: [Set], opt: Options):
+    def reach_one_step(cls, sys: NonLinSys, r0: [Set], opt: Options):
         r_ti, r_tp = [], []
         for i in range(len(r0)):
             temp_r_ti, temp_r_tp, dims = cls.poly_reach(sys, r0[i], opt)
@@ -186,7 +186,7 @@ class HSCC2013:
         return r_ti, r_tp
 
     @classmethod
-    def reach(cls, sys: NonLinSys.Entity, opt: Options):
+    def reach(cls, sys: NonLinSys, opt: Options):
         assert opt.validation(sys.dim)
         # init containers for storing the results
         time_pts = np.linspace(opt.t_start, opt.t_end, opt.steps_num)

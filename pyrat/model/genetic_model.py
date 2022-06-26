@@ -1,5 +1,5 @@
 from sympy import *
-from .model import Model
+from .model_old import ModelOld
 
 
 """
@@ -23,7 +23,7 @@ def _f(x, u):
     return Matrix(dxdt)
 
 
-class GeneticModel(Model):
+class GeneticModel(ModelOld):
     vars = symbols(("x:9", "u:1"))
     f = _f(*vars)
     name = "Genetic"

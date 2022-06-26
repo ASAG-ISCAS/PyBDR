@@ -1,5 +1,5 @@
 from sympy import *
-from .model import Model
+from .model_old import ModelOld
 
 
 def _f(x, u):
@@ -16,7 +16,7 @@ def _f(x, u):
     return Matrix(dxdt)
 
 
-class LaubLoomis(Model):
+class LaubLoomis(ModelOld):
     vars = symbols(("x:7", "u:1"))
     f = _f(*vars)
     name = "LaubLoomis"

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.linalg import expm
 
-from pyrat.geometry import Geometry, Interval, IntervalMatrix, Zonotope, cvt2
+from pyrat.geometry import Geometry, IntervalOld, IntervalMatrix, Zonotope, cvt2
 from pyrat.misc import Reachable, Simulation
 from .continuous_system import ContSys, Option
 

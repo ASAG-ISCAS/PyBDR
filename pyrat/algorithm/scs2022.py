@@ -15,7 +15,7 @@ from sympy import *
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Zonotope, Interval
 from pyrat.misc import Set
-from pyrat.model import Model
+from pyrat.model import ModelOld
 from .asb2008cdc import ASB2008CDC
 
 
@@ -140,7 +140,7 @@ class SCS2022:
             return Matrix(func(x, px))
 
         @dataclass
-        class InnerModel(Model):
+        class InnerModel(ModelOld):
             vars = symbols(("x:" + str(opt.dim), "u:1"))
             f = _f(*vars)
             name = "inner model"
@@ -153,7 +153,7 @@ class SCS2022:
         r0 = [Set(Zonotope(opt.cur_x, np.eye(opt.cur_x.shape[0]) * 0.05))]
 
         # init system according to this given px
-        system = NonLinSys.Entity(cls.init_model(f, px, opt))
+        system = NonLinSysOld.Entity(cls.init_model(f, px, opt))
 
         # init options for verification
         verif_opt = ASB2008CDC.Options()

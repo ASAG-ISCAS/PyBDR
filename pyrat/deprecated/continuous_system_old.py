@@ -8,13 +8,13 @@ import numpy as np
 from scipy.special import factorial
 from sympy import derive_by_array, ImmutableDenseNDimArray, lambdify
 
-from pyrat.geometry import Geometry, Zonotope, Interval, IntervalMatrix
+from pyrat.geometry import Geometry, Zonotope
 from pyrat.geometry.operation import cvt2
 from pyrat.misc import Set, Reachable
-from pyrat.model import Model
+from pyrat.model import ModelOld
 
 
-class ContSys:
+class ContSysOld:
     class TYPE(IntEnum):
         LINEAR_SYSTEM = 0
         NON_LINEAR_SYSTEM = 1
@@ -49,7 +49,7 @@ class ContSys:
                 raise NotImplementedError
 
     class Entity(ABC):
-        def __init__(self, model: Model):
+        def __init__(self, model: ModelOld):
             assert 1 <= len(model.vars) <= 2  # f(x) may be a good alternative
             self._model = model
             self._jaco = None
@@ -85,78 +85,78 @@ class ContSys:
 
             return [_eval_jacob(j) for j in self._jaco]
 
-        def hessian(self, xs: tuple, mod: str = "numpy"):
-            """
-            NOTE: only support interval matrix currently and numpy
-            """
+        # def hessian(self, xs: tuple, mod: str = "numpy"):
+        #     """
+        #     NOTE: only support interval matrix currently and numpy
+        #     """
+        #
+        #     def _eval_hessian_interval(he):
+        #         def __eval_element(x):
+        #             if x.is_number:
+        #                 return IntervalOld(float(x), float(x))
+        #             else:
+        #                 f = lambdify(self._model.vars, x, IntervalOld.functional())
+        #                 return f(*xs)
+        #
+        #         v = np.vectorize(__eval_element)(he)
+        #         inf = np.vectorize(lambda x: x.inf)(v)
+        #         sup = np.vectorize(lambda x: x.sup)(v)
+        #         return [
+        #             IntervalMatrix(inf[idx], sup[idx]) for idx in range(he.shape[0])
+        #         ]
+        #
+        #     def _eval_hessian_numpy(he):
+        #         f = lambdify(self._model.vars, he, "numpy")
+        #         return np.asarray(f(*xs)).squeeze()
+        #
+        #     def _eval(he):
+        #         if mod == "numpy":
+        #             return _eval_hessian_numpy(he)
+        #         elif mod == "interval":
+        #             return _eval_hessian_interval(he)
+        #         else:
+        #             raise NotImplementedError
+        #
+        #     return [_eval(h) for h in self._hess]
 
-            def _eval_hessian_interval(he):
-                def __eval_element(x):
-                    if x.is_number:
-                        return Interval(float(x), float(x))
-                    else:
-                        f = lambdify(self._model.vars, x, Interval.functional())
-                        return f(*xs)
-
-                v = np.vectorize(__eval_element)(he)
-                inf = np.vectorize(lambda x: x.inf)(v)
-                sup = np.vectorize(lambda x: x.sup)(v)
-                return [
-                    IntervalMatrix(inf[idx], sup[idx]) for idx in range(he.shape[0])
-                ]
-
-            def _eval_hessian_numpy(he):
-                f = lambdify(self._model.vars, he, "numpy")
-                return np.asarray(f(*xs)).squeeze()
-
-            def _eval(he):
-                if mod == "numpy":
-                    return _eval_hessian_numpy(he)
-                elif mod == "interval":
-                    return _eval_hessian_interval(he)
-                else:
-                    raise NotImplementedError
-
-            return [_eval(h) for h in self._hess]
-
-        def third_order(self, xs: tuple, mod: str = "numpy"):
-            """
-            NOTE: only support interval and numpy currently
-            """
-
-            def _eval_third_interval(te):
-                def __eval_element(x):
-                    if x.is_number:
-                        return Interval(float(x), float(x))
-                    else:
-                        f = lambdify(self._model.vars, x, Interval.functional())
-                        return f(*xs)
-
-                v = np.vectorize(__eval_element)(te)
-                inf = np.vectorize(lambda x: x.inf)(v)
-                sup = np.vectorize(lambda x: x.sup)(v)
-
-                ret = []
-                for row in range(te.shape[0]):
-                    row_ret = []
-                    for col in range(te.shape[1]):
-                        row_ret.append(IntervalMatrix(inf[row][col], sup[row][col]))
-                    ret.append(row_ret)
-                ind = np.argwhere(np.vectorize(lambda x: not x.is_zero)(ret))
-                return ind, np.asarray(ret)
-
-            def _eval_third_numpy(te):
-                raise NotImplementedError
-
-            def _eval(te):
-                if mod == "numpy":
-                    return _eval_third_numpy(te)
-                elif mod == "interval":
-                    return _eval_third_interval(te)
-                else:
-                    raise NotImplementedError
-
-            return [_eval(te) for te in self._third]
+        # def third_order(self, xs: tuple, mod: str = "numpy"):
+        #     """
+        #     NOTE: only support interval and numpy currently
+        #     """
+        #
+        #     def _eval_third_interval(te):
+        #         def __eval_element(x):
+        #             if x.is_number:
+        #                 return IntervalOld(float(x), float(x))
+        #             else:
+        #                 f = lambdify(self._model.vars, x, IntervalOld.functional())
+        #                 return f(*xs)
+        #
+        #         v = np.vectorize(__eval_element)(te)
+        #         inf = np.vectorize(lambda x: x.inf)(v)
+        #         sup = np.vectorize(lambda x: x.sup)(v)
+        #
+        #         ret = []
+        #         for row in range(te.shape[0]):
+        #             row_ret = []
+        #             for col in range(te.shape[1]):
+        #                 row_ret.append(IntervalMatrix(inf[row][col], sup[row][col]))
+        #             ret.append(row_ret)
+        #         ind = np.argwhere(np.vectorize(lambda x: not x.is_zero)(ret))
+        #         return ind, np.asarray(ret)
+        #
+        #     def _eval_third_numpy(te):
+        #         raise NotImplementedError
+        #
+        #     def _eval(te):
+        #         if mod == "numpy":
+        #             return _eval_third_numpy(te)
+        #         elif mod == "interval":
+        #             return _eval_third_interval(te)
+        #         else:
+        #             raise NotImplementedError
+        #
+        #     return [_eval(te) for te in self._third]
 
         @abstractmethod
         def __str__(self):
@@ -260,5 +260,5 @@ class ContSys:
             raise NotImplementedError
 
         @abstractmethod
-        def reach(self, option: ContSys.Option.Base):
+        def reach(self, option: ContSysOld.Option.Base):
             raise NotImplementedError

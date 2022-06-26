@@ -23,11 +23,11 @@ class CSPSolver:
         :return:
         """
         assert epsilon >= 0
-        from pyrat.geometry import Interval
+        from pyrat.geometry import IntervalOld
 
         boxes = []
 
-        active_boxes = {Interval(lb, ub)}
+        active_boxes = {IntervalOld(lb, ub)}
         while len(boxes) < CSPSolver.MAX_BOXES and len(active_boxes) > 0:
             box = active_boxes.pop()
             if constraint(box):

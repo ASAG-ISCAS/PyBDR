@@ -1,6 +1,6 @@
 import numpy as np
 
-from pyrat.geometry import Geometry, Zonotope, Interval, IntervalMatrix
+from pyrat.geometry import Geometry, Zonotope, IntervalOld, IntervalMatrix
 from pyrat.geometry.operation import cvt2
 from pyrat.util.visualization import vis2dGeo
 

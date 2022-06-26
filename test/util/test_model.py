@@ -3,7 +3,7 @@ import inspect
 import numpy as np
 
 from pyrat.model import ModelNEW
-from pyrat.model import ModelRef
+from pyrat.model import Model
 from sympy import *
 
 
@@ -30,7 +30,6 @@ def test_fx():
 
 def test_fxu():
     import pyrat.util.functional.auxiliary as aux
-    from pyrat.geometry import Interval
 
     def f(x, u):
         # parameters
@@ -46,37 +45,31 @@ def test_fxu():
         dxdt[5] = k0 * sqrt(2 * g) * (sqrt(x[4]) - sqrt(x[5]))
         return Matrix(dxdt)
 
-    xu = symbols(("x:6", "u:1"))
-    model = ModelNEW(f(*xu), xu)
-
-    modelref = ModelRef(f, [6, 1])
+    modelref = Model(f, [6, 1])
+    start = aux.performance_counter_start()
 
     x, u = np.random.rand(6), np.random.rand(1)
+    start = aux.performance_counter(start, "xu")
     pre_temp = modelref.evaluate((x, u), "numpy", 3, 1)
-    print(pre_temp.shape)
+    start = aux.performance_counter(start, "pre_temp")
     suc_temp = modelref.evaluate((x, u), "numpy", 3, 0)
     print(suc_temp.shape)
+    start = aux.performance_counter(start, "suc_temp")
+    tt = modelref.evaluate((x, u), "numpy", 0, 0)
+    print(tt.shape)
 
-    start = aux.performance_counter_start()
-    temp0 = model.evaluate((x, u), "numpy", 3)
-    print(temp0.shape)
-    temp = temp0[:, :-1, :-1, :-1]
-    print(temp.shape)
-    assert np.allclose(suc_temp, temp0[:, :-1, :-1, :-1])
-    assert np.allclose(pre_temp, temp0[:, -1, -1, -1])
+    from pyrat.geometry import Interval
+
     x, u = Interval.rand(6), Interval.rand(1)
 
-    start = aux.performance_counter(start, "modref")
-
-    modelref.evaluate((x, u), "interval", 3, 0)
+    temp0 = modelref.evaluate((x, u), "interval", 3, 0)
     start = aux.performance_counter(start, "modref1")
-    modelref.evaluate((x, u), "interval", 2, 0)
+    temp1 = modelref.evaluate((x, u), "interval", 2, 0)
     start = aux.performance_counter(start, "modref2")
-    modelref.evaluate((x, u), "interval", 2, 0)
+    temp2 = modelref.evaluate((x, u), "interval", 2, 0)
     start = aux.performance_counter(start, "modref3")
-    modelref.evaluate((x, u), "interval", 2, 0)
-
-    temp1 = model.evaluate((x, u), "numpy", 2)
-    start = aux.performance_counter(start, "temp1")
-    temp2 = model.evaluate((x, u), "numpy", 3)
-    start = aux.performance_counter(start, "temp2")
+    temp3 = modelref.evaluate((x, u), "interval", 0, 1)
+    print(temp0.dim)
+    print(temp1.dim)
+    print(temp2.dim)
+    print(temp3.dim)

@@ -1,4 +1,4 @@
-from .model import Model
+from .model_old import ModelOld
 from .tank6Eq import Tank6Eq
 from .vanderpol import VanDerPol
 from .laubLoomis import LaubLoomis
@@ -7,15 +7,15 @@ from .ltv import LTV
 from .genetic_model import GeneticModel
 from .p53_small import P53Small
 from .model_new import ModelNEW
-from .model_ref import ModelRef
+from .model import Model
 from .synchronous_machine import SynchronousMachine
 
 # from .computer_based_ode import ComputerBasedODE
 
 __all__ = [
-    "Model",
+    "ModelOld",
     "ModelNEW",
-    "ModelRef",
+    "Model",
     "Tank6Eq",
     "VanDerPol",
     "LaubLoomis",

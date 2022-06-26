@@ -19,7 +19,7 @@ def __2d_plot(objs, dims: list, width: int, height: int):
         assert pts.ndim == 2
         ax.scatter(pts[:, dims[:, 0]], pts[:, dims[:, 1]])
 
-    def __add_interval(i: "Interval"):
+    def __add_interval(i: "IntervalOld"):
         ax.add_patch(
             Polygon(
                 i.rectangle(dims),

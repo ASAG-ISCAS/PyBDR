@@ -1,7 +1,7 @@
 import inspect
 
 import numpy as np
-from pyrat.dynamic_system import NonLinSys
+from pyrat.dynamic_system import NonLinSysOld
 from pyrat.model import *
 from pyrat.geometry import Zonotope
 from pyrat.misc import Reachable, Set
@@ -9,10 +9,10 @@ from pyrat.util.visualization import vis2d
 
 
 def test_vanDerPol():
-    system = NonLinSys.Entity(VanDerPol())
+    system = NonLinSysOld.Entity(VanDerPol())
 
     # setting for the computation
-    option = NonLinSys.Option.Linear()
+    option = NonLinSysOld.Option.Linear()
     option.t_end = 4
     option.steps = 1000
     option.tensor_order = 2
@@ -33,9 +33,9 @@ def test_vanDerPol():
 
 
 def test_tank6Eq():
-    system = NonLinSys.Entity(Tank6Eq())
+    system = NonLinSysOld.Entity(Tank6Eq())
     # setting for the computation
-    option = NonLinSys.Option.Linear()
+    option = NonLinSysOld.Option.Linear()
     option.t_end = 400
     option.steps = 100
     option.tensor_order = 2
@@ -56,9 +56,9 @@ def test_tank6Eq():
 
 
 def test_laub_loomis():
-    system = NonLinSys.Entity(LaubLoomis())
+    system = NonLinSysOld.Entity(LaubLoomis())
     # setting for the computation
-    option = NonLinSys.Option.Linear()
+    option = NonLinSysOld.Option.Linear()
     option.t_end = 20
     option.steps = 500
     option.tensor_order = 2
@@ -81,9 +81,9 @@ def test_laub_loomis():
 
 
 def test_ltv():
-    system = NonLinSys.Entity(LTV())
+    system = NonLinSysOld.Entity(LTV())
     # setting for the computation
-    option = NonLinSys.Option.Linear()
+    option = NonLinSysOld.Option.Linear()
     option.t_end = 5
     option.steps = 500
     option.tensor_order = 2
@@ -102,9 +102,9 @@ def test_ltv():
 
 
 def test_genetic():
-    system = NonLinSys.Entity(GeneticModel())
+    system = NonLinSysOld.Entity(GeneticModel())
     # setting for the computation
-    option = NonLinSys.Option.Linear()
+    option = NonLinSysOld.Option.Linear()
     option.t_end = 3
     option.steps = 500
     option.tensor_order = 2
@@ -124,9 +124,9 @@ def test_genetic():
 
 
 def test_p53_small():
-    system = NonLinSys.Entity(P53Small())
+    system = NonLinSysOld.Entity(P53Small())
     # setting for the computation
-    option = NonLinSys.Option.Linear()
+    option = NonLinSysOld.Option.Linear()
     option.t_end = 10
     option.steps = 500
     option.tensor_order = 2

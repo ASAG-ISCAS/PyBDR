@@ -9,11 +9,9 @@ from dataclasses import dataclass
 class Geometry:
     class TYPE(IntEnum):
         INTERVAL = 0
-        INTERVAL_MATRIX = 1
-        INTERVAL_TENSOR = 2
-        ZONOTOPE = 3
-        POLYTOPE = 4
-        POLY_ZONOTOPE = 5
+        ZONOTOPE = 1
+        POLYTOPE = 2
+        POLY_ZONOTOPE = 3
 
     class Base(ABC):
         __array_ufunc__ = None
@@ -102,16 +100,4 @@ class Geometry:
         @staticmethod
         @abstractmethod
         def rand(dim: int):
-            raise NotImplementedError
-
-        # =============================================== public method
-        def enclose(self, other):
-            raise NotImplementedError
-
-        @abstractmethod
-        def proj(self, dims):
-            raise NotImplementedError
-
-        @abstractmethod
-        def boundary(self, max_dist: float, element: Geometry.TYPE):
             raise NotImplementedError

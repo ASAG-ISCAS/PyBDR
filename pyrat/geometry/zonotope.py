@@ -11,8 +11,7 @@ import pyrat.util.functional.auxiliary as aux
 from .geometry import Geometry
 
 if TYPE_CHECKING:  # for type hint, easy coding ：)
-    from .interval import Interval
-    from .interval_matrix import IntervalMatrix
+    from pyrat.geometry.interval import Interval
 
 
 class Zonotope(Geometry.Base):
@@ -110,7 +109,6 @@ class Zonotope(Geometry.Base):
 
     # =============================================== operator
     def __contains__(self, item):
-        from .operation import cvt2
 
         # TODO
         raise NotImplementedError
@@ -185,15 +183,13 @@ class Zonotope(Geometry.Base):
         elif isinstance(other, Geometry.Base):
             if other.type == Geometry.TYPE.INTERVAL:
                 return __mul_interval(other)
-            elif other.type == Geometry.TYPE.INTERVAL_MATRIX:
-                return __mul_interval(other)
             else:
                 raise NotImplementedError
         else:
             raise NotImplementedError
 
     def __rmul__(self, other):
-        def __rmul_interval_matrix(lhs: IntervalMatrix):
+        def __rmul_interval(lhs: Interval):
             zas = np.sum(abs(self.z), axis=1)
             z = None
             s = lhs.rad
@@ -207,8 +203,8 @@ class Zonotope(Geometry.Base):
         if isinstance(other, Real):
             return self * other
         elif isinstance(other, Geometry.Base):
-            if other.type == Geometry.TYPE.INTERVAL_MATRIX:
-                return __rmul_interval_matrix(other)
+            if other.type == Geometry.TYPE.INTERVAL:
+                return __rmul_interval(other)
             else:
                 raise NotImplementedError
         else:

@@ -1,7 +1,7 @@
 import inspect
 
 import numpy as np
-from pyrat.dynamic_system import NonLinSys
+from pyrat.dynamic_system import NonLinSysOld
 from pyrat.model import *
 from pyrat.geometry import Zonotope
 from pyrat.misc import Reachable, Set
@@ -9,10 +9,10 @@ from pyrat.util.visualization import vis2d
 
 
 def test_tank6Eq():
-    system = NonLinSys.Entity(Tank6Eq())
+    system = NonLinSysOld.Entity(Tank6Eq())
 
     # setting for the computation
-    option = NonLinSys.Option.Linear()
+    option = NonLinSysOld.Option.Linear()
     option.t_end = 800
     option.steps = 150
     option.tensor_order = 2

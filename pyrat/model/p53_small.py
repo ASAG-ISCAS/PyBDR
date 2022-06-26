@@ -1,5 +1,5 @@
 from sympy import *
-from .model import Model
+from .model_old import ModelOld
 
 """
 NOTE: https://flowstar.org/benchmarks/p53-model/
@@ -21,7 +21,7 @@ def _f(x, u):
     return Matrix(dxdt)
 
 
-class P53Small(Model):
+class P53Small(ModelOld):
     vars = symbols(("x:6", "u:1"))
     f = _f(*vars)
     name = "P53Small"

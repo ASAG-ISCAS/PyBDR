@@ -180,10 +180,10 @@ class Polytope(Geometry.Base):
 
     def boundary(self, max_dist: float, element: Geometry.TYPE):
         from pyrat.util.functional import CSPSolver
-        from pyrat.geometry import Interval, cvt2
+        from pyrat.geometry import IntervalOld, cvt2
 
         def f(x):
-            z = Interval.zero(self._a.shape[0])
+            z = IntervalOld.zero(self._a.shape[0])
             for i in range(self.a.shape[0]):
                 for j in range(self.a.shape[1]):
                     z[i] += self.a[i, j] * x[j]

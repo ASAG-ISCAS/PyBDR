@@ -8,9 +8,9 @@ import sympy
 from scipy.special import factorial
 from sympy import lambdify, derive_by_array
 
-from pyrat.geometry import Geometry, Zonotope, Interval, IntervalMatrix, cvt2
+from pyrat.geometry import Geometry, Zonotope, IntervalOld, IntervalMatrix, cvt2
 from pyrat.misc import Reachable, Simulation
-from pyrat.model import Model
+from pyrat.model import ModelOld
 
 # from .continuous_system import ContSys, Option, RunTime
 from .continuous_system import Entity, Option
@@ -72,7 +72,7 @@ class NonLinSys:
                 raise NotImplementedError
 
     class Sys(Entity):
-        def __init__(self, model: Model):
+        def __init__(self, model: ModelOld):
             assert 1 <= len(model.vars) <= 2  # only support f(x) or f(x,u) as input
             self._model = model
             # self._run_time = RunTime()
@@ -124,7 +124,7 @@ class NonLinSys:
             def _eval_hessian_interval(he):
                 def __eval_element(x):
                     if x.is_number:
-                        return Interval(float(x), float(x))
+                        return IntervalOld(float(x), float(x))
                     else:
                         f = lambdify(self._model.vars, x, ops)
                         return f(*xs)
@@ -180,7 +180,7 @@ class NonLinSys:
 
         def _abst_err_lin(
             self, op: NonLinSys.OptionOld, r: Geometry
-        ) -> (Interval, Zonotope):
+        ) -> (IntervalOld, Zonotope):
             """
             computes the abstraction error for linearization approach to enter
             :param op:
@@ -204,7 +204,7 @@ class NonLinSys:
 
                 # evaluate the hessian matrix with the selected range-bounding technique
                 hx, hu = self._hessian(
-                    (total_int_x, total_int_u), Interval.functional()
+                    (total_int_x, total_int_u), IntervalOld.functional()
                 )
 
                 # calculate the Lagrange remainder (second-order error)

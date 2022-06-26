@@ -26,11 +26,11 @@ class HSCC2005:
             # TODO
             return True
 
-    def one_step(self, sys: LinSys, r0: [Set], opt: Options):
+    def one_step(self, sys: LinSysOld, r0: [Set], opt: Options):
 
         raise NotImplementedError
 
-    def reach(self, sys: LinSys.Entity, opt: Options):
+    def reach(self, sys: LinSysOld.Entity, opt: Options):
         assert opt.validation(sys.dim)
         # TODO
         raise NotImplementedError

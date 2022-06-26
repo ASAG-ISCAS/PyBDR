@@ -1,6 +1,6 @@
 import numpy as np
 
-from pyrat.dynamic_system import NonLinSys
+from pyrat.dynamic_system import NonLinSysOld
 from pyrat.geometry import Zonotope, PolyZonotope
 from pyrat.misc import Reachable
 from pyrat.model import *
@@ -15,12 +15,12 @@ def test_tank6Eq():
     """
     init nonlinear system --------------------------------------------------------------
     """
-    system = NonLinSys.Sys(Tank6Eq())
+    system = NonLinSysOld.Sys(Tank6Eq())
 
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.OptionOld()
+    option = NonLinSysOld.OptionOld()
     option.t_end = 400
     option.steps_num = 100
     option.taylor_terms = 4
@@ -56,12 +56,12 @@ def test_vanDerPol():
     """
     init nonlinear system --------------------------------------------------------------
     """
-    system = NonLinSys.Sys(VanDerPol())
+    system = NonLinSysOld.Sys(VanDerPol())
 
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.OptionOld()
+    option = NonLinSysOld.OptionOld()
     option.t_end = 13
     option.steps_num = 701
     option.taylor_terms = 4
@@ -94,11 +94,11 @@ def test_vanDerPol_PolyZonotope():
     """
     init nonlinear system --------------------------------------------------------------
     """
-    system = NonLinSys.Sys(VanDerPol())
+    system = NonLinSysOld.Sys(VanDerPol())
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.OptionOld()
+    option = NonLinSysOld.OptionOld()
     option.t_end = 6.74
     option.steps_num = 1349
     option.zonotope_order = 50
@@ -130,12 +130,12 @@ def test_laubLoomis():
     """
     init nonlinear system --------------------------------------------------------------
     """
-    system = NonLinSys.Sys(LaubLoomis())
+    system = NonLinSysOld.Sys(LaubLoomis())
 
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.OptionOld()
+    option = NonLinSysOld.OptionOld()
     option.t_end = 20
     option.steps_num = 500
     option.taylor_terms = 20
@@ -173,12 +173,12 @@ def test_linear_model():
     """
     init nonlinear system --------------------------------------------------------------
     """
-    system = NonLinSys.Sys(RandModel())
+    system = NonLinSysOld.Sys(RandModel())
 
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.OptionOld()
+    option = NonLinSysOld.OptionOld()
     option.t_end = 50
     option.steps_num = 100
     option.taylor_terms = 4
@@ -215,11 +215,11 @@ def test_ltv():
     """
     init nonlinear system --------------------------------------------------------------
     """
-    system = NonLinSys.Sys(LTV())
+    system = NonLinSysOld.Sys(LTV())
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.OptionOld()
+    option = NonLinSysOld.OptionOld()
     option.t_end = 5
     option.steps_num = 500
     option.taylor_terms = 4
@@ -254,11 +254,11 @@ def test_genetic():
     """
     init nonlinear system --------------------------------------------------------------
     """
-    system = NonLinSys.Sys(GeneticModel())
+    system = NonLinSysOld.Sys(GeneticModel())
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.OptionOld()
+    option = NonLinSysOld.OptionOld()
     option.t_end = 3
     option.steps_num = 500
     option.taylor_terms = 4
@@ -296,11 +296,11 @@ def test_p53_small():
     """
     init nonlinear system --------------------------------------------------------------
     """
-    system = NonLinSys.Sys(P53Small())
+    system = NonLinSysOld.Sys(P53Small())
     """
     init options for the computation ---------------------------------------------------
     """
-    option = NonLinSys.OptionOld()
+    option = NonLinSysOld.OptionOld()
     option.t_end = 10
     option.steps_num = 500
     option.taylor_terms = 4
@@ -328,6 +328,6 @@ def test_p53_small():
 
 
 def test_continuous_system():
-    system = NonLinSys.Sys(VanDerPol())
-    option = NonLinSys.Option.Linear()
+    system = NonLinSysOld.Sys(VanDerPol())
+    option = NonLinSysOld.Option.Linear()
     raise None

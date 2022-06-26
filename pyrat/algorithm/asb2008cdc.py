@@ -49,14 +49,17 @@ class ASB2008CDC:
             return True
 
     @staticmethod
-    def linearize(sys: NonLinSys.Entity, r: Geometry.Base, opt: Options):
+    def linearize(sys: NonLinSys, r: Geometry.Base, opt: Options):
         opt.lin_err_u = opt.u_trans if opt.u_trans is not None else opt.u.c
-        f0 = sys.evaluate((r.c, opt.lin_err_u))
+        f0 = sys.evaluate((r.c, opt.lin_err_u), "numpy", 0, 0)
+        print(f0.shape)
+        print(f0)
         opt.lin_err_x = r.c + f0 * 0.5 * opt.step
-        opt.lin_err_f0 = sys.evaluate((opt.lin_err_x, opt.lin_err_u))
-        a, b = sys.jacobian((opt.lin_err_x, opt.lin_err_u))
+        opt.lin_err_f0 = sys.evaluate((opt.lin_err_x, opt.lin_err_u), "numpy", 0, 0)
+        a = sys.evaluate((opt.lin_err_x, opt.lin_err_u), "numpy", 1, 0)
+        b = sys.evaluate((opt.lin_err_x, opt.lin_err_u), "numpy", 1, 1)
         assert not (np.any(np.isnan(a))) or np.any(np.isnan(b))
-        lin_sys = LinSys.Entity(xa=a)
+        lin_sys = LinSys(xa=a)
         lin_opt = ALK2011HSCC.Options()
         lin_opt.step = opt.step
         lin_opt.taylor_terms = opt.taylor_terms
@@ -69,7 +72,7 @@ class ASB2008CDC:
         return lin_sys, lin_opt
 
     @staticmethod
-    def abstract_err(sys: NonLinSys.Entity, r: Geometry.Base, opt: Options):
+    def abstract_err(sys: NonLinSys, r: Geometry.Base, opt: Options):
         ihx = cvt2(r, Geometry.TYPE.INTERVAL)
         total_int_x = ihx + opt.lin_err_x
 
@@ -81,15 +84,13 @@ class ASB2008CDC:
             du = np.maximum(abs(ihu.inf), abs(ihu.sup))
 
             # evaluate the hessian matrix with the selected range-bounding technique
-            hx, hu = sys.hessian((total_int_x, total_int_u), "interval")
+            hx = sys.evaluate((total_int_x, total_int_u), "interval", 2, 0)
+            hu = sys.evaluate((total_int_x, total_int_u), "interval", 2, 1)
+            xx = np.maximum(abs(hx.inf), abs(hx.sup))
+            uu = np.maximum(abs(hu.inf), abs(hu.sup))
 
-            err_lagrange = np.zeros(sys.dim, dtype=float)
+            err_lagrange = 0.5 * (dx @ xx @ dx + du @ uu @ du)
 
-            for i in range(sys.dim):
-                abs_hx, abs_hu = abs(hx[i]), abs(hu[i])
-                hx_ = np.maximum(abs_hx.inf, abs_hx.sup)
-                hu_ = np.maximum(abs_hu.inf, abs_hu.sup)
-                err_lagrange[i] = 0.5 * (dx @ hx_ @ dx + du @ hu_ @ du)
             v_err_dyn = Zonotope(np.zeros(sys.dim), np.diag(err_lagrange))
             return err_lagrange, v_err_dyn
         elif opt.tensor_order == 3:
@@ -98,7 +99,7 @@ class ASB2008CDC:
             raise Exception("unsupported tensor order")
 
     @classmethod
-    def linear_reach(cls, sys: NonLinSys.Entity, r: Set, opt: Options):
+    def linear_reach(cls, sys: NonLinSys, r: Set, opt: Options):
         lin_sys, lin_opt = cls.linearize(sys, r.geometry, opt)
         r_delta = r.geometry - opt.lin_err_x
         r_ti, r_tp = ALK2011HSCC.reach_one_step(lin_sys, r_delta, lin_opt)
@@ -144,7 +145,7 @@ class ASB2008CDC:
         return r_ti, Set(r_tp, abstract_err), dim_for_split
 
     @classmethod
-    def reach_one_step(cls, sys: NonLinSys.Entity, r0: [Set], opt: Options):
+    def reach_one_step(cls, sys: NonLinSys, r0: [Set], opt: Options):
         r_ti, r_tp = [], []
         for i in range(len(r0)):
             temp_r_ti, temp_r_tp, dims = cls.linear_reach(sys, r0[i], opt)
@@ -158,7 +159,7 @@ class ASB2008CDC:
         return r_ti, r_tp
 
     @classmethod
-    def reach(cls, sys: NonLinSys.Entity, opt: Options):
+    def reach(cls, sys: NonLinSys, opt: Options):
         assert opt.validation(sys.dim)
         # init containers for storing the results
         time_pts = np.linspace(opt.t_start, opt.t_end, opt.steps_num)
@@ -168,7 +169,7 @@ class ASB2008CDC:
             next_ti, next_tp = cls.reach_one_step(sys, tp_set[-1], opt)
             opt.step_idx += 1
             ti_set.append(next_ti)
-            ti_time.append(time_pts[opt.step_idx - 1: opt.step_idx + 1])
+            ti_time.append(time_pts[opt.step_idx - 1 : opt.step_idx + 1])
             tp_set.append(next_tp)
             tp_time.append(time_pts[opt.step_idx])
 

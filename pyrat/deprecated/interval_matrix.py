@@ -4,13 +4,12 @@ import numpy as np
 from numbers import Real
 from numpy.typing import ArrayLike
 import pyrat.util.functional.auxiliary as aux
-from .geometry import Geometry
+from pyrat.geometry.geometry import Geometry
 from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:  # for type hint
-    from .zonotope import Zonotope
-    from .interval import Interval
+    pass
 
 
 class IntervalMatrix(Geometry.Base):

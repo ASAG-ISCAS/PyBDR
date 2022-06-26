@@ -1,5 +1,5 @@
 from sympy import *
-from .model import Model
+from .model_old import ModelOld
 
 
 def _f(x, u):
@@ -11,7 +11,7 @@ def _f(x, u):
     return Matrix(dxdt)
 
 
-class RandModel(Model):
+class RandModel(ModelOld):
     vars = symbols(("x:3", "u:1"))
     f = _f(*vars)
     name = "Random Model"

@@ -14,7 +14,7 @@ import numpy as np
 from scipy.linalg import expm
 
 from pyrat.dynamic_system import LinSys
-from pyrat.geometry import Geometry, Zonotope, IntervalMatrix
+from pyrat.geometry import Geometry, Zonotope, Interval
 from pyrat.geometry.operation import cvt2
 from .algorithm import Algorithm
 
@@ -43,7 +43,7 @@ class ALK2011HSCC:
             return True
 
     @staticmethod
-    def exponential(sys: LinSys.Entity, opt: Options):
+    def exponential(sys: LinSys, opt: Options):
         xa_abs = abs(sys.xa)
         xa_power = [sys.xa]
         xa_power_abs = [xa_abs]
@@ -54,14 +54,27 @@ class ALK2011HSCC:
             xa_power_abs.append(xa_power_abs[i] @ xa_abs)
             m += xa_power_abs[i] * opt.factors[i]
 
+        # TODO
+        # xap = [np.linalg.matrix_power(sys.xa, i) for i in range(opt.taylor_terms + 1)]
+        # xapa = [np.linalg.matrix_power(xa_abs, i) for i in range(opt.taylor_terms + 1)]
+        # xapa = np.stack(xapa)
+        # temp_m = np.eye(sys.dim, dtype=float) + np.sum(
+        #     xapa * opt.factors[:, None, None], axis=0
+        # )
+        # print(temp_m)
+        # print(m)
+        #
+        # exit(False)
+        # TODO
+
         w = expm(xa_abs * opt.step) - m
         w = abs(w)
-        e = IntervalMatrix(-w, w)
+        e = Interval(-w, w)
         opt.taylor_powers = xa_power
         opt.taylor_err = e
 
     @classmethod
-    def compute_time_interval_err(cls, sys: LinSys.Entity, opt: Options):
+    def compute_time_interval_err(cls, sys: LinSys, opt: Options):
         # initialize asum
         asum_pos = np.zeros((sys.dim, sys.dim), dtype=float)
         asum_neg = np.zeros((sys.dim, sys.dim), dtype=float)
@@ -82,12 +95,12 @@ class ALK2011HSCC:
             asum_pos += factor * aneg
             asum_neg += factor * apos
         # instantiate interval matrix
-        asum = IntervalMatrix(asum_neg, asum_pos)
+        asum = Interval(asum_neg, asum_pos)
         # write to object structure
         opt.taylor_f = asum + opt.taylor_err
 
     @classmethod
-    def input_time_interval_err(cls, sys: LinSys.Entity, opt: Options):
+    def input_time_interval_err(cls, sys: LinSys, opt: Options):
         # initialize asum
         asum_pos = np.zeros((sys.dim, sys.dim), dtype=float)
         asum_neg = np.zeros((sys.dim, sys.dim), dtype=float)
@@ -108,7 +121,7 @@ class ALK2011HSCC:
             asum_pos += factor * aneg
             asum_neg += factor * apos
         # instantiate interval matrix
-        asum = IntervalMatrix(asum_neg, asum_pos)
+        asum = Interval(asum_neg, asum_pos)
         # compute error due to finite taylor series according to interval document
         # "Input Error Bounds in Reachability Analysis"
         e_input = opt.taylor_err * opt.step
@@ -116,7 +129,7 @@ class ALK2011HSCC:
         opt.taylor_input_f = asum + e_input
 
     @classmethod
-    def input_solution(cls, sys: LinSys.Entity, opt: Options):
+    def input_solution(cls, sys: LinSys, opt: Options):
         v = opt.u if sys.ub is None else sys.ub @ opt.u
         # compute vTrans
         opt.is_rv = True
@@ -181,7 +194,7 @@ class ALK2011HSCC:
         return a_sum + f
 
     @classmethod
-    def delta_reach(cls, sys: LinSys.Entity, r: Geometry.Base, opt: Options):
+    def delta_reach(cls, sys: LinSys, r: Geometry.Base, opt: Options):
         rhom_tp_delta = (opt.taylor_ea_t - np.eye(sys.dim)) @ r + opt.taylor_r_trans
 
         if r.type == Geometry.TYPE.ZONOTOPE:
@@ -199,7 +212,7 @@ class ALK2011HSCC:
         return rhom + rv
 
     @classmethod
-    def reach_one_step(cls, sys: LinSys.Entity, r: Geometry.Base, opt: Options):
+    def reach_one_step(cls, sys: LinSys, r: Geometry.Base, opt: Options):
         cls.exponential(sys, opt)
         cls.compute_time_interval_err(sys, opt)
         cls.input_solution(sys, opt)
@@ -216,7 +229,7 @@ class ALK2011HSCC:
 
         return r_hom + rv, r_hom_tp + rv
 
-    def reach(self, sys: LinSys.Entity, opt: Options):
+    def reach(self, sys: LinSys, opt: Options):
         assert opt.validation(sys.dim)
         # TODO
         raise NotImplementedError

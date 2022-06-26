@@ -36,7 +36,7 @@ class CAV2016:
             return True
 
     @classmethod
-    def boundary_back(cls, sys: NonLinSys.Entity, u, epsilon, opt: ASB2008CDC.Options):
+    def boundary_back(cls, sys: NonLinSys, u, epsilon, opt: ASB2008CDC.Options):
         bounds = boundary(u, epsilon, Geometry.TYPE.ZONOTOPE)
         r0 = [cvt2(bd, Geometry.TYPE.ZONOTOPE) for bd in bounds]
         opt.r0 = r0
@@ -157,7 +157,7 @@ class CAV2016:
         return u_back, True
 
     @classmethod
-    def reach(cls, sys: NonLinSys.Entity, opt: Options, opt_back: ASB2008CDC.Options):
+    def reach(cls, sys: NonLinSys, opt: Options, opt_back: ASB2008CDC.Options):
         assert opt.validation(sys.dim)
         assert opt_back.validation(sys.dim)
         tp_set, tp_time = [], []

@@ -1,4 +1,4 @@
-from .model import Model
+from .model_old import ModelOld
 from sympy import *
 
 
@@ -11,7 +11,7 @@ def _f(x, u):
     return Matrix(dxdt)
 
 
-class LinearModel(Model):
+class LinearModel(ModelOld):
     """
     system dynamics for the tank benchmark (see Sec. VII in [1])
     :return:

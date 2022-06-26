@@ -2,7 +2,7 @@ from sympy import *
 from .model import Model
 
 
-def _f(x, u):
+def __f(x, u):
     mu = 1
 
     dxdt = [None] * 2
@@ -13,8 +13,4 @@ def _f(x, u):
     return Matrix(dxdt)
 
 
-class VanDerPol(Model):
-    vars = symbols(("x:2", "u:1"))
-    f = _f(*vars)
-    name = "VanDerPol"
-    dim = f.rows
+VanDerPol = Model(__f, [2, 1])

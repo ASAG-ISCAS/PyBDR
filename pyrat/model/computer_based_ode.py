@@ -1,6 +1,6 @@
 from sympy import *
 
-from .model import Model
+from .model_old import ModelOld
 
 """
 NOTE: 
@@ -18,7 +18,7 @@ def _f(x, u):
     return Matrix(dxdt)
 
 
-class ComputerBasedODE(Model):
+class ComputerBasedODE(ModelOld):
     vars = symbols(("x:5", "u:1"))
     f = _f(*vars)
     name = "computer based ode"

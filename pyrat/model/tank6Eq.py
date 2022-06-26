@@ -2,7 +2,7 @@ from sympy import *
 from .model import Model
 
 
-def _f(x, u):
+def __f(x, u):
     # parameters
     k0, k1, g = 0.015, 0.01, 9.81
     # dynamic
@@ -17,13 +17,4 @@ def _f(x, u):
     return Matrix(dxdt)
 
 
-class Tank6Eq(Model):
-    """
-    system dynamics for the tank benchmark (see Sec. VII in [1])
-    :return:
-    """
-
-    vars = symbols(("x:6", "u:1"))
-    f = _f(*vars)
-    name = "Tank6Eq"
-    dim = f.rows
+Tank6Eq = Model(__f, [6, 1])

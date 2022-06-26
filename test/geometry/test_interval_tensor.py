@@ -1,6 +1,6 @@
 import numpy as np
 
-from pyrat.geometry import IntervalTensor
+from pyrat.geometry import Interval
 
 np.set_printoptions(precision=5, suppress=True)
 
@@ -13,7 +13,7 @@ def random_interval(m, n, neg: bool = True):
         inf[row, col] *= -1
         sup[row, col] *= -1
     inf, sup = np.minimum(inf, sup), np.maximum(inf, sup)
-    return IntervalTensor(inf, sup)
+    return Interval(inf, sup)
 
 
 def out_interval(a, name):
@@ -140,7 +140,7 @@ def test_exp():
     a = random_interval(2, 4, False)
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.exp(a))
+    print(Interval.exp(a))
 
 
 def test_log():
@@ -148,7 +148,7 @@ def test_log():
     a = random_interval(2, 4, False)
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.log(a))
+    print(Interval.log(a))
 
 
 def test_sqrt():
@@ -156,7 +156,7 @@ def test_sqrt():
     a = random_interval(2, 4, False)
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.sqrt(a))
+    print(Interval.sqrt(a))
 
 
 def test_arcsin():
@@ -164,7 +164,7 @@ def test_arcsin():
     a = random_interval(2, 4, False)
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.arcsin(a))
+    print(Interval.arcsin(a))
 
 
 def test_arccos():
@@ -172,7 +172,7 @@ def test_arccos():
     a = random_interval(2, 4, False)
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.arccos(a))
+    print(Interval.arccos(a))
 
 
 def test_arctan():
@@ -180,7 +180,7 @@ def test_arctan():
     a = random_interval(2, 4)
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.arctan(a))
+    print(Interval.arctan(a))
 
 
 def test_sinh():
@@ -188,7 +188,7 @@ def test_sinh():
     a = random_interval(2, 4)
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.sinh(a))
+    print(Interval.sinh(a))
 
 
 def test_cosh():
@@ -196,7 +196,7 @@ def test_cosh():
     a = random_interval(2, 4)
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.cosh(a))
+    print(Interval.cosh(a))
 
 
 def test_tanh():
@@ -204,7 +204,7 @@ def test_tanh():
     a = random_interval(2, 4)
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.tanh(a))
+    print(Interval.tanh(a))
 
 
 def test_arcsinh():
@@ -212,7 +212,7 @@ def test_arcsinh():
     a = random_interval(2, 4)
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.arcsinh(a))
+    print(Interval.arcsinh(a))
 
 
 def test_arccosh():
@@ -220,7 +220,7 @@ def test_arccosh():
     a = random_interval(2, 4, False) + 1
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.arccosh(a))
+    print(Interval.arccosh(a))
 
 
 def test_arctanh():
@@ -228,7 +228,7 @@ def test_arctanh():
     a = random_interval(2, 4)
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.arctanh(a))
+    print(Interval.arctanh(a))
 
 
 def test_sin():
@@ -236,7 +236,7 @@ def test_sin():
     a = random_interval(2, 4) * 10
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.sin(a))
+    print(Interval.sin(a))
 
 
 def test_cos():
@@ -244,7 +244,7 @@ def test_cos():
     a = random_interval(2, 4) * 10
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.cos(a))
+    print(Interval.cos(a))
 
 
 def test_tan():
@@ -252,9 +252,9 @@ def test_tan():
     a = random_interval(2, 4) * 10
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.tan(a))
-    b = IntervalTensor(5.781807046304337, 7.156265610661695)
-    print(IntervalTensor.tan(b))
+    print(Interval.tan(a))
+    b = Interval(5.781807046304337, 7.156265610661695)
+    print(Interval.tan(b))
 
 
 def test_cot():
@@ -262,6 +262,6 @@ def test_cot():
     a = random_interval(2, 4) * 10
     out_interval(a, "a")
     print("--------------------------")
-    print(IntervalTensor.cot(a))
-    b = IntervalTensor(5.781807046304337, 7.156265610661695)
-    print(IntervalTensor.cot(b))
+    print(Interval.cot(a))
+    b = Interval(5.781807046304337, 7.156265610661695)
+    print(Interval.cot(b))

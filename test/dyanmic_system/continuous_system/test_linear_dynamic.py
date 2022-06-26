@@ -1,7 +1,7 @@
 import numpy as np
 
 from pyrat.dynamic_system import LinearSystem, LSOptions
-from pyrat.dynamic_system import LinSys
+from pyrat.dynamic_system import LinSysOld
 
 
 def test_reach():

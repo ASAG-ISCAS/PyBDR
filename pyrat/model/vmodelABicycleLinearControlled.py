@@ -1,5 +1,5 @@
 from sympy import *
-from .model import Model
+from .model_old import ModelOld
 
 
 def _f(x, u):
@@ -99,7 +99,7 @@ def _f(x, u):
     return Matrix(dxdt)
 
 
-class VModelABicycleLinearControlled(Model):
+class VModelABicycleLinearControlled(ModelOld):
     vars = symbols(("x:8", "u:26"))
     f = _f(*vars)
     name = "vmodel_a_bicycle_linear_controlled"

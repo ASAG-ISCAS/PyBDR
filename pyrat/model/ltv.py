@@ -1,5 +1,5 @@
 from sympy import *
-from .model import Model
+from .model_old import ModelOld
 
 """
 NOTE: https://flowstar.org/benchmarks/2-dimensional-ltv-system/
@@ -16,7 +16,7 @@ def _f(x, u):
     return Matrix(dxdt)
 
 
-class LTV(Model):
+class LTV(ModelOld):
     vars = symbols(("x:3", "u:4"))
     f = _f(*vars)
     name = "LTV"

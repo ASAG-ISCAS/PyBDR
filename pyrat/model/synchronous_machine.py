@@ -1,5 +1,5 @@
 from sympy import *
-from .model import Model
+from .model_old import ModelOld
 
 """
 NOTE: 
@@ -18,7 +18,7 @@ def _f(x, u):
     return Matrix(dxdt)
 
 
-class SynchronousMachine(Model):
+class SynchronousMachine(ModelOld):
     vars = symbols(("x:2", "u:1"))
     f = _f(*vars)
     name = "Synchronous Machine"

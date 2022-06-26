@@ -1,4 +1,5 @@
 import numpy as np
+
 from pyrat.algorithm import ASB2008CDC
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Zonotope
@@ -8,7 +9,7 @@ from pyrat.util.visualization import plot
 
 def test_van_der_pol():
     # init dynamic system
-    system = NonLinSys.Entity(VanDerPol())
+    system = NonLinSys(VanDerPol)
 
     # settings for the computation
     options = ASB2008CDC.Options()
@@ -38,7 +39,7 @@ def test_van_der_pol():
 
 def test_tank6eq():
     # init dynamic system
-    system = NonLinSys.Entity(Tank6Eq())
+    system = NonLinSys(Tank6Eq)
 
     # settings for the computation
     options = ASB2008CDC.Options()
@@ -71,7 +72,7 @@ def test_tank6eq():
 
 def test_laub_loomis():
     # init dynamic system
-    system = NonLinSys.Entity(LaubLoomis())
+    system = NonLinSysOld.Entity(LaubLoomis())
 
     # settings for the computation
     options = ASB2008CDC.Options()

@@ -9,7 +9,7 @@ from pyrat.util.visualization import vis2d
 
 def test_van_der_pol_using_zonotope():
     # init dynamic system
-    system = NonLinSys.Entity(VanDerPol())
+    system = NonLinSys(VanDerPol)
 
     # settings for the computation
     options = HSCC2013.Options()
@@ -35,7 +35,7 @@ def test_van_der_pol_using_zonotope():
 
 def test_van_der_pol_using_polyzonotope():
     # init dynamic system
-    system = NonLinSys.Entity(VanDerPol())
+    system = NonLinSysOld.Entity(VanDerPol())
 
     # settings for the computation
     options = HSCC2013.Options()
@@ -64,7 +64,7 @@ def test_van_der_pol_using_polyzonotope():
 
 def test_tank6eq():
     # init dynamic system
-    system = NonLinSys.Entity(Tank6Eq())
+    system = NonLinSysOld.Entity(Tank6Eq())
 
     # settings for the computations
     options = HSCC2013.Options()
