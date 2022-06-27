@@ -1,4 +1,5 @@
 import numpy as np
+
 from pyrat.algorithm import ASB2008CDC
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Zonotope
@@ -13,7 +14,7 @@ def test_van_der_pol():
     # settings for the computation
     options = ASB2008CDC.Options()
     options.t_end = 3.5
-    options.step = 0.015
+    options.step = 0.01
     options.tensor_order = 2
     options.taylor_terms = 4
     options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
@@ -25,15 +26,11 @@ def test_van_der_pol():
     Zonotope.ORDER = 50
 
     # reachable sets computation
-    results = ASB2008CDC.reach(system, options)
+    ti, tp, _, _ = ASB2008CDC.reach(system, options)
 
-    geos = []
-    for tps in results.tps:
-        for tp in tps:
-            geos.append(tp.geometry)
-
+    tp = [[r.geometry for r in l] for l in tp]
     # visualize the results
-    plot(geos, [0, 1])
+    plot(tp, [0, 1])
 
 
 def test_tank6eq():
@@ -56,17 +53,14 @@ def test_tank6eq():
     Zonotope.ORDER = 50
 
     # reachable sets computation
-    results = ASB2008CDC.reach(system, options)
+    ti, tp, _, _ = ASB2008CDC.reach(system, options)
 
-    geos = []
-    for tps in results.tps:
-        for tp in tps:
-            geos.append(tp.geometry)
+    tp = [[r.geometry for r in l] for l in tp]
 
     # visualize the results
-    plot(geos, [0, 1])
-    plot(geos, [2, 3])
-    plot(geos, [4, 5])
+    plot(tp, [0, 1])
+    plot(tp, [2, 3])
+    plot(tp, [4, 5])
 
 
 def test_laub_loomis():
@@ -88,15 +82,12 @@ def test_laub_loomis():
     Zonotope.REDUCE_METHOD = Zonotope.METHOD.REDUCE.GIRARD
     Zonotope.ORDER = 50
 
-    results = ASB2008CDC.reach(system, options)
+    ti, tp, _, _ = ASB2008CDC.reach(system, options)
 
-    geos = []
-    for tps in results.tps:
-        for tp in tps:
-            geos.append(tp.geometry)
+    tp = [[r.geometry for r in l] for l in tp]
 
-    plot(geos, [0, 1])
-    plot(geos, [2, 4])
-    plot(geos, [5, 6])
-    plot(geos, [1, 5])
-    plot(geos, [4, 6])
+    plot(tp, [0, 1])
+    plot(tp, [2, 4])
+    plot(tp, [5, 6])
+    plot(tp, [1, 5])
+    plot(tp, [4, 6])

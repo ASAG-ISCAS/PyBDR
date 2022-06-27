@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import itertools
 from numbers import Real
 
 import numpy as np
 from numpy.typing import ArrayLike
-import itertools
+
 from .geometry import Geometry
 
 
@@ -674,7 +675,7 @@ class Interval(Geometry.Base):
         return Interval(self._inf.sum(axis), self._sup.sum(axis))
 
     def split(self, index):
-        inf, sup = self.inf, self.sup
+        inf, sup = self.inf.copy(), self.sup.copy()
         c = (self.inf[index] + self.sup[index]) * 0.5
         inf[index] = c
         sup[index] = c
@@ -711,9 +712,18 @@ class Interval(Geometry.Base):
         aux_idx = np.tile(np.arange(self.dim[0]), ext_idx.shape[0])
         return segs[aux_idx, ext_idx.reshape(-1)].reshape((-1, self.dim[0], 2))
 
+    def rectangle(self):
+        assert len(self.dim) == 1 and self.dim[0] == 2  # enforce 2d
+        pts = np.zeros((4, 2), dtype=float)
+        pts[[0, 3], 0] = self.inf[0]
+        pts[[1, 2], 0] = self.sup[0]
+        pts[[0, 1], 1] = self.inf[1]
+        pts[[2, 3], 1] = self.sup[1]
+        return pts
+
     def union(self, xs: [Interval]):
         """
-        get the union of given intevals
+        get the union of given intervals
         :param xs:
         :return:
         """

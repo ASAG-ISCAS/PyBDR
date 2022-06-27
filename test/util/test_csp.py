@@ -1,6 +1,7 @@
 import numpy as np
+
 from pyrat.util.functional import CSPSolver
-from pyrat.util.visualization import vis2dGeo
+from pyrat.util.visualization import plot
 
 
 def test_case_0():
@@ -12,4 +13,4 @@ def test_case_0():
     lb, ub = np.ones(2) * -5, np.ones(2) * 5
     results = CSPSolver.solve(f, lb, ub, 0.03)
 
-    vis2dGeo(results, [0, 1])
+    plot(results, [0, 1])

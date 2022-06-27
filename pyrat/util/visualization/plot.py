@@ -1,8 +1,10 @@
+import itertools
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Polygon
 from pyrat.geometry import Geometry, Interval, Zonotope, Polytope
-from pyrat.misc import Reachable
+from itertools import chain
 
 
 def __3d_plot(objs, dims: list, width: int, height: int):
@@ -15,23 +17,23 @@ def __2d_plot(objs, dims: list, width: int, height: int):
     px = 1 / plt.rcParams["figure.dpi"]
     fig, ax = plt.subplots(figsize=(width * px, height * px), layout="constrained")
 
-    def __add_pts(pts: np.ndarray):
+    def __add_pts(pts: np.ndarray, color):
         assert pts.ndim == 2
-        ax.scatter(pts[:, dims[:, 0]], pts[:, dims[:, 1]])
+        ax.scatter(pts[:, dims[0]], pts[:, dims[1]], c=color)
 
-    def __add_interval(i: "IntervalOld"):
+    def __add_interval(i: "Interval", color):
         ax.add_patch(
             Polygon(
-                i.rectangle(dims),
+                i.proj(dims).rectangle(),
                 closed=True,
                 alpha=0.7,
                 fill=False,
                 linewidth=0.5,
-                edgecolor="black",
+                edgecolor=color,
             )
         )
 
-    def __add_polytope(p: "Polytope"):
+    def __add_polytope(p: "Polytope", color):
         ax.add_patch(
             Polygon(
                 p.polygon(dims),
@@ -39,32 +41,37 @@ def __2d_plot(objs, dims: list, width: int, height: int):
                 alpha=0.7,
                 fill=False,
                 linewidth=0.5,
-                edgecolor="red",
+                edgecolor=color,
             )
         )
 
-    def __add_zonotope(zono: "Zonotope"):
+    def __add_zonotope(zono: "Zonotope", color):
         g = zono.proj(dims)
         p = Polygon(
             g.polygon(),
             closed=True,
             alpha=1,
             fill=False,
-            linewidth=0.5,
-            edgecolor="blue",
+            linewidth=1,
+            edgecolor=color,
         )
         ax.add_patch(p)
 
-    for obj in objs:
-        if isinstance(obj, np.ndarray):
-            __add_pts(obj)
-        elif isinstance(obj, Geometry.Base):
-            if obj.type == Geometry.TYPE.INTERVAL:
-                __add_interval(obj)
-            elif obj.type == Geometry.TYPE.POLYTOPE:
-                __add_polytope(obj)
-            elif obj.type == Geometry.TYPE.ZONOTOPE:
-                __add_zonotope(obj)
+    for i in range(len(objs)):
+        c = plt.cm.turbo(i / len(objs))
+        geos = list(itertools.chain.from_iterable([objs[i]]))
+        for geo in geos:
+            if isinstance(geo, np.ndarray):
+                __add_pts(geo, c)
+            elif isinstance(geo, Geometry.Base):
+                if geo.type == Geometry.TYPE.INTERVAL:
+                    __add_interval(geo, c)
+                elif geo.type == Geometry.TYPE.POLYTOPE:
+                    __add_polytope(geo, c)
+                elif geo.type == Geometry.TYPE.ZONOTOPE:
+                    __add_zonotope(geo, c)
+                else:
+                    raise NotImplementedError
             else:
                 raise NotImplementedError
 

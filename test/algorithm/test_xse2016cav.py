@@ -33,12 +33,7 @@ def test_synchronous_machine():
     Zonotope.ORDER = 50
 
     # reachable sets computation
-    results = CAV2016.reach(system, options, options_back_one_step)
-
-    geos = []
-    for tps in results.tps:
-        for tp in tps:
-            geos.append(tp.geometry)
+    rs, _ = CAV2016.reach(system, options, options_back_one_step)
 
     # visualize the results
-    plot(geos, [0, 1])
+    plot(rs, [0, 1])

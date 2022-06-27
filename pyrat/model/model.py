@@ -1,6 +1,7 @@
 import inspect
 from dataclasses import dataclass
 from typing import Callable
+
 import numpy as np
 from sympy import symbols, Matrix, lambdify, derive_by_array, ImmutableDenseNDimArray
 
@@ -30,7 +31,7 @@ class Model:
         )
         self.__inr_x = symbols("inr_x:" + str(self.__inr_dim))
         self.__inr_f = self.f(*self.__inr_vars)
-        self.__inr_f = -self.__inr_f if self.__reversed else self.__inr_f
+        self.__inr_f = -1 * self.__inr_f if self.__reversed else self.__inr_f
         self.dim = self.__inr_f.rows
         self.__inr_idx = np.zeros((vars_num, 2), dtype=int)
         self.__inr_idx[:, 0] = np.cumsum(self.var_dims) - self.var_dims
@@ -67,7 +68,8 @@ class Model:
         self.__inr_series[order] = {"sym": {v: np.moveaxis(d, 0, -2)}}
 
     def reverse(self):
-        self.__reversed = True
+        self.__reversed = not self.__reversed
+        print(self.__reversed)
         self.__validation()
 
     def evaluate(self, xs: tuple, mod: str, order: int, v: int):

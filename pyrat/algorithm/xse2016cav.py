@@ -7,17 +7,13 @@ sets by polytopes. In International Conference on Computer Aided Verification
 """
 
 from __future__ import annotations
-
 from dataclasses import dataclass
-
 import cvxpy as cp
 import numpy as np
 from scipy.linalg import block_diag
-
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Geometry, Polytope, Zonotope
 from pyrat.geometry.operation import cvt2, boundary
-from pyrat.misc import Reachable
 from .algorithm import Algorithm
 from .asb2008cdc import ASB2008CDC
 
@@ -82,40 +78,6 @@ class CAV2016:
         return Polytope(o.a, o.b + bu), bu
 
     @classmethod
-    def contraction_try(cls, omega, o, opt: Options):
-        # do linear programming simultaneously
-        num_box = len(omega)
-        x = cp.Variable(num_box * o.dim + num_box)
-        constraints = []
-        # add constraints Ax+C<=B
-        a = np.zeros((o.a.shape[0] * num_box, x.shape[0]))
-        temp0 = a[:, :-num_box]
-        temp1 = block_diag(*[o.a for i in range(num_box)])
-        print(temp1.shape)
-        print(temp0.shape)
-        a[:, :-num_box] = block_diag(*[o.a for i in range(num_box)])
-        constraints.append(a @ x <= np.repeat(o.b, num_box))
-        # add constraints x in Ij
-        bd = np.full((x.shape[0], 2), -np.inf)
-        bd[:-num_box, 0] = np.concatenate([interval.inf for interval in omega])
-        bd[:-num_box, 1] = np.concatenate([interval.sup for interval in omega])
-        bd[-num_box:1] = 0
-        constraints.append(bd[:, 0] <= x)
-        constraints.append(x <= bd[:, 1])
-        assert np.all(bd[:, 0] <= bd[:, 1])
-        # minimize c'x with x=[xj0 xj1 ... b0 b1 b2 ... b_{mk}] == sum of bj
-        c = np.zeros(x.shape[0])
-        c[-num_box:] = 1
-        cost = c @ x
-        prob = cp.Problem(cp.Minimize(cost), constraints)
-        prob.solve(solver=cp.MOSEK, verbose=True)
-        # check the linear programming
-
-        exit(False)
-        # TODO
-        raise NotImplementedError
-
-    @classmethod
     def get_d(cls, o: Polytope):  # polytope before contraction
         x = cp.Variable(o.dim + 1)
         c = np.zeros(o.dim + 1)
@@ -176,4 +138,4 @@ class CAV2016:
             else:
                 break
 
-        return Reachable.Result([], tp_set)
+        return tp_set, tp_time
