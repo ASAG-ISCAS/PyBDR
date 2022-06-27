@@ -1,4 +1,4 @@
-from .cav2016 import CAV2016
+from .xse2016cav import CAV2016
 from .asb2008cdc import ASB2008CDC
 from .hscc2005 import HSCC2005
 from .alk2011hscc import ALK2011HSCC

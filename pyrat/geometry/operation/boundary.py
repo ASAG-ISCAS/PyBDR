@@ -9,18 +9,19 @@ from .convert import cvt2
 
 def __interval2interval(src: Interval, r: float):
     bd = []
-    dims = np.arange(src.dim)
-    for i in range(src.dim):
+    assert len(src.dim) == 1
+    dims = np.arange(src.dim[0])
+    for i in range(src.dim[0]):
         valid_dims = np.setdiff1d(dims, i)
         g = src.proj(valid_dims).grid(r)
-        data = np.zeros((g.shape[0], src.dim * 2, 2), dtype=float)
+        data = np.zeros((g.shape[0], src.dim[0] * 2, 2), dtype=float)
         # set this dimension inf related boundary
         data[:, valid_dims, :] = g
         data[:, i, :] = src.inf[i]
         # set this dimension sup related boundary
-        data[:, valid_dims + src.dim, :] = g
-        data[:, i + src.dim, :] = src.sup[i]
-        data = data.reshape((-1, src.dim, 2))
+        data[:, valid_dims + src.dim[0], :] = g
+        data[:, i + src.dim[0], :] = src.sup[i]
+        data = data.reshape((-1, src.dim[0], 2))
         bd.append([Interval(cur_data[:, 0], cur_data[:, 1]) for cur_data in data])
 
     return list(chain.from_iterable(bd))
@@ -33,7 +34,7 @@ def __interval2zonotope(src: Interval, r: float):
 
 def __polytope2interval(src: Polytope, r: float):
     def f(x):
-        z = Interval.zero(src.a.shape[0])
+        z = Interval.zeros(src.a.shape[0])
         for i in range(src.a.shape[0]):
             for j in range(src.a.shape[1]):
                 z[i] += src.a[i, j] * x[j]

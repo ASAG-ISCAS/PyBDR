@@ -1,21 +1,21 @@
 import numpy as np
 
 from pyrat.algorithm import CAV2016, ASB2008CDC
-from pyrat.dynamic_system import NonLinSysOld
-from pyrat.geometry import IntervalOld, Zonotope
+from pyrat.dynamic_system import NonLinSys
+from pyrat.geometry import Interval, Zonotope
 from pyrat.model import *
-from pyrat.util.visualization import vis2d, vis2dGeo
+from pyrat.util.visualization import plot
 
 
 def test_synchronous_machine():
     # init dynamic system
-    system = NonLinSysOld.Entity(SynchronousMachine())
+    system = NonLinSys(Model(synchronousmachine, [2, 1]))
 
     # settings for the under approximation computation
     options = CAV2016.Options()
     options.t_end = 2
     options.step = 0.5
-    options.r0 = IntervalOld([-0.1, 0.1], [2.9, 3.1])
+    options.r0 = Interval([-0.1, 0.1], [2.9, 3.1])
     options.epsilon = 0.5
     options.epsilon_m = 0.1
 
@@ -35,5 +35,10 @@ def test_synchronous_machine():
     # reachable sets computation
     results = CAV2016.reach(system, options, options_back_one_step)
 
+    geos = []
+    for tps in results.tps:
+        for tp in tps:
+            geos.append(tp.geometry)
+
     # visualize the results
-    vis2dGeo(results.tps, [0, 1])
+    plot(geos, [0, 1])

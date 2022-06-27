@@ -8,7 +8,7 @@ from .geometry import Geometry
 
 class SPZono(Geometry.Base):
     def __init__(
-            self,
-            c: np.ndarray,
+        self,
+        c: np.ndarray,
     ):
         raise None

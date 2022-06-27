@@ -1,4 +1,4 @@
-from .model_old import ModelOld
+from pyrat.deprecated.model_old import ModelOld
 from sympy import *
 
 

@@ -7,12 +7,8 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 import pyrat.util.functional.auxiliary as aux
-from .geometry import Geometry
-from .zonotope import Zonotope
-
-
-# if TYPE_CHECKING:
-#     from .zonotope import Zonotope
+from pyrat.geometry.geometry import Geometry
+from pyrat.geometry.zonotope import Zonotope
 
 
 class PolyZonotope(Geometry.Base):

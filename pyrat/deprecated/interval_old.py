@@ -12,7 +12,9 @@ import pyrat.util.functional.auxiliary as aux
 from pyrat.geometry.geometry import Geometry
 
 if TYPE_CHECKING:
-    from pyrat.deprecated.interval_matrix import IntervalMatrix  # for type hint, easy coding
+    from pyrat.deprecated.interval_matrix import (
+        IntervalMatrix,
+    )  # for type hint, easy coding
     from pyrat.geometry.zonotope import Zonotope
 
 

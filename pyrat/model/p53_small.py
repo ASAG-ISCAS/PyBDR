@@ -1,5 +1,5 @@
 from sympy import *
-from .model_old import ModelOld
+from pyrat.deprecated.model_old import ModelOld
 
 """
 NOTE: https://flowstar.org/benchmarks/p53-model/

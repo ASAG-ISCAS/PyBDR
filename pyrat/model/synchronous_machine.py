@@ -1,5 +1,5 @@
 from sympy import *
-from .model_old import ModelOld
+from pyrat.deprecated.model_old import ModelOld
 
 """
 NOTE: 
@@ -9,17 +9,10 @@ performance. Proc. IEEE 100, 225–239 (2012)
 """
 
 
-def _f(x, u):
+def synchronousmachine(x, u):
     dxdt = [None] * 2
 
     dxdt[0] = x[1]
     dxdt[1] = 0.2 - 0.7 * sin(x[0]) - 0.05 * x[1]
 
     return Matrix(dxdt)
-
-
-class SynchronousMachine(ModelOld):
-    vars = symbols(("x:2", "u:1"))
-    f = _f(*vars)
-    name = "Synchronous Machine"
-    dim = f.rows

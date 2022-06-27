@@ -7,6 +7,7 @@ Althoff, M. (2013, April). Reachability analysis of nonlinear systems using cons
 """
 
 from __future__ import annotations
+
 import numpy as np
 from scipy.special import factorial
 from pyrat.dynamic_system import NonLinSys
@@ -54,11 +55,13 @@ class HSCC2013:
         z = r_red.card_prod(u_stat)
         z_delta = r_delta.card_prod(u_stat)
         # compute hessian
-        h = sys.hessian((opt.lin_err_x, opt.lin_err_u), "numpy")
+        hx = sys.evaluate((opt.lin_err_x, opt.lin_err_u), "numpy", 2, 0)
+        hu = sys.evaluate((opt.lin_err_x, opt.lin_err_u), "numpy", 2, 1)
+
         t, ind3, zd3 = None, None, None
 
         # calculate the quadratic map == static second order error
-        err_stat_sec = 0.5 * z.quad_map(h)
+        err_stat_sec = 0.5 * z.quad_map([hx, hu])
         err_stat = None
         # third order tensor
         if opt.tensor_order >= 4:
@@ -68,7 +71,7 @@ class HSCC2013:
             err_stat = err_stat.reduce(
                 Zonotope.REDUCE_METHOD, Zonotope.INTERMEDIATE_ORDER
             )
-        return h, z_delta, err_stat, t, ind3, zd3
+        return [hx, hu], z_delta, err_stat, t, ind3, zd3
 
     @classmethod
     def abstract_err(cls, sys, opt, r_all, r_diff, h, zd, verr_stat, t, ind3, zd3):
@@ -91,20 +94,12 @@ class HSCC2013:
         )
 
         if opt.tensor_order == 3:
-            tx, tu = sys.third_order((total_int_x, total_int_u), mod="interval")
+            tx = sys.evaluate((total_int_x, total_int_u), "interval", 3, 0)
+            tu = sys.evaluate((total_int_x, total_int_u), "interval", 3, 1)
 
-            # calculate the lagrange remainder term
-            err_dyn_third = Interval.zeros(sys.dim)
-
-            # error relates to tx
-            for row, col in tx[0]:
-                err_dyn_third[row] += dx @ tx[1][row][col] @ dx * dx[col]
-
-            # error relates to tu
-            for row, col in tu[0]:
-                err_dyn_third[row] += du @ tu[1][row][col] @ du * du[col]
-
-            err_dyn_third *= 1 / 6
+            xx = Interval.sum((dx @ tx @ dx) * dx, axis=1)
+            uu = Interval.sum((du @ tu @ du) * du, axis=1)
+            err_dyn_third = (xx + uu) / 6
             err_dyn_third = cvt2(err_dyn_third, Geometry.TYPE.ZONOTOPE)
 
             # no terms of order >=4, max 3 for now

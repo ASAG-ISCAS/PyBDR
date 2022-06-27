@@ -24,8 +24,8 @@ from .alk2011hscc import ALK2011HSCC
 class ASB2008CDC:
     @dataclass
     class Options(Algorithm.Options):
-        taylor_terms: int = 4
-        tensor_order: int = 2
+        taylor_terms: int = 4  # for linearization
+        tensor_order: int = 2  # for error approximation
         u_trans: np.ndarray = None
         factors: np.ndarray = None
         max_err: np.ndarray = None
@@ -52,8 +52,6 @@ class ASB2008CDC:
     def linearize(sys: NonLinSys, r: Geometry.Base, opt: Options):
         opt.lin_err_u = opt.u_trans if opt.u_trans is not None else opt.u.c
         f0 = sys.evaluate((r.c, opt.lin_err_u), "numpy", 0, 0)
-        print(f0.shape)
-        print(f0)
         opt.lin_err_x = r.c + f0 * 0.5 * opt.step
         opt.lin_err_f0 = sys.evaluate((opt.lin_err_x, opt.lin_err_u), "numpy", 0, 0)
         a = sys.evaluate((opt.lin_err_x, opt.lin_err_u), "numpy", 1, 0)

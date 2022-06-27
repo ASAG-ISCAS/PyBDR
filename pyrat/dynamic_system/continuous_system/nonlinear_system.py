@@ -11,5 +11,8 @@ class NonLinSys:
     def dim(self):
         return self.model.dim
 
+    def reverse(self):
+        self.model.reverse()
+
     def evaluate(self, xs: tuple, mod: str, order: int, v: int):
         return self.model.evaluate(xs, mod, order, v)

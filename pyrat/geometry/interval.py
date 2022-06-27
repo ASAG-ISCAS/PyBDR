@@ -1,15 +1,11 @@
 from __future__ import annotations
 
 from numbers import Real
-from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.typing import ArrayLike
-
+import itertools
 from .geometry import Geometry
-
-if TYPE_CHECKING:
-    pass
 
 
 class Interval(Geometry.Base):
@@ -22,6 +18,7 @@ class Interval(Geometry.Base):
         self._inf = inf
         self._sup = sup
         self._type = Geometry.TYPE.INTERVAL
+        self._vertices = None
 
     # =============================================== property
     @property
@@ -49,6 +46,10 @@ class Interval(Geometry.Base):
         return self._sup
 
     @property
+    def bd(self) -> np.ndarray:
+        return np.stack([self.inf, self.sup]).T
+
+    @property
     def T(self):
         """
         shorthand for transpose the interval
@@ -66,8 +67,13 @@ class Interval(Geometry.Base):
 
     @property
     def vertices(self) -> np.ndarray:
-        # TODO
-        raise NotImplementedError
+        assert len(self.dim) == 1
+        if self._vertices is None:
+            col = np.asarray(list(itertools.product(np.arange(2), repeat=self.dim[0])))
+            row = np.tile(np.arange(self.dim[0]), col.shape[0])
+            self._vertices = self.bd[row, col.reshape(-1)].reshape((-1, self.dim[0]))
+
+        return self._vertices
 
     @property
     def info(self):
@@ -155,7 +161,6 @@ class Interval(Geometry.Base):
 
     def __mul__(self, other):
         def _mul_interval(x: Interval):
-            assert np.allclose(self.dim, x.dim)
             bd = np.stack(
                 [self.inf * x.inf, self.inf * x.sup, self.sup * x.inf, self.sup * x.sup]
             )
@@ -241,11 +246,23 @@ class Interval(Geometry.Base):
             return Interval(inf, sup)
 
         def _matmul_interval(x: Interval):
-            def mmm(la, lb, ra, rb):
-                lhs = la[..., np.newaxis] * lb[np.newaxis, ...]
-                rhs = ra[..., np.newaxis] * rb[np.newaxis, ...]
-                c = np.maximum(lhs, rhs)
-                return np.sum(c, axis=-2)
+            def _mm(l, r):
+                if l.ndim == 1 and r.ndim == 1:
+                    return l * r, 0
+                elif l.ndim == 1 and r.ndim == 2:
+                    return l[..., None] * r, 0
+                elif l.ndim == 1 and r.ndim > 2:
+                    return l[..., None] * r, -2
+                elif l.ndim >= 2 and r.ndim == 1:
+                    return l * r[None, ...], -1
+                else:
+                    return l[..., np.newaxis] * r[..., np.newaxis, :, :], -2
+
+            def _mmm(la, lb, ra, rb):
+                ll, lr = _mm(la, lb)
+                rl, rr = _mm(ra, rb)
+                assert lr == rr
+                return np.sum(np.maximum(ll, rl), axis=lr)
 
             def posneg(m):
                 pos, neg = m, -m
@@ -255,8 +272,8 @@ class Interval(Geometry.Base):
 
             (linfp, linfn), (lsupp, lsupn) = posneg(self.inf), posneg(self.sup)
             (rinfp, rinfn), (rsupp, rsupn) = posneg(x.inf), posneg(x.sup)
-            inf = mmm(linfp, rinfp, lsupn, rsupn) - mmm(lsupp, rinfn, linfn, rsupp)
-            sup = mmm(lsupp, rsupp, linfn, rinfn) - mmm(linfp, rsupn, lsupn, rinfp)
+            inf = _mmm(linfp, rinfp, lsupn, rsupn) - _mmm(lsupp, rinfn, linfn, rsupp)
+            sup = _mmm(lsupp, rsupp, linfn, rinfn) - _mmm(linfp, rsupn, lsupn, rinfp)
             return Interval(inf, sup)
 
         if isinstance(other, np.ndarray):
@@ -608,8 +625,8 @@ class Interval(Geometry.Base):
         return Interval(inf, sup)
 
     @staticmethod
-    def rand(shape):
-        inf, sup = np.random.rand(shape), np.random.rand(shape)
+    def rand(*shape):
+        inf, sup = np.random.rand(*shape), np.random.rand(*shape)
         inf, sup = np.minimum(inf, sup), np.maximum(inf, sup)
         return Interval(inf, sup)
 
@@ -644,7 +661,7 @@ class Interval(Geometry.Base):
         raise NotImplementedError
 
     def proj(self, dims):
-        raise NotImplementedError
+        return Interval(self.inf[dims], self.sup[dims])
 
     def boundary(self, max_dist: float, element: Geometry.TYPE):
         # TODO
@@ -652,6 +669,47 @@ class Interval(Geometry.Base):
 
     def transpose(self, *axes):
         return Interval(self._inf.transpose(*axes), self._sup.transpose(*axes))
+
+    def sum(self, axis=None):
+        return Interval(self._inf.sum(axis), self._sup.sum(axis))
+
+    def split(self, index):
+        inf, sup = self.inf, self.sup
+        c = (self.inf[index] + self.sup[index]) * 0.5
+        inf[index] = c
+        sup[index] = c
+        return Interval(self.inf, sup), Interval(inf, self.sup)
+
+    def grid(self, max_dist: float) -> np.ndarray:
+        def __ll2arr(ll, fill_value: float):
+            lens = [lst.shape[0] for lst in ll]
+            max_len = max(lens)
+            mask = np.arange(max_len) < np.array(lens)[:, None]
+            arr = np.ones((len(lens), max_len, 2), dtype=float) * fill_value
+            arr[mask] = np.concatenate(ll)
+            return arr, mask
+
+        def __get_seg(dim_idx: int, seg_num: int):
+            if seg_num <= 1:
+                return np.array(
+                    [self.inf[dim_idx], self.sup[dim_idx]], dtype=float
+                ).reshape((1, -1))
+            else:
+                samples = np.linspace(
+                    self.inf[dim_idx], self.sup[dim_idx], num=seg_num + 1
+                )
+                this_segs = np.zeros((seg_num, 2), dtype=float)
+                this_segs[:, 0] = samples[:-1]
+                this_segs[:, 1] = samples[1:]
+                return this_segs
+
+        assert len(self.dim) == 1
+        nums = np.floor((self.sup - self.inf) / max_dist).astype(dtype=int) + 1
+        segs, _ = __ll2arr([__get_seg(i, nums[i]) for i in range(self.dim[0])], np.nan)
+        idx_list = [np.arange(nums[i]) for i in range(self.dim[0])]
+        ext_idx = np.array(np.meshgrid(*idx_list)).T.reshape((-1, len(idx_list)))
+        aux_idx = np.tile(np.arange(self.dim[0]), ext_idx.shape[0])
+        return segs[aux_idx, ext_idx.reshape(-1)].reshape((-1, self.dim[0], 2))
 
     def union(self, xs: [Interval]):
         """

@@ -1,8 +1,7 @@
 from sympy import *
-from .model import Model
 
 
-def __f(x, u):
+def tank6eq(x, u):
     # parameters
     k0, k1, g = 0.015, 0.01, 9.81
     # dynamic
@@ -15,6 +14,3 @@ def __f(x, u):
     dxdt[4] = k0 * sqrt(2 * g) * (sqrt(x[3]) - sqrt(x[4]))
     dxdt[5] = k0 * sqrt(2 * g) * (sqrt(x[4]) - sqrt(x[5]))
     return Matrix(dxdt)
-
-
-Tank6Eq = Model(__f, [6, 1])

@@ -54,23 +54,10 @@ class ALK2011HSCC:
             xa_power_abs.append(xa_power_abs[i] @ xa_abs)
             m += xa_power_abs[i] * opt.factors[i]
 
-        # TODO
-        # xap = [np.linalg.matrix_power(sys.xa, i) for i in range(opt.taylor_terms + 1)]
-        # xapa = [np.linalg.matrix_power(xa_abs, i) for i in range(opt.taylor_terms + 1)]
-        # xapa = np.stack(xapa)
-        # temp_m = np.eye(sys.dim, dtype=float) + np.sum(
-        #     xapa * opt.factors[:, None, None], axis=0
-        # )
-        # print(temp_m)
-        # print(m)
-        #
-        # exit(False)
-        # TODO
-
         w = expm(xa_abs * opt.step) - m
         w = abs(w)
         e = Interval(-w, w)
-        opt.taylor_powers = xa_power
+        opt.taylor_powers = np.stack(xa_power)
         opt.taylor_err = e
 
     @classmethod

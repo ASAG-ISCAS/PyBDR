@@ -15,7 +15,7 @@ from sympy import *
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Zonotope, Interval
 from pyrat.misc import Set
-from pyrat.model import ModelOld
+from pyrat.model import Model
 from .asb2008cdc import ASB2008CDC
 
 

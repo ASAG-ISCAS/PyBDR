@@ -1,8 +1,7 @@
 from sympy import *
-from .model_old import ModelOld
 
 
-def _f(x, u):
+def laubloomis(x, u):
     dxdt = [None] * 7
 
     dxdt[0] = 1.4 * x[2] - 0.9 * x[0]
@@ -14,10 +13,3 @@ def _f(x, u):
     dxdt[6] = 1.8 * x[5] - 1.5 * x[6] * x[1]
 
     return Matrix(dxdt)
-
-
-class LaubLoomis(ModelOld):
-    vars = symbols(("x:7", "u:1"))
-    f = _f(*vars)
-    name = "LaubLoomis"
-    dim = f.rows
