@@ -17,6 +17,7 @@ class WidgetType(IntEnum):
     LABEL = 6
     SCENE = 7
     VECTOR_EDIT = 8
+    NUMBER_EDIT = 9
 
 
 class MenuTag(IntEnum):
@@ -125,6 +126,15 @@ class WidgetManager:
         self.__window.callback_mgr.bind_vector_edit_on_value_changed_callback(
             self.widget(widget_type, name), name
         )
+
+    def add_number_edit(self, name, v_type=0, default_num_value=None):
+        default_number_value = 0 if default_num_value is None else default_num_value
+        widget_type = WidgetType.NUMBER_EDIT
+        assert name not in self._widgets[widget_type]
+        value_type = gui.NumberEdit.INT if v_type else gui.NumberEdit.DOUBLE
+        self._widgets[widget_type][name] = gui.NumberEdit(value_type)
+        self._widgets[widget_type][name].double_value = default_number_value
+        # TODO
 
     def widget(self, widget_type, name):
         assert name in self._widgets[widget_type]

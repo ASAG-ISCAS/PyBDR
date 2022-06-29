@@ -195,4 +195,4 @@ class HSCC2013:
             tp_set.append(next_tp)
             tp_time.append(time_pts[opt.step_idx])
 
-        return Reachable.Result(ti_set, tp_set, np.vstack(ti_time), np.array(tp_time))
+        return ti_set, tp_set, np.vstack(ti_time), np.array(tp_time)

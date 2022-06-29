@@ -40,7 +40,7 @@ def __2d_plot(objs, dims: list, width: int, height: int):
                 closed=True,
                 alpha=0.7,
                 fill=False,
-                linewidth=0.5,
+                linewidth=2,
                 edgecolor=color,
             )
         )
@@ -59,13 +59,17 @@ def __2d_plot(objs, dims: list, width: int, height: int):
 
     for i in range(len(objs)):
         c = plt.cm.turbo(i / len(objs))
-        geos = list(itertools.chain.from_iterable([objs[i]]))
+        geos = (
+            [objs[i]]
+            if not isinstance(objs[i], list)
+            else list(itertools.chain.from_iterable([objs[i]]))
+        )
         for geo in geos:
             if isinstance(geo, np.ndarray):
                 __add_pts(geo, c)
             elif isinstance(geo, Geometry.Base):
                 if geo.type == Geometry.TYPE.INTERVAL:
-                    __add_interval(geo, c)
+                    __add_interval(geo, "black")
                 elif geo.type == Geometry.TYPE.POLYTOPE:
                     __add_polytope(geo, c)
                 elif geo.type == Geometry.TYPE.ZONOTOPE:

@@ -103,3 +103,50 @@ def test_static_class_variables():
     f1 = Foo()
     print(f0.var())
     print(f1.var())
+
+
+def test_random_pts():
+    from pyrat.geometry import Zonotope, Geometry
+    from pyrat.geometry.operation import cvt2
+    from pyrat.util.visualization import plot
+    from scipy import interpolate
+
+    z = Zonotope.rand(2, 8)
+    pts = z.vertices
+    i = cvt2(pts, Geometry.TYPE.INTERVAL)
+    print(pts.shape)
+    index = np.random.choice(z.vertices.shape[0], 15)
+    pts[index] *= 0.8
+    index = np.random.choice(z.vertices.shape[0], 10)
+    pts[index] *= 0.7
+
+    p = cvt2(pts, Geometry.TYPE.POLYTOPE)
+    x, y = pts[:, 0], pts[:, 1]
+
+    tck, u = interpolate.splprep([x, y], s=0.3, per=True)
+    xi, yi = interpolate.splev(np.linspace(0, 1, 1000), tck)
+    temp = np.vstack([xi, yi]).T
+    pp = cvt2(temp, Geometry.TYPE.POLYTOPE)
+
+    # plot([p, temp], [0, 1])
+    # plot([z, temp], [0, 1])
+    # plot([i, temp], [0, 1])
+    plot([p], [0, 1])
+    plot([z], [0, 1])
+    plot([i], [0, 1])
+
+    import matplotlib.pyplot as plt
+
+    dims = [0, 1]
+    width, height = 800, 800
+    assert len(dims) == 2
+    px = 1 / plt.rcParams["figure.dpi"]
+    fig, ax = plt.subplots(figsize=(width * px, height * px), layout="constrained")
+    ax.plot(xi, yi, c="black", linewidth=3)
+    ax.autoscale_view()
+    ax.axis("equal")
+    ax.axis("off")
+    ax.set_xlabel("x" + str(dims[0]))
+    ax.set_ylabel("x" + str(dims[1]))
+
+    plt.show()

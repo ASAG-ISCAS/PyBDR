@@ -24,327 +24,126 @@
 # IN THE SOFTWARE.
 # ----------------------------------------------------------------------------
 
-import math
-import os
-import random
-
 import numpy as np
 import open3d as o3d
-import open3d.visualization as vis
-
-pyexample_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-test_data_path = os.path.join(os.path.dirname(pyexample_path), "test_data")
-
-
-def normalize(v):
-    a = 1.0 / math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
-    return (a * v[0], a * v[1], a * v[2])
+import open3d.visualization.gui as gui
+import open3d.visualization.rendering as rendering
+import time
+import threading
 
 
-def make_point_cloud(npts, center, radius, colorize):
-    pts = np.random.uniform(-radius, radius, size=[npts, 3]) + center
-    cloud = o3d.geometry.PointCloud()
-    cloud.points = o3d.utility.Vector3dVector(pts)
-    if colorize:
-        colors = np.random.uniform(0.0, 1.0, size=[npts, 3])
-        cloud.colors = o3d.utility.Vector3dVector(colors)
-    return cloud
+def rescale_greyscale(img):
+    data = np.asarray(img)
+    assert len(data.shape) == 2  # requires 1 channel image
+    dataFloat = data.astype(np.float64)
+    max_val = dataFloat.max()
+    # We don't currently support 16-bit images, so convert to 8-bit
+    dataFloat *= 255.0 / max_val
+    data8 = dataFloat.astype(np.uint8)
+    return o3d.geometry.Image(data8)
 
 
-def single_object():
-    # No colors, no normals, should appear unlit black
-    cube = o3d.geometry.TriangleMesh.create_box(1, 2, 4)
+class VideoWindow:
+    def __init__(self):
+        self.rgb_images = []
+        rgbd_data = o3d.data.SampleRedwoodRGBDImages("/home/jqlab/Downloads")
+        for path in rgbd_data.color_paths:
+            img = o3d.io.read_image(path)
+            self.rgb_images.append(img)
+        self.depth_images = []
+        for path in rgbd_data.depth_paths:
+            img = o3d.io.read_image(path)
+            # The images are pretty dark, so rescale them so that it is
+            # obvious that this is a depth image, for the sake of the example
+            img = rescale_greyscale(img)
+            self.depth_images.append(img)
+        assert len(self.rgb_images) == len(self.depth_images)
 
+        self.window = gui.Application.instance.create_window(
+            "Open3D - Video Example", 1000, 500
+        )
+        self.window.set_on_layout(self._on_layout)
+        self.window.set_on_close(self._on_close)
 
-def multi_objects():
-    pc_rad = 1.0
-    pc_nocolor = make_point_cloud(100, (0, -2, 0), pc_rad, False)
-    pc_color = make_point_cloud(100, (3, -2, 0), pc_rad, True)
-    r = 0.4
-    sphere_unlit = o3d.geometry.TriangleMesh.create_sphere(r)
-    sphere_unlit.translate((0, 1, 0))
-    sphere_colored_unlit = o3d.geometry.TriangleMesh.create_sphere(r)
-    sphere_colored_unlit.paint_uniform_color((1.0, 0.0, 0.0))
-    sphere_colored_unlit.translate((2, 1, 0))
-    sphere_lit = o3d.geometry.TriangleMesh.create_sphere(r)
-    sphere_lit.compute_vertex_normals()
-    sphere_lit.translate((4, 1, 0))
-    sphere_colored_lit = o3d.geometry.TriangleMesh.create_sphere(r)
-    sphere_colored_lit.compute_vertex_normals()
-    sphere_colored_lit.paint_uniform_color((0.0, 1.0, 0.0))
-    sphere_colored_lit.translate((6, 1, 0))
-    big_bbox = o3d.geometry.AxisAlignedBoundingBox(
-        (-pc_rad, -3, -pc_rad), (6.0 + r, 1.0 + r, pc_rad)
-    )
-    big_bbox.color = (0.0, 0.0, 0.0)
-    sphere_bbox = sphere_unlit.get_axis_aligned_bounding_box()
-    sphere_bbox.color = (1.0, 0.5, 0.0)
-    lines = o3d.geometry.LineSet.create_from_axis_aligned_bounding_box(
-        sphere_lit.get_axis_aligned_bounding_box()
-    )
-    lines.paint_uniform_color((0.0, 1.0, 0.0))
-    lines_colored = o3d.geometry.LineSet.create_from_axis_aligned_bounding_box(
-        sphere_colored_lit.get_axis_aligned_bounding_box()
-    )
-    lines_colored.paint_uniform_color((0.0, 0.0, 1.0))
+        self.widget3d = gui.SceneWidget()
+        self.widget3d.scene = rendering.Open3DScene(self.window.renderer)
+        self.window.add_child(self.widget3d)
 
-    vis.draw(
-        [
-            pc_nocolor,
-            pc_color,
-            sphere_unlit,
-            sphere_colored_unlit,
-            sphere_lit,
-            sphere_colored_lit,
-            big_bbox,
-            sphere_bbox,
-            lines,
-            lines_colored,
-        ]
-    )
+        lit = rendering.MaterialRecord()
+        lit.shader = "defaultLit"
+        tet = o3d.geometry.TriangleMesh.create_tetrahedron()
+        tet.compute_vertex_normals()
+        tet.paint_uniform_color([0.5, 0.75, 1.0])
+        self.widget3d.scene.add_geometry("tetrahedron", tet, lit)
+        bounds = self.widget3d.scene.bounding_box
+        self.widget3d.setup_camera(60.0, bounds, bounds.get_center())
+        self.widget3d.scene.show_axes(True)
 
+        em = self.window.theme.font_size
+        margin = 0.5 * em
+        self.panel = gui.Vert(0.5 * em, gui.Margins(margin))
+        self.panel.add_child(gui.Label("Color image"))
+        self.rgb_widget = gui.ImageWidget(self.rgb_images[0])
+        self.panel.add_child(self.rgb_widget)
+        self.panel.add_child(gui.Label("Depth image (normalized)"))
+        self.depth_widget = gui.ImageWidget(self.depth_images[0])
+        self.panel.add_child(self.depth_widget)
+        self.window.add_child(self.panel)
 
-def actions():
-    SOURCE_NAME = "Source"
-    RESULT_NAME = "Result (Poisson reconstruction)"
-    TRUTH_NAME = "Ground truth"
+        self.is_done = False
+        threading.Thread(target=self._update_thread).start()
 
-    bunny = o3d.data.BunnyMesh()
-    bunny_mesh = o3d.io.read_triangle_mesh(bunny.path)
-    bunny_mesh.compute_vertex_normals()
+    def _on_layout(self, layout_context):
+        contentRect = self.window.content_rect
+        panel_width = 15 * layout_context.theme.font_size  # 15 ems wide
+        self.widget3d.frame = gui.Rect(
+            contentRect.x,
+            contentRect.y,
+            contentRect.width - panel_width,
+            contentRect.height,
+        )
+        self.panel.frame = gui.Rect(
+            self.widget3d.frame.get_right(),
+            contentRect.y,
+            panel_width,
+            contentRect.height,
+        )
 
-    bunny_mesh.paint_uniform_color((1, 0.75, 0))
-    bunny_mesh.compute_vertex_normals()
-    cloud = o3d.geometry.PointCloud()
-    cloud.points = bunny_mesh.vertices
-    cloud.normals = bunny_mesh.vertex_normals
+    def _on_close(self):
+        self.is_done = True
+        return True  # False would cancel the close
 
-    def make_mesh(o3dvis):
-        # TODO: call o3dvis.get_geometry instead of using bunny_mesh
-        mesh, _ = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(cloud)
-        mesh.paint_uniform_color((1, 1, 1))
-        mesh.compute_vertex_normals()
-        o3dvis.add_geometry({"name": RESULT_NAME, "geometry": mesh})
-        o3dvis.show_geometry(SOURCE_NAME, False)
+    def _update_thread(self):
+        # This is NOT the UI thread, need to call post_to_main_thread() to update
+        # the scene or any part of the UI.
+        idx = 0
+        while not self.is_done:
+            time.sleep(0.100)
 
-    def toggle_result(o3dvis):
-        truth_vis = o3dvis.get_geometry(TRUTH_NAME).is_visible
-        o3dvis.show_geometry(TRUTH_NAME, not truth_vis)
-        o3dvis.show_geometry(RESULT_NAME, truth_vis)
+            # Get the next frame, for instance, reading a frame from the camera.
+            rgb_frame = self.rgb_images[idx]
+            depth_frame = self.depth_images[idx]
+            idx += 1
+            if idx >= len(self.rgb_images):
+                idx = 0
 
-    vis.draw(
-        [
-            {"name": SOURCE_NAME, "geometry": cloud},
-            {"name": TRUTH_NAME, "geometry": bunny_mesh, "is_visible": False},
-        ],
-        actions=[("Create Mesh", make_mesh), ("Toggle truth/result", toggle_result)],
-    )
+            # Update the images. This must be done on the UI thread.
+            def update():
+                self.rgb_widget.update_image(rgb_frame)
+                self.depth_widget.update_image(depth_frame)
+                self.widget3d.scene.set_background([1, 1, 1, 1], rgb_frame)
 
-
-def get_icp_transform(source, target, source_indices, target_indices):
-    corr = np.zeros((len(source_indices), 2))
-    corr[:, 0] = source_indices
-    corr[:, 1] = target_indices
-
-    # Estimate rough transformation using correspondences
-    p2p = o3d.pipelines.registration.TransformationEstimationPointToPoint()
-    trans_init = p2p.compute_transformation(
-        source, target, o3d.utility.Vector2iVector(corr)
-    )
-
-    # Point-to-point ICP for refinement
-    threshold = 0.03  # 3cm distance threshold
-    reg_p2p = o3d.pipelines.registration.registration_icp(
-        source,
-        target,
-        threshold,
-        trans_init,
-        o3d.pipelines.registration.TransformationEstimationPointToPoint(),
-    )
-
-    return reg_p2p.transformation
-
-
-def selections():
-    pcd_fragments_data = o3d.data.DemoICPPointClouds()
-    source = o3d.io.read_point_cloud(pcd_fragments_data.paths[0])
-    target = o3d.io.read_point_cloud(pcd_fragments_data.paths[1])
-    source.paint_uniform_color([1, 0.706, 0])
-    target.paint_uniform_color([0, 0.651, 0.929])
-
-    source_name = "Source (yellow)"
-    target_name = "Target (blue)"
-
-    def do_icp_one_set(o3dvis):
-        # sets: [name: [{ "index": int, "order": int, "point": (x, y, z)}, ...],
-        #        ...]
-        sets = o3dvis.get_selection_sets()
-        source_picked = sorted(list(sets[0][source_name]), key=lambda x: x.order)
-        target_picked = sorted(list(sets[0][target_name]), key=lambda x: x.order)
-        source_indices = [idx.index for idx in source_picked]
-        target_indices = [idx.index for idx in target_picked]
-
-        t = get_icp_transform(source, target, source_indices, target_indices)
-        source.transform(t)
-
-        # Update the source geometry
-        o3dvis.remove_geometry(source_name)
-        o3dvis.add_geometry({"name": source_name, "geometry": source})
-
-    def do_icp_two_sets(o3dvis):
-        sets = o3dvis.get_selection_sets()
-        source_set = sets[0][source_name]
-        target_set = sets[1][target_name]
-        source_picked = sorted(list(source_set), key=lambda x: x.order)
-        target_picked = sorted(list(target_set), key=lambda x: x.order)
-        source_indices = [idx.index for idx in source_picked]
-        target_indices = [idx.index for idx in target_picked]
-
-        t = get_icp_transform(source, target, source_indices, target_indices)
-        source.transform(t)
-
-        # Update the source geometry
-        o3dvis.remove_geometry(source_name)
-        o3dvis.add_geometry({"name": source_name, "geometry": source})
-
-    vis.draw(
-        [
-            {"name": source_name, "geometry": source},
-            {"name": target_name, "geometry": target},
-        ],
-        actions=[
-            ("ICP Registration (one set)", do_icp_one_set),
-            ("ICP Registration (two sets)", do_icp_two_sets),
-        ],
-        show_ui=True,
-    )
-
-
-def time_animation():
-    orig = make_point_cloud(200, (0, 0, 0), 1.0, True)
-    clouds = [{"name": "t=0", "geometry": orig, "time": 0}]
-    drift_dir = (1.0, 0.0, 0.0)
-    expand = 1.0
-    n = 20
-    for i in range(1, n):
-        amount = float(i) / float(n - 1)
-        cloud = o3d.geometry.PointCloud()
-        pts = np.asarray(orig.points)
-        pts = pts * (1.0 + amount * expand) + [amount * v for v in drift_dir]
-        cloud.points = o3d.utility.Vector3dVector(pts)
-        cloud.colors = orig.colors
-        clouds.append({"name": "points at t=" + str(i), "geometry": cloud, "time": i})
-
-    vis.draw(clouds)
-
-
-def groups():
-    building_mat = vis.rendering.MaterialRecord()
-    building_mat.shader = "defaultLit"
-    building_mat.base_color = (1.0, 0.90, 0.75, 1.0)
-    building_mat.base_reflectance = 0.1
-    midrise_mat = vis.rendering.MaterialRecord()
-    midrise_mat.shader = "defaultLit"
-    midrise_mat.base_color = (0.475, 0.450, 0.425, 1.0)
-    midrise_mat.base_reflectance = 0.1
-    skyscraper_mat = vis.rendering.MaterialRecord()
-    skyscraper_mat.shader = "defaultLit"
-    skyscraper_mat.base_color = (0.05, 0.20, 0.55, 1.0)
-    skyscraper_mat.base_reflectance = 0.9
-    skyscraper_mat.base_roughness = 0.01
-
-    buildings = []
-    size = 10.0
-    half = size / 2.0
-    min_height = 1.0
-    max_height = 20.0
-    for z in range(0, 10):
-        for x in range(0, 10):
-            max_h = (
-                max_height * (1.0 - abs(half - x) / half) * (1.0 - abs(half - z) / half)
-            )
-            h = random.uniform(min_height, max(max_h, min_height + 1.0))
-            box = o3d.geometry.TriangleMesh.create_box(0.9, h, 0.9)
-            box.compute_triangle_normals()
-            box.translate((x + 0.05, 0.0, z + 0.05))
-            if h > 0.333 * max_height:
-                mat = skyscraper_mat
-            elif h > 0.1 * max_height:
-                mat = midrise_mat
-            else:
-                mat = building_mat
-            buildings.append(
-                {
-                    "name": "building_" + str(x) + "_" + str(z),
-                    "geometry": box,
-                    "material": mat,
-                    "group": "buildings",
-                }
-            )
-
-    haze = make_point_cloud(5000, (half, 0.333 * max_height, half), 1.414 * half, False)
-    haze.paint_uniform_color((0.8, 0.8, 0.8))
-
-    smog = make_point_cloud(10000, (half, 0.25 * max_height, half), 1.2 * half, False)
-    smog.paint_uniform_color((0.95, 0.85, 0.75))
-
-    vis.draw(
-        buildings
-        + [
-            {"name": "haze", "geometry": haze, "group": "haze"},
-            {"name": "smog", "geometry": smog, "group": "smog"},
-        ]
-    )
-
-
-def remove():
-    def make_sphere(name, center, color, group, time):
-        sphere = o3d.geometry.TriangleMesh.create_sphere(0.5)
-        sphere.compute_vertex_normals()
-        sphere.translate(center)
-
-        mat = vis.rendering.Material()
-        mat.shader = "defaultLit"
-        mat.base_color = color
-
-        return {
-            "name": name,
-            "geometry": sphere,
-            "material": mat,
-            "group": group,
-            "time": time,
-        }
-
-    red = make_sphere("red", (0, 0, 0), (1.0, 0.0, 0.0, 1.0), "spheres", 0)
-    green = make_sphere("green", (2, 0, 0), (0.0, 1.0, 0.0, 1.0), "spheres", 0)
-    blue = make_sphere("blue", (4, 0, 0), (0.0, 0.0, 1.0, 1.0), "spheres", 0)
-    yellow = make_sphere("yellow", (0, 0, 0), (1.0, 1.0, 0.0, 1.0), "spheres", 1)
-    bbox = {"name": "bbox", "geometry": red["geometry"].get_axis_aligned_bounding_box()}
-
-    def remove_green(visdraw):
-        visdraw.remove_geometry("green")
-
-    def remove_yellow(visdraw):
-        visdraw.remove_geometry("yellow")
-
-    def remove_bbox(visdraw):
-        visdraw.remove_geometry("bbox")
-
-    vis.draw(
-        [red, green, blue, yellow, bbox],
-        actions=[
-            ("Remove Green", remove_green),
-            ("Remove Yellow", remove_yellow),
-            ("Remove Bounds", remove_bbox),
-        ],
-    )
+            if not self.is_done:
+                gui.Application.instance.post_to_main_thread(self.window, update)
 
 
 def main():
-    single_object()
-    multi_objects()
-    actions()
-    selections()
+    app = o3d.visualization.gui.Application.instance
+    app.initialize()
+
+    win = VideoWindow()
+
+    app.run()
 
 
 def test_main():

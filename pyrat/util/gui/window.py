@@ -1,10 +1,11 @@
-import numpy as np
 import open3d as o3d
 import open3d.visualization.gui as gui
+
 from .callback_manager import CallbackManager
-from .widget_manager import WidgetManager, WidgetType
 from .geometry_manager import GeometryManager
 from .ui_settings import UISettings
+from .widget_manager import WidgetManager, WidgetType
+
 
 # from .ui_settings import
 
@@ -36,7 +37,10 @@ class Window:
         self.settings_panel = gui.Vert(
             0, gui.Margins(self.mgn_half, self.mgn_half, self.mgn_half, self.mgn_half)
         )
-        self.settings_panel.add_child(self.__view_controls())
+        self.__view_controls()
+        # self.settings_panel.add_child(self.__view_controls())
+        # self.settings_panel.add_fixed(self.sep_h)
+        self.settings_panel.add_child(self.__algorithm2d_controls())
         self.settings_panel.add_fixed(self.sep_h)
 
         self.entity.set_on_layout(self.__on_layout)
@@ -63,13 +67,17 @@ class Window:
 
     def apply_settings(self):
         # update scene
+        img = o3d.io.read_image(
+            "/home/jqlab/PycharmProjects/RAToolbox/test/util/img_1.png"
+        )
         self.scene.scene.set_background(
             [
                 self.settings.bg_color.red,
                 self.settings.bg_color.green,
                 self.settings.bg_color.blue,
                 self.settings.bg_color.alpha,
-            ]
+            ],
+            img,
         )
         self.scene.scene.scene.enable_indirect_light(self.settings.use_ibl)
         self.scene.scene.scene.set_indirect_light_intensity(self.settings.ibl_intensity)
@@ -120,6 +128,59 @@ class Window:
         view_controls.add_child(grid)
 
         return view_controls
+
+    def __algorithm2d_controls(self):
+        # init widgets
+        self.widget_mgr.add_label("time end")
+        self.widget_mgr.add_label("step")
+        self.widget_mgr.add_label("tensor order")
+        self.widget_mgr.add_label("taylor terms")
+        self.widget_mgr.add_label("r0")
+        self.widget_mgr.add_vector_edit("r0_edit")
+        self.widget_mgr.add_number_edit("time end")
+        self.widget_mgr.add_number_edit("step")
+        self.widget_mgr.add_number_edit("tensor order")
+        self.widget_mgr.add_number_edit("taylor terms")
+        self.widget_mgr.add_button("run")
+
+        # define layout
+        algorithm2d_controls = gui.CollapsableVert(
+            "ABS2008CDC", self.mgn_qtr, gui.Margins(self.em, 0, 0, 0)
+        )
+
+        h = gui.Horiz(self.mgn_qtr)
+        h.add_child(self.widget_mgr.widget(WidgetType.LABEL, "time end"))
+        h.add_stretch()
+        h.add_child(self.widget_mgr.widget(WidgetType.NUMBER_EDIT, "time end"))
+        algorithm2d_controls.add_child(h)
+
+        h = gui.Horiz(self.mgn_qtr)
+        h.add_child(self.widget_mgr.widget(WidgetType.LABEL, "step"))
+        h.add_stretch()
+        h.add_child(self.widget_mgr.widget(WidgetType.NUMBER_EDIT, "step"))
+        algorithm2d_controls.add_child(h)
+
+        h = gui.Horiz(self.mgn_qtr)
+        h.add_child(self.widget_mgr.widget(WidgetType.LABEL, "tensor order"))
+        h.add_stretch()
+        h.add_child(self.widget_mgr.widget(WidgetType.NUMBER_EDIT, "tensor order"))
+        algorithm2d_controls.add_child(h)
+
+        h = gui.Horiz(self.mgn_qtr)
+        h.add_child(self.widget_mgr.widget(WidgetType.LABEL, "taylor terms"))
+        h.add_stretch()
+        h.add_child(self.widget_mgr.widget(WidgetType.NUMBER_EDIT, "taylor terms"))
+        algorithm2d_controls.add_child(h)
+
+        h = gui.Horiz(self.mgn_qtr)
+        h.add_stretch()
+        h.add_child(self.widget_mgr.widget(WidgetType.LABEL, "r0"))
+        h.add_child(self.widget_mgr.widget(WidgetType.VECTOR_EDIT, "r0_edit"))
+        algorithm2d_controls.add_child(h)
+
+        algorithm2d_controls.add_child(self.widget_mgr.widget(WidgetType.BUTTON, "run"))
+
+        return algorithm2d_controls
 
     def __on_layout(self, layout_context):
         r = self.entity.content_rect

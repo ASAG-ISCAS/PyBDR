@@ -14,7 +14,7 @@ def test_synchronous_machine():
     # settings for the under approximation computation
     options = CAV2016.Options()
     options.t_end = 2
-    options.step = 0.5
+    options.step = 0.3
     options.r0 = Interval([-0.1, 0.1], [2.9, 3.1])
     options.epsilon = 0.5
     options.epsilon_m = 0.1

@@ -48,9 +48,16 @@ class CallbackManager:
             tag, on_menu_item_activated_callback
         )
 
+    def bind_vector_edit_on_value_changed_callback(self, callback_name, vector_value):
+        pass
+
     # =============================================================== callback functions
 
     # button callbacks
+
+    def _on_clicked_run(self):
+        pass
+
     def _on_clicked_arcball(self):
         self._window.scene.set_view_control(gui.SceneWidget.Controls.ROTATE_CAMERA)
 

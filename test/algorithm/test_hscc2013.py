@@ -26,15 +26,12 @@ def test_van_der_pol_using_zonotope():
     Zonotope.ERROR_ORDER = 20
 
     # reachable sets
-    results = HSCC2013.reach(system, options)
+    ti, tp, _, _ = HSCC2013.reach(system, options)
 
-    geos = []
-    for tps in results.tps:
-        for tp in tps:
-            geos.append(tp.geometry)
+    tp = [[r.geometry for r in l] for l in tp]
 
     # visualize the results
-    plot(geos, [0, 1])
+    plot(tp, [0, 1])
 
 
 def test_van_der_pol_using_polyzonotope():

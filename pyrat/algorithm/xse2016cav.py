@@ -36,8 +36,8 @@ class CAV2016:
         bounds = boundary(u, epsilon, Geometry.TYPE.ZONOTOPE)
         r0 = [cvt2(bd, Geometry.TYPE.ZONOTOPE) for bd in bounds]
         opt.r0 = r0
-        rs = ASB2008CDC.reach(sys, opt)
-        return [cvt2(zono.geometry, Geometry.TYPE.INTERVAL) for zono in rs.tps[-1]]
+        _, tps, _, _ = ASB2008CDC.reach(sys, opt)
+        return [cvt2(zono.geometry, Geometry.TYPE.INTERVAL) for zono in tps[-1]]
 
     @classmethod
     def polytope(cls, omega):
@@ -99,8 +99,8 @@ class CAV2016:
     def verification(cls, o, u_back, sys, bu, epsilon, opt: ASB2008CDC.Options):
         r0 = Zonotope(u_back.c, np.eye(u_back.c.shape[0]) * 0.1)
         opt.r0 = [r0]
-        rs = ASB2008CDC.reach(sys, opt)
-        sx = rs.tps[-1][-1].geometry
+        _, tps, _, _ = ASB2008CDC.reach(sys, opt)
+        sx = tps[-1][-1].geometry
         is_inside = sx in o
         d = cls.get_d(o)
         if abs(bu / d) > epsilon or not is_inside:
@@ -113,6 +113,12 @@ class CAV2016:
         omega = cls.boundary_back(sys, u, opt.epsilon_m, opt_back)
         o = cls.polytope(omega)
         u_back, bu = cls.contraction(omega, o, opt)
+
+        # from pyrat.util.visualization import plot
+        #
+        # plot([u, u_back, o, *omega], [0, 1])
+        # exit(False)
+
         sys.reverse()  # reverse the system for forward computation
         if not cls.verification(o, u_back, sys, bu, opt.epsilon, opt_back):
             return None, False

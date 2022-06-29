@@ -1,5 +1,4 @@
 import numpy as np
-
 from pyrat.algorithm import ASB2008CDC
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Zonotope

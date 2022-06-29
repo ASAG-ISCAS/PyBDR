@@ -20,7 +20,7 @@ def test_plot_polytope():
     from pyrat.geometry.operation import cvt2
 
     pts = np.random.rand(100, 2)
-    a = cvt2(pts, Geometry.TYPE.POLYTOPE)
+    a = cvt2(pts, Geometry.TYPE.ZONOTOPE)
 
     plot([a, pts], [0, 1])
     print(a)
