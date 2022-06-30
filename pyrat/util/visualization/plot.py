@@ -26,9 +26,9 @@ def __2d_plot(objs, dims: list, width: int, height: int):
             Polygon(
                 i.proj(dims).rectangle(),
                 closed=True,
-                alpha=0.7,
+                alpha=1,
                 fill=False,
-                linewidth=0.5,
+                linewidth=1,
                 edgecolor=color,
             )
         )
@@ -38,9 +38,9 @@ def __2d_plot(objs, dims: list, width: int, height: int):
             Polygon(
                 p.polygon(dims),
                 closed=True,
-                alpha=0.7,
+                alpha=1,
                 fill=False,
-                linewidth=2,
+                linewidth=3,
                 edgecolor=color,
             )
         )
@@ -71,7 +71,7 @@ def __2d_plot(objs, dims: list, width: int, height: int):
                 if geo.type == Geometry.TYPE.INTERVAL:
                     __add_interval(geo, "black")
                 elif geo.type == Geometry.TYPE.POLYTOPE:
-                    __add_polytope(geo, c)
+                    __add_polytope(geo, "blue")
                 elif geo.type == Geometry.TYPE.ZONOTOPE:
                     __add_zonotope(geo, c)
                 else:
@@ -84,7 +84,8 @@ def __2d_plot(objs, dims: list, width: int, height: int):
     ax.set_xlabel("x" + str(dims[0]))
     ax.set_ylabel("x" + str(dims[1]))
 
-    plt.show()
+    # plt.show()
+    plt.savefig("temp.svg", dpi=300, transparent=True)
 
 
 def plot(objs, dims: list, mod: str = "2d", width: int = 800, height: int = 800):

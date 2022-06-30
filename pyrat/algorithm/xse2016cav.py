@@ -114,10 +114,10 @@ class CAV2016:
         o = cls.polytope(omega)
         u_back, bu = cls.contraction(omega, o, opt)
 
-        # from pyrat.util.visualization import plot
-        #
-        # plot([u, u_back, o, *omega], [0, 1])
-        # exit(False)
+        from pyrat.util.visualization import plot
+
+        plot([u, u_back, o, *omega], [0, 1])
+        exit(False)
 
         sys.reverse()  # reverse the system for forward computation
         if not cls.verification(o, u_back, sys, bu, opt.epsilon, opt_back):
