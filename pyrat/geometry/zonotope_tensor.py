@@ -4,8 +4,11 @@ from numbers import Real
 
 import numpy as np
 from numpy.typing import ArrayLike
-
 from .geometry import Geometry
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pyrat.geometry.interval import Interval
 
 
 class ZonoTensor(Geometry.Base):
@@ -41,6 +44,10 @@ class ZonoTensor(Geometry.Base):
     def type(self) -> Geometry.TYPE:
         return self._type
 
+    @property
+    def T(self):
+        return self.transpose()
+
     # =============================================== operations
     def __getitem__(self, item):
         c, gen = self.c[item], self.gen[item, :]
@@ -71,21 +78,63 @@ class ZonoTensor(Geometry.Base):
             return ZonoTensor(self.c + x, self.gen)
 
         def _add_zono(x: ZonoTensor):
-            if len(self.shape) > len(x.shape):
+            if len(self.shape) >= len(x.shape):
                 xgen = np.broadcast_to(x.gen, np.append(self.shape, x.gen_num))
                 gen = np.concatenate([self.gen, xgen], axis=-1)
                 return ZonoTensor(self.c + x.c, gen)
             else:
-                return
-            # return ZonoTensor(self.c+x.c,self.gen+)
-            raise NotImplementedError
+                return other + self
 
         if isinstance(other, (Real, np.ndarray)):
             return _add_number(other)
         elif isinstance(other, ZonoTensor):
-            raise NotImplementedError
+            return _add_zono(other)
         else:
             raise NotImplementedError
+
+    def __radd__(self, other):
+        return NotImplemented
+
+    def __iadd__(self, other):
+        return self + other
+
+    def __sub__(self, other):
+
+        if isinstance(other, (Real, np.ndarray)):
+            return self + (-other)
+        else:
+            raise NotImplementedError
+
+    def __rsub__(self, other):
+        raise NotImplementedError
+
+    def __isub__(self, other):
+        return self - other
+
+    def __mul__(self, other):
+        def _mul_number(x: (Real, np.ndarray)):
+            return ZonoTensor(self.c * x, self.gen * x)
+
+        def _mul_interval(x: Interval):
+            if len(self.shape) >= len(x.shape):
+                raise NotImplementedError
+            else:
+                return x * self
+
+        if isinstance(other, (Real, np.ndarray)):
+            return _mul_number(other)
+        elif isinstance(other, Interval):
+            raise NotImplementedError
+        raise NotImplementedError
+
+    def __rmul__(self, other):
+        return NotImplemented
+
+    def __imul__(self, other):
+        return self * other
+
+    def __matmul__(self, other):
+        raise NotImplementedError
 
     # =============================================== static method
     @staticmethod
