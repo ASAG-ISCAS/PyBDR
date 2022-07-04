@@ -173,7 +173,7 @@ class ContSysOld:
                 Zonotope.REDUCE_METHOD, Zonotope.ERROR_ORDER
             )
             # extend teh sets byt the input sets
-            u_stat = Zonotope.zero(option.u.dim)
+            u_stat = Zonotope.zero(option.u.shape)
             z = r_red.card_prod(u_stat)
             z_delta = r_delta.card_prod(u_stat)
             # compute hessian

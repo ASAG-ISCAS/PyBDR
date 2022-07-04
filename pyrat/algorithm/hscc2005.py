@@ -12,7 +12,6 @@ from numbers import Real
 from dataclasses import dataclass
 from pyrat.geometry import Geometry
 from pyrat.dynamic_system import LinSys
-from pyrat.misc import Set
 from .algorithm import Algorithm
 from scipy.linalg import expm
 
@@ -26,11 +25,11 @@ class HSCC2005:
             # TODO
             return True
 
-    def one_step(self, sys: LinSysOld, r0: [Set], opt: Options):
+    def one_step(self, sys: LinSys, r0, opt: Options):
 
         raise NotImplementedError
 
-    def reach(self, sys: LinSysOld.Entity, opt: Options):
+    def reach(self, sys: LinSys, opt: Options):
         assert opt.validation(sys.dim)
         # TODO
         raise NotImplementedError

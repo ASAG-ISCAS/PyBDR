@@ -59,7 +59,7 @@ class Interval(Geometry.Base):
         return self.transpose()
 
     @property
-    def dim(self) -> tuple:
+    def shape(self) -> tuple:
         return self._inf.shape
 
     @property
@@ -68,11 +68,13 @@ class Interval(Geometry.Base):
 
     @property
     def vertices(self) -> np.ndarray:
-        assert len(self.dim) == 1
+        assert len(self.shape) == 1
         if self._vertices is None:
-            col = np.asarray(list(itertools.product(np.arange(2), repeat=self.dim[0])))
-            row = np.tile(np.arange(self.dim[0]), col.shape[0])
-            self._vertices = self.bd[row, col.reshape(-1)].reshape((-1, self.dim[0]))
+            col = np.asarray(
+                list(itertools.product(np.arange(2), repeat=self.shape[0]))
+            )
+            row = np.tile(np.arange(self.shape[0]), col.shape[0])
+            self._vertices = self.bd[row, col.reshape(-1)].reshape((-1, self.shape[0]))
 
         return self._vertices
 
@@ -80,7 +82,7 @@ class Interval(Geometry.Base):
     def info(self):
         info = "\n ------------- Interval BEGIN ------------- \n"
         info += ">>> dimension \n"
-        info += str(self.dim) + "\n"
+        info += str(self.shape) + "\n"
         info += str(self.inf) + "\n"
         info += str(self.sup) + "\n"
         info += "\n ------------- Interval END ------------- \n"
@@ -118,7 +120,7 @@ class Interval(Geometry.Base):
 
     def __add__(self, other):
         def _add_interval(x: Interval):
-            assert np.allclose(self.dim, x.dim)
+            assert np.allclose(self.shape, x.shape)
             return Interval(self.inf + x.inf, self.sup + x.sup)
 
         if isinstance(other, (Real, np.ndarray)):
@@ -137,7 +139,7 @@ class Interval(Geometry.Base):
 
     def __sub__(self, other):
         def _sub_interval(x: Interval):
-            assert np.allclose(self.dim, x.dim)
+            assert np.allclose(self.shape, x.shape)
             return Interval(self.inf - x.sup, self.sup - x.inf)
 
         if isinstance(other, (Real, np.ndarray)):
@@ -621,8 +623,8 @@ class Interval(Geometry.Base):
 
     # =============================================== static method
     @staticmethod
-    def empty(dim):
-        inf, sup = np.full(dim, np.nan, dtype=float), np.full(dim, np.nan, dtype=float)
+    def empty(s):
+        inf, sup = np.full(s, np.nan, dtype=float), np.full(s, np.nan, dtype=float)
         return Interval(inf, sup)
 
     @staticmethod
@@ -657,9 +659,6 @@ class Interval(Geometry.Base):
             return _enclose_pts(x)
         else:
             raise NotImplementedError
-
-    def reduce(self):
-        raise NotImplementedError
 
     def proj(self, dims):
         return Interval(self.inf[dims], self.sup[dims])
@@ -704,16 +703,18 @@ class Interval(Geometry.Base):
                 this_segs[:, 1] = samples[1:]
                 return this_segs
 
-        assert len(self.dim) == 1
+        assert len(self.shape) == 1
         nums = np.floor((self.sup - self.inf) / max_dist).astype(dtype=int) + 1
-        segs, _ = __ll2arr([__get_seg(i, nums[i]) for i in range(self.dim[0])], np.nan)
-        idx_list = [np.arange(nums[i]) for i in range(self.dim[0])]
+        segs, _ = __ll2arr(
+            [__get_seg(i, nums[i]) for i in range(self.shape[0])], np.nan
+        )
+        idx_list = [np.arange(nums[i]) for i in range(self.shape[0])]
         ext_idx = np.array(np.meshgrid(*idx_list)).T.reshape((-1, len(idx_list)))
-        aux_idx = np.tile(np.arange(self.dim[0]), ext_idx.shape[0])
-        return segs[aux_idx, ext_idx.reshape(-1)].reshape((-1, self.dim[0], 2))
+        aux_idx = np.tile(np.arange(self.shape[0]), ext_idx.shape[0])
+        return segs[aux_idx, ext_idx.reshape(-1)].reshape((-1, self.shape[0], 2))
 
     def rectangle(self):
-        assert len(self.dim) == 1 and self.dim[0] == 2  # enforce 2d
+        assert len(self.shape) == 1 and self.shape[0] == 2  # enforce 2d
         pts = np.zeros((4, 2), dtype=float)
         pts[[0, 3], 0] = self.inf[0]
         pts[[1, 2], 0] = self.sup[0]

@@ -116,7 +116,7 @@ def test_matrix_multiplication_case_1():
     # out_interval(b, "b")
     print("--------------------------")
     c = a @ b
-    print(c.dim)
+    print(c.shape)
     # print(c)
 
 

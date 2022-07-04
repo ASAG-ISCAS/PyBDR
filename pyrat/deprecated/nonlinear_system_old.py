@@ -90,7 +90,7 @@ class NonLinSysOld:
 
         @property
         def dim(self):
-            return self._model.dim
+            return self._model.shape
 
         def linearize_old(self, r: Geometry.Base, option):
             option.lin_err_pu = option.u_trans if option.u is not None else None

@@ -17,7 +17,7 @@ def test_np_function():
 def test_construction():
     z = Zonotope.rand(2, 5)
     print(z.info)
-    assert z.dim == 2
+    assert z.shape == 2
 
 
 def test_numeric_operations():

@@ -51,8 +51,8 @@ class CAV2016:
         num_box = len(omega)
         bj = []
         for i in range(num_box):
-            x = cp.Variable(o.dim + 1)
-            c = np.zeros(o.dim + 1)
+            x = cp.Variable(o.shape + 1)
+            c = np.zeros(o.shape + 1)
             c[-1] = 1
 
             constraints = []

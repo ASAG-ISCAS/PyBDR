@@ -14,8 +14,8 @@ def _interval2zonotope(source: Interval):
 
 
 def _interval2polytope(source: Interval):
-    assert len(source.dim) == 1
-    a = np.concatenate([np.eye(source.dim[0]), -np.eye(source.dim[0])], axis=0)
+    assert len(source.shape) == 1
+    a = np.concatenate([np.eye(source.shape[0]), -np.eye(source.shape[0])], axis=0)
     b = np.concatenate([source.sup, -source.inf])
     return Polytope(a, b)
 
@@ -88,7 +88,7 @@ def _polyzonotope2zonotope(source: PolyZonotope):
             [
                 source.gen[:, temp == 0],
                 0.5 * g_quad,
-                np.zeros((source.dim, 0)) if source.gen_rst is None else source.gen_rst,
+                np.zeros((source.shape, 0)) if source.gen_rst is None else source.gen_rst,
             ],
             axis=1,
         )

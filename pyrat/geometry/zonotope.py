@@ -174,7 +174,6 @@ class Zonotope(Geometry.Base):
         def __mul_interval(rhs: Interval):
             s = (rhs.sup - rhs.inf) * 0.5
             zas = np.sum(abs(self.z), axis=1)
-            print(other.c.shape, self.z.shape)
             z = np.hstack([other.c @ self.z, np.diag(s @ zas)])
             return Zonotope(z[:, 0], z[:, 1:])
 

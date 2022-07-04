@@ -81,11 +81,22 @@ def test_numpy_container():
 
 
 def test_basic_numpy():
-    a = np.random.rand(2)
-    print((-2) ** a)
-    inf = np.nan
-    sup = np.nan
-    assert inf <= sup
+    a = np.random.rand(2, 3, 7)
+    b = np.random.rand(7)
+    a0 = np.random.rand(2, 3, 7, 4)
+    b0 = np.random.rand(7, 9)
+    bb = np.broadcast_to(b0, np.append(a0.shape[:-1], b0.shape[-1]))
+    print(bb.shape)
+    c = a + b
+    print(c.shape)
+    d = np.concatenate([a0, bb], axis=-1)
+    print(d.shape)
+    e = np.random.rand(7)
+    f = np.random.rand(9)
+    g = np.outer(e, f)
+    print(g.shape)
+    temp = np.any(np.isnan(a > 0.1), axis=-1)
+    print(temp.shape)
 
 
 def test_static_class_variables():

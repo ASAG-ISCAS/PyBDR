@@ -3,10 +3,9 @@ import numpy as np
 from matplotlib.patches import Polygon, Circle
 
 from pyrat.geometry import Geometry
-from pyrat.misc import Reachable
 
 
-def vis2d(r: Reachable.Result, dims: list, width=800, height=800):
+def vis2d(r, dims: list, width=800, height=800):
     assert len(dims) == 2
     px = 1 / plt.rcParams["figure.dpi"]
     fig, ax = plt.subplots(figsize=(width * px, height * px), layout="constrained")

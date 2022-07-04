@@ -3,7 +3,6 @@ from __future__ import annotations
 from abc import ABC
 
 from pyrat.geometry import Geometry
-from pyrat.misc import Set
 
 
 class Algorithm:
@@ -21,14 +20,6 @@ class Algorithm:
             assert 0 < self.step <= self.t_end - self.t_start
             self.steps_num = round((self.t_end - self.t_start) / self.step)
             self.step_idx = 0
-            return True
-
-        def _validate_inputs(self):
-            for idx in range(len(self.r0)):  # confirm valid inputs
-                if isinstance(self.r0[idx], Geometry.Base):
-                    self.r0[idx] = Set(self.r0[idx])
-                else:
-                    assert isinstance(self.r0[idx], Set)
             return True
 
         def validation(self, dim: int):

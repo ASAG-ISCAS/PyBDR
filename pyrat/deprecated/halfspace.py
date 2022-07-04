@@ -239,7 +239,7 @@ class HalfSpace:
         :param other: other halfspace instance
         :return:
         """
-        assert self.dim == 2 and other.dim == 2
+        assert self.dim == 2 and other.shape == 2
         assert not (self.is_empty or other.is_empty)
         mv = np.vstack([self.h, other.h])
         return np.linalg.lstsq(mv[:, :-1], mv[:, -1])[0].reshape((1, -1))

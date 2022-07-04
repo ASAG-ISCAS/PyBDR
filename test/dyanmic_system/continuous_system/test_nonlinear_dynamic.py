@@ -30,7 +30,7 @@ def test_tank6Eq():
     option.lagrange_rem["simplify"] = "simplify"
     option.r_init = [Reachable.Element()]
     option.r_init[0].set = Zonotope([2, 4, 4, 2, 10, 4], np.eye(6) * 0)
-    option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
+    option.r_init[0].err = np.zeros(option.r_init[0].set.shape, dtype=float)
     option.u = Zonotope([0], [[0.005]])
     option.u_trans = np.zeros(1)
 
@@ -70,7 +70,7 @@ def test_vanDerPol():
     option.tensor_order = 2
     option.r_init = [Reachable.Element()]
     option.r_init[0].set = Zonotope([1.4, 1.4], np.diag([0.00, 0.00]))
-    option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
+    option.r_init[0].err = np.zeros(option.r_init[0].set.shape, dtype=float)
     option.u = Zonotope([0], [[0.005]])
     option.u_trans = np.zeros(1)
 
@@ -106,7 +106,7 @@ def test_vanDerPol_PolyZonotope():
     option.tensor_order = 3
     option.r_init = [Reachable.Element()]
     option.r_init[0].set = Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))
-    option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
+    option.r_init[0].err = np.zeros(option.r_init[0].set.shape, dtype=float)
     option.u = Zonotope.zero(1, 1)
     option.u_trans = np.zeros(1)
 
@@ -145,7 +145,7 @@ def test_laubLoomis():
     option.lagrange_rem["simplify"] = "simplify"
     option.r_init = [Reachable.Element()]
     option.r_init[0].set = Zonotope([1.2, 1.05, 1.5, 2.4, 1, 0.1, 0.45], np.eye(7) * 0)
-    option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
+    option.r_init[0].err = np.zeros(option.r_init[0].set.shape, dtype=float)
     option.u = Zonotope.zero(1, 1)
     option.u_trans = np.zeros(1)
 
@@ -188,7 +188,7 @@ def test_linear_model():
     option.lagrange_rem["simplify"] = "simplify"
     option.r_init = [Reachable.Element()]
     option.r_init[0].set = Zonotope([1.4, 1.4, 1.4], np.diag([0, 0, 0]))
-    option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
+    option.r_init[0].err = np.zeros(option.r_init[0].set.shape, dtype=float)
     option.u = Zonotope([0], [[]])
     option.u_trans = np.zeros(1)
 
@@ -229,7 +229,7 @@ def test_ltv():
     option.lagrange_rem["simplify"] = "simplify"
     option.r_init = [Reachable.Element()]
     option.r_init[0].set = Zonotope([1.25, 5.25, 0], np.eye(3) * 0)
-    option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
+    option.r_init[0].err = np.zeros(option.r_init[0].set.shape, dtype=float)
     option.u = Zonotope([0, 0, 0, 0], np.diag([0, 0, 0, 0]))
     option.u_trans = np.zeros(4)
 
@@ -270,7 +270,7 @@ def test_genetic():
     option.r_init[0].set = Zonotope(
         [1.0, 1.3, 0.1, 0.1, 0.1, 1.3, 2.5, 0.6, 1.3], np.eye(9) * 0
     )
-    option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
+    option.r_init[0].err = np.zeros(option.r_init[0].set.shape, dtype=float)
     option.u = Zonotope([0], [[]])
     option.u_trans = np.zeros(1)
 
@@ -310,7 +310,7 @@ def test_p53_small():
     option.lagrange_rem["simplify"] = "simplify"
     option.r_init = [Reachable.Element()]
     option.r_init[0].set = Zonotope([20.0] * 6, np.eye(6) * 0)
-    option.r_init[0].err = np.zeros(option.r_init[0].set.dim, dtype=float)
+    option.r_init[0].err = np.zeros(option.r_init[0].set.shape, dtype=float)
     option.u = Zonotope([0], [[]])
     option.u_trans = np.zeros(1)
 

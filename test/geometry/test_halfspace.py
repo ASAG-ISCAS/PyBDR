@@ -17,7 +17,7 @@ def test_constructor():
     assert h.is_empty
     h = HalfSpace(np.random.rand(1), 0)
     h_rand = HalfSpace.rand(2)
-    assert h_rand.dim == 2
+    assert h_rand.shape == 2
     assert h.dim == 1
 
 

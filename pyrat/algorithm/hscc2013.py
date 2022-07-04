@@ -13,7 +13,6 @@ from scipy.special import factorial
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Geometry, Zonotope, Interval
 from pyrat.geometry.operation import cvt2
-from pyrat.misc import Set, Reachable
 from .algorithm import Algorithm
 from .alk2011hscc import ALK2011HSCC
 from .asb2008cdc import ASB2008CDC
@@ -103,7 +102,7 @@ class HSCC2013:
             err_dyn_third = cvt2(err_dyn_third, Geometry.TYPE.ZONOTOPE)
 
             # no terms of order >=4, max 3 for now
-            remainder = Zonotope.zero(sys.dim, 1)
+            remainder = Zonotope.zero(sys.shape, 1)
 
         else:
             raise NotImplementedError
@@ -118,14 +117,14 @@ class HSCC2013:
         return true_err, verr_dyn, verr_stat
 
     @classmethod
-    def poly_reach(cls, sys: NonLinSys, r: Set, opt: Options):
-        lin_sys, lin_opt = ASB2008CDC.linearize(sys, r.geometry, opt)
-        r_delta = r.geometry - opt.lin_err_x
+    def poly_reach(cls, sys: NonLinSys, r, err, opt: Options):
+        lin_sys, lin_opt = ASB2008CDC.linearize(sys, r, opt)
+        r_delta = r - opt.lin_err_x
         r_ti, r_tp = ALK2011HSCC.reach_one_step(lin_sys, r_delta, lin_opt)
         r_diff = ALK2011HSCC.delta_reach(lin_sys, r_delta, lin_opt)
         h, zd, err_stat, t, ind3, zd3 = cls.pre_stat_err(sys, r_delta, opt)
         perf_ind_cur, perf_ind = np.inf, 0
-        applied_err, abstract_err, v_err_dyn, v_err_stat = None, r.err, None, None
+        applied_err, abstract_err, v_err_dyn, v_err_stat = None, err, None, None
 
         while perf_ind_cur > 1 and perf_ind <= 1:
             applied_err = 1.1 * abstract_err
@@ -164,13 +163,15 @@ class HSCC2013:
         # store the linearization error
         r_ti = r_ti.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
         r_tp = r_tp.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
-        return r_ti, Set(r_tp, abstract_err), dim_for_split
+        return r_ti, r_tp, abstract_err, dim_for_split
 
     @classmethod
-    def reach_one_step(cls, sys: NonLinSys, r0: [Set], opt: Options):
+    def reach_one_step(cls, sys: NonLinSys, r0, err, opt: Options):
         r_ti, r_tp = [], []
         for i in range(len(r0)):
-            temp_r_ti, temp_r_tp, dims = cls.poly_reach(sys, r0[i], opt)
+            temp_r_ti, temp_r_tp, abst_err, dims = cls.poly_reach(
+                sys, r0[i], err[i], opt
+            )
             # check if initial set has to be split
             if len(dims) <= 0:
                 r_ti.append(temp_r_ti)

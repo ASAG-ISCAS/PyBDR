@@ -87,7 +87,7 @@ class NonLinSys:
         # =============================================== property
         @property
         def dim(self) -> int:
-            return self._model.dim
+            return self._model.shape
 
         # =============================================== private method
 
