@@ -37,7 +37,7 @@ def _zonotope2interval(source: Zonotope):
 def _zonotope2polytope(source: Zonotope):
     source.remove_zero_gen()
     c, g = source.c, source.gen
-    n, n_gen = source.dim, source.gen_num
+    n, n_gen = source.shape, source.gen_num
 
     is_deg = 0
     if np.linalg.matrix_rank(g) >= n:

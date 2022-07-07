@@ -47,7 +47,7 @@ class Zonotope(Geometry.Base):
         return np.hstack([self.c.reshape((-1, 1)), self.gen])
 
     @property
-    def dim(self) -> int:
+    def shape(self) -> int:
         return None if self.is_empty else self._c.shape[0]
 
     @property
@@ -72,7 +72,7 @@ class Zonotope(Geometry.Base):
                 v = np.concatenate([v + trans, v - trans], axis=1)
 
                 # remove inner points
-                if i >= self.dim:
+                if i >= self.shape:
                     hull = ConvexHull(v.transpose())
                     v = v[:, hull.vertices]
                 # else, do nothing
@@ -85,7 +85,7 @@ class Zonotope(Geometry.Base):
             self._vertices = cvt2(self, Geometry.TYPE.POLYTOPE).vertices
 
         if self._vertices is None:
-            if self.dim == 2:
+            if self.shape == 2:
                 self._vertices = self.polygon()
             else:
                 return __vertices_convex_hull()
@@ -96,7 +96,7 @@ class Zonotope(Geometry.Base):
     def info(self):
         info = "\n ------------- Zonotope BEGIN ------------- \n"
         info += ">>> dimension -- gen_num -- center\n"
-        info += str(self.dim) + "\n"
+        info += str(self.shape) + "\n"
         info += str(self.gen_num) + "\n"
         info += str(self.c) + "\n"
         info += str(self.gen) + "\n"
@@ -237,13 +237,13 @@ class Zonotope(Geometry.Base):
 
     # =============================================== private method
     def _picked_gen(self) -> (np.ndarray, np.ndarray):
-        gur = np.empty((self.dim, 0), dtype=float)
-        gr = np.empty((self.dim, 0), dtype=float)
+        gur = np.empty((self.shape, 0), dtype=float)
+        gr = np.empty((self.shape, 0), dtype=float)
 
         if not aux.is_empty(self.gen):
             # delete zero-length generators
             self.remove_zero_gen()
-            dim, gen_num = self.dim, self.gen_num
+            dim, gen_num = self.shape, self.gen_num
             # only reduce if zonotope order is greater than the desired order
             if gen_num > dim * self.ORDER:
                 # compute metric of generators
@@ -251,7 +251,7 @@ class Zonotope(Geometry.Base):
                     self.gen, ord=np.inf, axis=0
                 )
                 # number of generators that are not reduced
-                num_ur = np.floor(self.dim * (self.ORDER - 1)).astype(dtype=int)
+                num_ur = np.floor(self.shape * (self.ORDER - 1)).astype(dtype=int)
                 # number of generators that are reduced
                 num_r = self.gen_num - num_ur
 
@@ -339,7 +339,7 @@ class Zonotope(Geometry.Base):
             # box remaining generators
             d = np.sum(abs(gr), axis=1)
             d[abs(d) < 0] = 0
-            gb = np.diag(d) if d.shape[0] > 0 else np.empty((self.dim, 0), dtype=float)
+            gb = np.diag(d) if d.shape[0] > 0 else np.empty((self.shape, 0), dtype=float)
             # build reduced zonotope
             return Zonotope(self.c, np.hstack([gur, gb]))
 

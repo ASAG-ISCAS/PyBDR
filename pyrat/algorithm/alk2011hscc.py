@@ -199,7 +199,7 @@ class ALK2011HSCC:
         return rhom + rv
 
     @classmethod
-    def reach_one_step(cls, sys: LinSys, r: Geometry.Base, opt: Options):
+    def reach_one_step(cls, sys: LinSys, r: Zonotope, opt: Options):
         cls.exponential(sys, opt)
         cls.compute_time_interval_err(sys, opt)
         cls.input_solution(sys, opt)

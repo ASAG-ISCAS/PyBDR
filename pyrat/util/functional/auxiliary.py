@@ -1,5 +1,5 @@
 import numbers
-
+import datetime
 import numpy as np
 from scipy.sparse import coo_matrix
 import time
@@ -101,3 +101,8 @@ def performance_counter(start: time.perf_counter_ns(), event: str):
     end = time.perf_counter_ns()
     print(event + " cost: {}s".format((end - start) * 1e-9))
     return end
+
+
+def time_stamp():
+    t = time.time()
+    return datetime.datetime.fromtimestamp(t).strftime("%Y%m%d_%H%M%S")

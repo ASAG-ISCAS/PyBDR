@@ -1,8 +1,21 @@
 import numpy as np
 
-from pyrat.geometry import ZonoTensor, Interval
+from pyrat.geometry import ZonoTensor
 
 np.set_printoptions(precision=5, suppress=True)
+
+
+def out_zono(z, name):
+    zc = z.c.reshape(np.append(z.c.shape, 1))
+    cg = np.concatenate([zc, z.gen], axis=-1)
+    info = name + "z=["
+    for row in range(cg.shape[0]):
+        info += "["
+        for col in range(cg.shape[1]):
+            info += str(cg[row][col]) + ", "
+        info += "];\n"
+    info += "];"
+    print(info)
 
 
 def test_zono_rand():
@@ -29,13 +42,23 @@ def test_zono_add():
 
 
 def test_zono_mul():
-    a = ZonoTensor.rand(10, 3, 4)
-    b = ZonoTensor.rand(2, 5)
-    print(a.shape)
-    print(b.shape)
-    c = np.random.rand(11, 5, 4)
-    d = np.random.rand(5, 4)
+    c = np.random.rand(3, 2)
+    d = np.random.rand(2)
     e = c * d
     f = d * c
     print(e.shape)
     print(f.shape)
+    print("------------------------")
+
+    a = ZonoTensor.rand(3, 2)
+    b = ZonoTensor.rand(2, 2)
+    out_zono(a, "a")
+    print()
+    print()
+    out_zono(b, "b")
+    from pyrat.geometry import Interval
+
+    c = Interval([-1, 2], [3, 5])
+    d = c * a
+    print(d.c)
+    print(d.gen)

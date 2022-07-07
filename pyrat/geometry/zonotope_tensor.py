@@ -4,14 +4,21 @@ from numbers import Real
 
 import numpy as np
 from numpy.typing import ArrayLike
+from enum import IntEnum
+from pyrat.geometry.interval import Interval
 from .geometry import Geometry
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from pyrat.geometry.interval import Interval
 
 
 class ZonoTensor(Geometry.Base):
+    class METHOD:
+        class REDUCE(IntEnum):
+            GIRARD = 0
+
+    REDUCE_METHOD = METHOD.REDUCE.GIRARD
+    MAX_ORDER = 50
+    ERROR_ORDER = 20
+    INTERMEDIATE_ORDER = 50
+
     def __init__(self, c: ArrayLike, gen: ArrayLike):
         c = c if isinstance(c, np.ndarray) else np.asarray(c, dtype=float)
         gen = gen if isinstance(gen, np.ndarray) else np.asarray(gen, dtype=float)
@@ -47,6 +54,10 @@ class ZonoTensor(Geometry.Base):
     @property
     def T(self):
         return self.transpose()
+
+    @property
+    def R(self):
+        return self.reduce(ZonoTensor.METHOD.REDUCE.GIRARD, ZonoTensor.MAX_ORDER)
 
     # =============================================== operations
     def __getitem__(self, item):
@@ -117,18 +128,38 @@ class ZonoTensor(Geometry.Base):
 
         def _mul_interval(x: Interval):
             if len(self.shape) >= len(x.shape):
-                raise NotImplementedError
+                xgen = np.broadcast_to((x.sup - x.inf) * 0.5, self.shape)
+                c = self.c * x.c
+                gen0 = x.c * self.gen
+                gen1 = xgen * self.gen
+                gen = np.concatenate([gen0, gen1], axis=-1)
+                return ZonoTensor(c, gen)
+            else:
+                return x * self
+
+        def _mul_zono(x: ZonoTensor):
+            if len(self.shape) >= len(x.shape):
+                xgen = np.broadcast_to(x.gen, np.append(self.shape, x.gen_num))
+                xc = np.broadcast_to(x.c, self.shape)
+                c = self.c * x.c
+                gen0 = self.c[..., None] * xgen
+                gen1 = xc[..., None] * self.gen
+                gen2 = np.outer(self.gen, xgen).reshape(np.append(self.shape, -1))
+                gen = np.concatenate([gen0, gen1, gen2], axis=-1)
+                return ZonoTensor(c, gen)
             else:
                 return x * self
 
         if isinstance(other, (Real, np.ndarray)):
             return _mul_number(other)
         elif isinstance(other, Interval):
-            raise NotImplementedError
+            return _mul_interval(other)
+        elif isinstance(other, ZonoTensor):
+            return _mul_zono(other)
         raise NotImplementedError
 
     def __rmul__(self, other):
-        return NotImplemented
+        return self * other
 
     def __imul__(self, other):
         return self * other
@@ -176,3 +207,13 @@ class ZonoTensor(Geometry.Base):
     def sum(self, axis=None):
         c = self._c.sum(axis)
         return ZonoTensor(c, self._gen.reshape(np.append(c.shape, self._gen.shape[-1])))
+
+    def proj(self, dims):
+        return ZonoTensor(self.c[dims], self.gen[dims])
+
+    def reduce(self, method: REDUCE_METHOD, order: int):
+        def __reduce_girard():
+            # TODO
+            raise NotImplementedError
+
+        raise NotImplementedError

@@ -38,7 +38,6 @@ def test_van_der_pol():
     # reachable sets computation
     ti, tp, _, _ = ASB2008CDC.reach(system, options)
 
-    tp = [[r.geometry for r in l] for l in tp]
     # visualize the results
     plot(tp, [0, 1])
 
@@ -64,8 +63,6 @@ def test_van_der_pol_comp():
 
     # reachable sets computation
     ti, tp0, _, _ = ASB2008CDC.reach(system, options)
-
-    tp0 = [r.geometry for l in tp0 for r in l]
 
     from pyrat.geometry.operation import boundary
 
@@ -103,12 +100,13 @@ def test_van_der_pol_comp():
 
     assert len(tp0) == len(tp1)
 
-    # show tp0
+    # show tp0 & tp1
     for idx in range(len(tp0)):
         c = plt.cm.turbo(idx / len(tp0))
         for r in tp1[idx]:
-            __add_zonotope(r.geometry, "blue", True, 1)
-        __add_zonotope(tp0[idx], c, False, 0.7)
+            __add_zonotope(r, "blue", True, 1)
+        for r in tp0[idx]:
+            __add_zonotope(r, c, False, 0.7)
 
     ax.autoscale_view()
     ax.axis("equal")
