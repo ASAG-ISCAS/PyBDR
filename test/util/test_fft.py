@@ -80,34 +80,33 @@ def test_fftr_1d():
 
 
 def test_fftr_2d():
-
-    # sampling along the boundary of box in 2d
-    N = 100
+    SN = 1000
     lb, ub = [-2, 3], [5, 7]
-    # sampling along line 0
-    x0 = np.ones(N) * lb[0]
-    y0 = np.linspace(ub[0], ub[1], N, endpoint=True)
-    # sampling along line 1
-    x1 = np.ones(N) * lb[1]
-    y1 = np.linspace(ub[0], ub[1], N, endpoint=True)
-    # sampling along line 2
-    x2 = np.linspace(lb[0], lb[1], N, endpoint=True)
-    y2 = np.ones(N) * ub[0]
-    # sampling along line 3
-    x3 = np.linspace(lb[0], lb[1], N, endpoint=True)
-    y3 = np.ones(N) * ub[1]
+    # x
+    x0 = np.ones(SN - 1) * ub[0]
+    x1 = np.linspace(ub[0], lb[0], 2 * SN, endpoint=False)
+    x2 = np.ones(2 * SN - 1) * lb[0]
+    x3 = np.linspace(lb[0], ub[0], 2 * SN, endpoint=False)
+    x4 = np.ones(SN) * ub[0]
+    x = np.concatenate([x0, x1, x2, x3, x4])
 
-    x = np.concatenate([x0, x2, x1, x3])
-    y = np.concatenate([y0, y2, y1, y3])
+    # y
+    c = (lb[1] + ub[1]) * 0.5
+    y0 = np.linspace(c, ub[1], SN - 1, endpoint=False)
+    y1 = np.ones(2 * SN) * ub[1]
+    y2 = np.linspace(ub[1], lb[1], 2 * SN - 1, endpoint=False)
+    y3 = np.ones(2 * SN) * lb[1]
+    y4 = np.linspace(lb[1], c, SN, endpoint=False)
+    y = np.concatenate([y0, y1, y2, y3, y4])
 
     # reconstruct
     a00, a0, b0 = fourier_coefficients(x)
     a01, a1, b1 = fourier_coefficients(y)
 
-    N = 20
+    RN = 15
 
-    rx = fftr(a00, a0[:N], b0[:N], 2 * np.pi, 100)
-    ry = fftr(a01, a1[:N], b1[:N], 2 * np.pi, 100)
+    rx = fftr(a00, a0[:RN], b0[:RN], 2 * np.pi, x.shape[0])
+    ry = fftr(a01, a1[:RN], b1[:RN], 2 * np.pi, y.shape[0])
 
     plt.plot(x, y)
     plt.plot(rx, ry)
