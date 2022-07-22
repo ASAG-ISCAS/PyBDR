@@ -38,7 +38,8 @@ def test_case_1():
     y, x = np.ogrid[-4:4:1000j, -6:6:1000j]
 
     def f(_x, _y):
-        return _x**2 + _y**2
+        return _x**2 + _y**2 - 1
 
-    plt.contour(x.ravel(), y.ravel(), f(x, y), [1, 2])
+    temp = plt.contour(x.ravel(), y.ravel(), f(x, y), [0])
+    xy = temp.allsegs
     plt.show()

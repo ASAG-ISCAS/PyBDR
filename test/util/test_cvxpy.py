@@ -10,6 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import numpy as np
 
 """
 Branch and bound to solve minimum cardinality problem.
@@ -20,7 +21,7 @@ from queue import PriorityQueue
 
 import numpy
 
-from cvxpy import Minimize, Parameter, Problem, Variable, sum_squares
+from cvxpy import Minimize, Parameter, Problem, Variable, sum_squares, norm
 
 
 def test_case_0():
@@ -65,3 +66,13 @@ def test_case_0():
     print("Nodes visited: %s out of %s" % (visited, 2 ** (n + 1) - 1))
     print("Optimal solution:", best_solution)
     print(best_x)
+
+
+def test_case_1():
+    x = Variable((4, 4))
+    A = numpy.matrix(numpy.random.randn(4, 4))
+    I = numpy.matrix(numpy.eye(4))
+    cost = norm(x * A - I, "fro")
+    prob = Problem(Minimize(cost))
+    prob.solve()
+    print(x.value)
