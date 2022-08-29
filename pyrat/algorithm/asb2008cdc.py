@@ -14,7 +14,7 @@ import numpy as np
 from scipy.special import factorial
 
 from pyrat.dynamic_system import LinSys, NonLinSys
-from pyrat.geometry import Geometry, Zonotope
+from pyrat.geometry import Geometry, Zonotope, Interval
 from pyrat.geometry.operation import cvt2
 from .algorithm import Algorithm
 from .alk2011hscc import ALK2011HSCC
@@ -87,10 +87,32 @@ class ASB2008CDC:
 
             err_lagrange = 0.5 * (dx @ xx @ dx + du @ uu @ du)
 
-            v_err_dyn = Zonotope(np.zeros(sys.dim), np.diag(err_lagrange))
-            return err_lagrange, v_err_dyn
+            verr_dyn = Zonotope(np.zeros(sys.dim), np.diag(err_lagrange))
+            return err_lagrange, verr_dyn
         elif opt.tensor_order == 3:
-            raise NotImplementedError  # TODO
+            r_red = r.reduce(Zonotope.REDUCE_METHOD, Zonotope.ERROR_ORDER)
+            z = r_red.card_prod(opt.u)
+            # evaluate hessian
+            hx = sys.evaluate((opt.lin_err_x, opt.lin_err_u), "numpy", 2, 0)
+            hu = sys.evaluate((opt.lin_err_x, opt.lin_err_u), "numpy", 2, 1)
+            # evaluate third order
+            tx = sys.evaluate((total_int_x, total_int_u), "interval", 3, 0)
+            tu = sys.evaluate((total_int_x, total_int_u), "interval", 3, 1)
+
+            # second order error
+            err_sec = 0.5 * z.quad_map([hx, hu])
+            xx = Interval.sum((ihx @ tx @ ihx) * ihx, axis=1)
+            uu = Interval.sum((ihu @ tu @ ihu) * ihu, axis=1)
+            err_lagr = (xx + uu) / 6
+            err_lagr = cvt2(err_lagr, Geometry.TYPE.ZONOTOPE)
+
+            # overall linearization error
+            verr_dyn = err_sec + err_lagr
+            verr_dyn = verr_dyn.reduce(
+                Zonotope.REDUCE_METHOD, Zonotope.INTERMEDIATE_ORDER
+            )
+            true_err = abs(cvt2(verr_dyn, Geometry.TYPE.INTERVAL)).sup
+            return true_err, verr_dyn
         else:
             raise Exception("unsupported tensor order")
 

@@ -13,9 +13,9 @@ def test_van_der_pol():
 
     # settings for the computation
     options = ASB2008CDC.Options()
-    options.t_end = 3.5
-    options.step = 0.01
-    options.tensor_order = 2
+    options.t_end = 6
+    options.step = 0.005
+    options.tensor_order = 3
     options.taylor_terms = 4
     options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
     from pyrat.geometry.operation import boundary
@@ -48,9 +48,9 @@ def test_van_der_pol_comp():
 
     # settings for the computation
     options = ASB2008CDC.Options()
-    options.t_end = 3.5
-    options.step = 0.01
-    options.tensor_order = 2
+    options.t_end = 6.74
+    options.step = 0.005
+    options.tensor_order = 3
     options.taylor_terms = 4
     options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
 
@@ -124,8 +124,8 @@ def test_tank6eq():
     # settings for the computation
     options = ASB2008CDC.Options()
     options.t_end = 400
-    options.step = 4
-    options.tensor_order = 2
+    options.step = 1
+    options.tensor_order = 3
     options.taylor_terms = 4
     options.r0 = [Zonotope([2, 4, 4, 2, 10, 4], np.eye(6) * 0.2)]
     options.u = Zonotope([0], [[0.005]])

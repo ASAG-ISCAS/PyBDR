@@ -69,7 +69,6 @@ class Model:
 
     def reverse(self):
         self.__reversed = not self.__reversed
-        print(self.__reversed)
         self.__validation()
 
     def evaluate(self, xs: tuple, mod: str, order: int, v: int):

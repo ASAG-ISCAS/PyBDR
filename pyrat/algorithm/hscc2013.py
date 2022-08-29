@@ -40,7 +40,7 @@ class HSCC2013:
 
         def validation(self, dim: int):
             assert self._validate_time_related()
-            assert self._validate_inputs()
+            # assert self._validate_inputs()
             assert self._validate_misc(dim)
             return True
 
@@ -50,7 +50,7 @@ class HSCC2013:
             Zonotope.REDUCE_METHOD, Zonotope.ERROR_ORDER
         )
         # extend teh sets byt the input sets
-        u_stat = Zonotope.zero(opt.u.dim)
+        u_stat = Zonotope.zero(opt.u.shape)
         z = r_red.card_prod(u_stat)
         z_delta = r_delta.card_prod(u_stat)
         # compute hessian
@@ -102,7 +102,7 @@ class HSCC2013:
             err_dyn_third = cvt2(err_dyn_third, Geometry.TYPE.ZONOTOPE)
 
             # no terms of order >=4, max 3 for now
-            remainder = Zonotope.zero(sys.shape, 1)
+            remainder = Zonotope.zero(sys.dim, 1)
 
         else:
             raise NotImplementedError
@@ -187,9 +187,10 @@ class HSCC2013:
         # init containers for storing the results
         time_pts = np.linspace(opt.t_start, opt.t_end, opt.steps_num)
         ti_set, ti_time, tp_set, tp_time = [], [], [opt.r0], [time_pts[0]]
+        err = [[np.zeros(r.shape) for r in opt.r0]]
 
         while opt.step_idx < opt.steps_num - 1:
-            next_ti, next_tp = cls.reach_one_step(sys, tp_set[-1], opt)
+            next_ti, next_tp = cls.reach_one_step(sys, tp_set[-1], err[-1], opt)
             opt.step_idx += 1
             ti_set.append(next_ti)
             ti_time.append(time_pts[opt.step_idx - 1 : opt.step_idx + 1])

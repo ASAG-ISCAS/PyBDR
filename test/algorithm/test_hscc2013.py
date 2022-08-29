@@ -1,7 +1,7 @@
 import numpy as np
 from pyrat.algorithm import HSCC2013
 from pyrat.dynamic_system import NonLinSys
-from pyrat.geometry import Geometry, Zonotope, cvt2, SPZono
+from pyrat.geometry import Geometry, Zonotope
 from pyrat.model import *
 from pyrat.util.visualization import plot
 
@@ -13,7 +13,7 @@ def test_van_der_pol_using_zonotope():
     # settings for the computation
     options = HSCC2013.Options()
     options.t_end = 6.74
-    options.step = 0.01
+    options.step = 0.005
     options.taylor_terms = 4
     options.tensor_order = 3
     options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
@@ -28,7 +28,7 @@ def test_van_der_pol_using_zonotope():
     # reachable sets
     ti, tp, _, _ = HSCC2013.reach(system, options)
 
-    tp = [[r.geometry for r in l] for l in tp]
+    # tp = [[r.geometry for r in l] for l in tp]
 
     # visualize the results
     plot(tp, [0, 1])

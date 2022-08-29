@@ -37,7 +37,7 @@ class CAV2016:
         r0 = [cvt2(bd, Geometry.TYPE.ZONOTOPE) for bd in bounds]
         opt.r0 = r0
         _, tps, _, _ = ASB2008CDC.reach(sys, opt)
-        return [cvt2(zono.geometry, Geometry.TYPE.INTERVAL) for zono in tps[-1]]
+        return [cvt2(zono, Geometry.TYPE.INTERVAL) for zono in tps[-1]]
 
     @classmethod
     def polytope(cls, omega):
@@ -51,8 +51,8 @@ class CAV2016:
         num_box = len(omega)
         bj = []
         for i in range(num_box):
-            x = cp.Variable(o.shape + 1)
-            c = np.zeros(o.shape + 1)
+            x = cp.Variable(o.dim + 1)
+            c = np.zeros(o.dim + 1)
             c[-1] = 1
 
             constraints = []
@@ -100,7 +100,7 @@ class CAV2016:
         r0 = Zonotope(u_back.c, np.eye(u_back.c.shape[0]) * 0.1)
         opt.r0 = [r0]
         _, tps, _, _ = ASB2008CDC.reach(sys, opt)
-        sx = tps[-1][-1].geometry
+        sx = tps[-1][-1]
         is_inside = sx in o
         d = cls.get_d(o)
         if abs(bu / d) > epsilon or not is_inside:
