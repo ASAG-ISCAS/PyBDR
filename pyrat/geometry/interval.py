@@ -151,7 +151,7 @@ class Interval(Geometry.Base):
                 raise NotImplementedError
 
     def __rsub__(self, other):
-        raise NotImplementedError
+        return other + (-self)
 
     def __isub__(self, other):
         return self - other
