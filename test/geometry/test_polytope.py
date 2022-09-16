@@ -45,5 +45,7 @@ def test_vis():
 def test_construction_from_vertices():
     vs = np.random.rand(100, 2)
     p = cvt2(vs, Geometry.TYPE.POLYTOPE)
-    boxes = p.boundary(0.01, Geometry.TYPE.INTERVAL)
-    vis2dGeo([p, *boxes], [0, 1])
+    boxes = p.boundary(0.1, Geometry.TYPE.INTERVAL)
+    pts=np.concatenate([box.vertices for box in boxes],axis=0)
+    re_p=cvt2(pts,Geometry.TYPE.POLYTOPE)
+    vis2dGeo([p, *boxes,pts,re_p], [0, 1])

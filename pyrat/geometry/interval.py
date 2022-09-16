@@ -318,7 +318,7 @@ class Interval(Geometry.Base):
     def __pow__(self, power, modulo=None):
         def _pow_int(x: int):
             if x >= 0:
-                inff, supp = self.inf**x, self.sup**x
+                inff, supp = self.inf ** x, self.sup ** x
                 inf, sup = np.minimum(inff, supp), np.maximum(inff, supp)
                 if x % 2 == 0 and x != 0:
                     ind = (self._inf <= 0) & (self._sup >= 0)
@@ -329,7 +329,7 @@ class Interval(Geometry.Base):
 
         def _pow_real(x):
             if x >= 0:
-                inf, sup = self.inf**x, self.sup**x
+                inf, sup = self.inf ** x, self.sup ** x
                 ind = self._inf < 0
                 inf[ind] = np.nan
                 sup[ind] = np.nan
@@ -352,7 +352,7 @@ class Interval(Geometry.Base):
         raise NotImplementedError
 
     def __ipow__(self, other):
-        return self**other
+        return self ** other
 
     @staticmethod
     def exp(x: Interval):
@@ -476,6 +476,10 @@ class Interval(Geometry.Base):
 
         return Interval(inf, sup)
 
+    @staticmethod
+    def sigmoid(x: Interval):
+        return 1 / (1 + Interval.exp(-x))
+
     # =============================================== periodic functions
     @staticmethod
     def sin(x: Interval):
@@ -510,11 +514,11 @@ class Interval(Geometry.Base):
         sup[ind] = np.sin(yinf[ind])
 
         ind = (
-            ind0
-            | (ind1 & ind2 & ind7)
-            | (ind1 & ind6)
-            | (ind3 & ind4 & ind7)
-            | (ind5 & ind6 & ind7)
+                ind0
+                | (ind1 & ind2 & ind7)
+                | (ind1 & ind6)
+                | (ind3 & ind4 & ind7)
+                | (ind5 & ind6 & ind7)
         )
         inf[ind] = -1
         sup[ind] = 1
