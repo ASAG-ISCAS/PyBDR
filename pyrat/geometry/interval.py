@@ -623,6 +623,7 @@ class Interval(Geometry.Base):
             "sin": cls.sin,
             "cos": cls.cos,
             "tan": cls.tan,
+            "sigmoid": cls.sigmoid,
         }
 
     # =============================================== static method
