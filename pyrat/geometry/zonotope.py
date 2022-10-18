@@ -339,7 +339,8 @@ class Zonotope(Geometry.Base):
             # box remaining generators
             d = np.sum(abs(gr), axis=1)
             d[abs(d) < 0] = 0
-            gb = np.diag(d) if d.shape[0] > 0 else np.empty((self.shape, 0), dtype=float)
+            gb = np.diag(d) if d.shape[0] > 0 else np.empty((self.shape, 0),
+                                                            dtype=float)
             # build reduced zonotope
             return Zonotope(self.c, np.hstack([gur, gb]))
 
@@ -350,6 +351,10 @@ class Zonotope(Geometry.Base):
 
     def proj(self, dims):
         return Zonotope(self.c[dims], self.gen[dims, :])
+
+    def partition(self):
+        # TODO
+        raise NotImplementedError
 
     def boundary(self, max_dist: float, element: Geometry.TYPE):
         raise NotImplementedError
@@ -368,7 +373,7 @@ class Zonotope(Geometry.Base):
         def _xTQx():
             dim_q = q[0].shape[0]
             c = np.zeros(dim_q)
-            gen_num = int(0.5 * (self.gen_num**2 + self.gen_num)) + self.gen_num
+            gen_num = int(0.5 * (self.gen_num ** 2 + self.gen_num)) + self.gen_num
             gens = self.gen_num
             gen = np.zeros((dim_q, gen_num))
 
@@ -385,7 +390,7 @@ class Zonotope(Geometry.Base):
                     qi = block_diag(*[iq[i] for iq in q])
                     quad_mat = z.T @ qi @ z
                     # faster method diag elements
-                    gen[i, :gens] = 0.5 * np.diag(quad_mat[1 : gens + 1, 1 : gens + 1])
+                    gen[i, :gens] = 0.5 * np.diag(quad_mat[1: gens + 1, 1: gens + 1])
                     # center
                     c[i] = quad_mat[0, 0] + np.sum(gen[i, 0:gens])
                     # off-diagonal elements added, pick via logical indexing

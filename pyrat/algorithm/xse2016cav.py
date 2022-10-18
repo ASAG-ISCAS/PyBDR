@@ -18,7 +18,7 @@ from .algorithm import Algorithm
 from .asb2008cdc import ASB2008CDC
 
 
-class CAV2016:
+class XSE2016CAV:
     @dataclass
     class Options(Algorithm.Options):
         epsilon_m: float = np.inf  # for boundary sampling

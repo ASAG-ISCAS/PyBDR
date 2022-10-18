@@ -1,6 +1,6 @@
 import numpy as np
 
-from pyrat.algorithm import CAV2016, ASB2008CDC
+from pyrat.algorithm import XSE2016CAV, ASB2008CDC
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Interval, Zonotope
 from pyrat.model import *
@@ -12,7 +12,7 @@ def test_synchronous_machine():
     system = NonLinSys(Model(synchronousmachine, [2, 1]))
 
     # settings for the under approximation computation
-    options = CAV2016.Options()
+    options = XSE2016CAV.Options()
     options.t_end = 2
     options.step = 0.3
     options.r0 = Interval([-0.1, 0.1], [2.9, 3.1])
@@ -33,7 +33,7 @@ def test_synchronous_machine():
     Zonotope.ORDER = 50
 
     # reachable sets computation
-    rs, _ = CAV2016.reach(system, options, options_back_one_step)
+    rs, _ = XSE2016CAV.reach(system, options, options_back_one_step)
 
     # visualize the results
     plot(rs, [0, 1])

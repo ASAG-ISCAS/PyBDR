@@ -84,8 +84,8 @@ def __2d_plot(objs, dims: list, width: int, height: int):
     ax.set_xlabel("x" + str(dims[0]))
     ax.set_ylabel("x" + str(dims[1]))
 
-    # plt.show()
-    plt.savefig("temp.svg", dpi=300, transparent=True)
+    plt.show()
+    # plt.savefig("temp.svg", dpi=300, transparent=True)
 
 
 def plot(objs, dims: list, mod: str = "2d", width: int = 800, height: int = 800):

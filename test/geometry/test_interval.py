@@ -291,3 +291,15 @@ def test_mm():
     print(c.shape, d.shape)
     assert np.allclose(c, d)
     print("DONE")
+
+
+def test_partition():
+    a = Interval.rand(2)
+    from pyrat.util.visualization import plot
+    plot([a], [0, 1])
+    from pyrat.geometry import Geometry
+    from pyrat.geometry.operation import partition
+    parts = partition(a, 0.1, Geometry.TYPE.INTERVAL)
+    plot(parts, [0, 1])
+    zonos = partition(a, 0.1, Geometry.TYPE.ZONOTOPE)
+    plot(zonos, [0, 1])

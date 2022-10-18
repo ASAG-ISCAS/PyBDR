@@ -1,7 +1,7 @@
 import numpy as np
 
-from pyrat.geometry import Geometry, Zonotope, IntervalOld, IntervalMatrix
-from pyrat.geometry.operation import cvt2
+from pyrat.geometry import Geometry, Zonotope, Interval
+from pyrat.geometry.operation import cvt2, boundary
 from pyrat.util.visualization import vis2dGeo
 
 
@@ -117,10 +117,66 @@ def test_enclose():
 
 def test_mul():
     a = np.array([[2, 4, 5], [7, 6, 8]])
-    a = IntervalMatrix(a.T, a.T)
+    a = Interval(a.T, a.T)
     b = np.array([[-2, 4, -5, 7], [9, 6, 3, 11]])
     b = Zonotope(b[:, 0], b[:, 1:])
     print(a)
     print(b)
     print(a * b)
     print(b * a)
+
+
+def test_boundary_2d():
+    z = Zonotope.rand(2, 100)
+    zono_bounds = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+    from pyrat.util.visualization import plot
+    plot(zono_bounds, [0, 1])
+    plot([z], [0, 1])
+
+
+def test_boundary_3d():
+    z = Zonotope.rand(3, 20)
+    zono_bounds = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+    from pyrat.util.visualization import plot
+    plot(zono_bounds, [0, 1])
+    plot([z], [0, 1])
+
+
+def test_partition_3d():
+    z = Zonotope([4, 4, 2], np.array([[0, 1, 0, 1], [0, 0, 1, 1], [1, 0, 0, 0]]))
+    from pyrat.geometry.operation import partition
+    zono_parts = partition(z, 0.1, Geometry.TYPE.ZONOTOPE)
+    interval_parts = partition(z, 0.1, Geometry.TYPE.INTERVAL)
+    from pyrat.util.visualization import plot
+    plot(zono_parts, [0, 1])
+    plot(interval_parts, [0, 1])
+
+
+def test_partition_2d():
+    z = Zonotope([2, 3], [[1, 0, 1, 1], [0, 1, 1, -1]])
+    from pyrat.geometry.operation import partition
+    zono_parts = partition(z, 0.1, Geometry.TYPE.ZONOTOPE)
+    from pyrat.util.visualization import plot
+    plot(zono_parts, [0, 1])
+    interval_parts = partition(z, 0.1, Geometry.TYPE.INTERVAL)
+    plot([z, *interval_parts], [0, 1])
+
+
+def test_partition_2d_case_1():
+    z = Zonotope.rand(2, 100)
+    from pyrat.geometry.operation import partition
+    zono_parts = partition(z, 1, Geometry.TYPE.ZONOTOPE)
+    from pyrat.util.visualization import plot
+    plot(zono_parts, [0, 1])
+
+
+def test_temp():
+    from itertools import combinations
+    x = np.asarray(list(combinations(np.arange(5), 4)))
+    y = np.sum(x, axis=-1)
+    # value = y.max() - y
+    ind = np.argsort(y)[::-1]
+    print(y)
+    print(ind)
+    print(x)
+    print(x[ind])
