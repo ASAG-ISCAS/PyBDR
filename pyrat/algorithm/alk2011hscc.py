@@ -206,9 +206,9 @@ class ALK2011HSCC:
         opt.taylor_ea_t = expm(sys.xa * opt.step)
         r_hom_tp = opt.taylor_ea_t @ r + opt.taylor_r_trans
         r_hom = (
-            r.enclose(r_hom_tp)
-            + opt.taylor_f * cvt2(r, Geometry.TYPE.ZONOTOPE)
-            + opt.taylor_input_corr
+                r.enclose(r_hom_tp)
+                + opt.taylor_f * cvt2(r, Geometry.TYPE.ZONOTOPE)
+                + opt.taylor_input_corr
         )
         r_hom = r_hom.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
         r_hom_tp = r_hom_tp.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
@@ -216,7 +216,19 @@ class ALK2011HSCC:
 
         return r_hom + rv, r_hom_tp + rv
 
-    def reach(self, sys: LinSys, opt: Options):
+    @classmethod
+    def reach(cls, sys: LinSys, opt: Options):
         assert opt.validation(sys.dim)
-        # TODO
-        raise NotImplementedError
+        # init containers for storing the results
+        time_pts = np.linspace(opt.t_start, opt.t_end, opt.steps_num)
+        ti_set, ti_time, tp_set, tp_time = [], [], [opt.r0], [time_pts[0]]
+
+        while opt.step_idx < opt.steps_num - 1:
+            next_ti, next_tp = cls.reach_one_step(sys, tp_set[-1], opt)
+            opt.step_idx += 1
+            ti_set.append(next_ti)
+            ti_time.append(time_pts[opt.step_idx - 1: opt.step_idx + 1])
+            tp_set.append(next_tp)
+            tp_time.append(time_pts[opt.step_idx])
+
+        return ti_set, tp_set, np.vstack(ti_time), np.array(tp_time)

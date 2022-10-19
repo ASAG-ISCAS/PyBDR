@@ -1,8 +1,7 @@
 from sympy import *
-from pyrat.deprecated.model_old import ModelOld
 
 
-def _f(x, u):
+def vmodela_bicycle_linear_controlled(x, u):
     """
     NOTE: Bicycle Model with
         - normal force equilibrium for pitching-moments
@@ -97,10 +96,3 @@ def _f(x, u):
     dxdt[6] = v[0]
     dxdt[7] = v[1]
     return Matrix(dxdt)
-
-
-class VModelABicycleLinearControlled(ModelOld):
-    vars = symbols(("x:8", "u:26"))
-    f = _f(*vars)
-    name = "vmodel_a_bicycle_linear_controlled"
-    dim = f.rows

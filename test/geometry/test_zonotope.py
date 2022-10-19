@@ -167,7 +167,7 @@ def test_partition_2d_case_1():
     from pyrat.geometry.operation import partition
     zono_parts = partition(z, 1, Geometry.TYPE.ZONOTOPE)
     from pyrat.util.visualization import plot
-    plot(zono_parts, [0, 1])
+    plot([*zono_parts, z], [0, 1])
 
 
 def test_temp():

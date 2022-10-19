@@ -303,3 +303,14 @@ def test_partition():
     plot(parts, [0, 1])
     zonos = partition(a, 0.1, Geometry.TYPE.ZONOTOPE)
     plot(zonos, [0, 1])
+
+
+def test_temp():
+    from pyrat.geometry import Interval
+    from pyrat.util.visualization import plot
+    from pyrat.geometry import Geometry
+    from pyrat.geometry.operation import partition
+
+    a = Interval([-1, -2], [3, 5])
+    parts = partition(a, 0.1, Geometry.TYPE.INTERVAL)
+    plot([*parts, a], [0, 1])

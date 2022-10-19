@@ -56,7 +56,7 @@ def vis2dGeo(geos: [Geometry.Base], dims: list, width=800, height=800):
             if obj.type == Geometry.TYPE.INTERVAL:
                 ax.add_patch(
                     Polygon(
-                        obj.rectangle(dims),
+                        obj.proj(dims).rectangle(),
                         closed=True,
                         alpha=0.7,
                         fill=False,

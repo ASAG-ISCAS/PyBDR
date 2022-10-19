@@ -13,20 +13,11 @@ def test_van_der_pol():
 
     # settings for the computation
     options = ASB2008CDC.Options()
-    options.t_end = 6
+    options.t_end = 6.74
     options.step = 0.005
     options.tensor_order = 3
     options.taylor_terms = 4
     options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
-    from pyrat.geometry.operation import boundary
-
-    c = np.array([1.4, 2.4], dtype=float)
-    inf = c - [0.17, 0.06]
-    sup = c + [0.17, 0.06]
-    box = Interval(inf, sup)
-
-    # box=Interval()
-    options.r0 = boundary(box, 1, Geometry.TYPE.ZONOTOPE)
 
     options.u = Zonotope.zero(1, 1)
     options.u_trans = np.zeros(1)
@@ -139,8 +130,6 @@ def test_tank6eq():
     # reachable sets computation
     ti, tp, _, _ = ASB2008CDC.reach(system, options)
 
-    tp = [[r.geometry for r in l] for l in tp]
-
     # visualize the results
     plot(tp, [0, 1])
     plot(tp, [2, 3])
@@ -167,8 +156,6 @@ def test_laub_loomis():
     Zonotope.ORDER = 50
 
     ti, tp, _, _ = ASB2008CDC.reach(system, options)
-
-    tp = [[r.geometry for r in l] for l in tp]
 
     plot(tp, [0, 1])
     plot(tp, [2, 4])

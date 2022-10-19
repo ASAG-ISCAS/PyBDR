@@ -1,13 +1,11 @@
 from sympy import *
-from pyrat.deprecated.model_old import ModelOld
-
 
 """
 NOTE:  https://flowstar.org/benchmarks/9-dimensional-genetic-model/
 """
 
 
-def _f(x, u):
+def genetic_model(x, u):
     dxdt = [None] * 9
 
     dxdt[0] = 50 * x[2] - 0.1 * x[0] * x[5]
@@ -21,10 +19,3 @@ def _f(x, u):
     dxdt[8] = 2 * x[5] * x[7] - x[8]
 
     return Matrix(dxdt)
-
-
-class GeneticModel(ModelOld):
-    vars = symbols(("x:9", "u:1"))
-    f = _f(*vars)
-    name = "Genetic"
-    dim = f.rows

@@ -1,17 +1,18 @@
 import numpy as np
-from pyrat.algorithm import HSCC2013
+from pyrat.algorithm import ALTHOFF2013HSCC
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Geometry, Zonotope
+from pyrat.geometry.operation import cvt2
 from pyrat.model import *
 from pyrat.util.visualization import plot
 
 
-def test_van_der_pol_using_zonotope():
+def test_case_0():
     # init dynamic system
     system = NonLinSys(Model(vanderpol, [2, 1]))
 
     # settings for the computation
-    options = HSCC2013.Options()
+    options = ALTHOFF2013HSCC.Options()
     options.t_end = 6.74
     options.step = 0.005
     options.taylor_terms = 4
@@ -26,9 +27,33 @@ def test_van_der_pol_using_zonotope():
     Zonotope.ERROR_ORDER = 20
 
     # reachable sets
-    ti, tp, _, _ = HSCC2013.reach(system, options)
+    ti, tp, _, _ = ALTHOFF2013HSCC.reach(system, options)
 
-    # tp = [[r.geometry for r in l] for l in tp]
+    # visualize the results
+    plot(tp, [0, 1])
+
+
+def test_van_der_pol_using_zonotope():
+    # init dynamic system
+    system = NonLinSys(Model(vanderpol, [2, 1]))
+
+    # settings for the computation
+    options = ALTHOFF2013HSCC.Options()
+    options.t_end = 6.74
+    options.step = 0.005
+    options.taylor_terms = 4
+    options.tensor_order = 3
+    options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
+    options.u = Zonotope.zero(1, 1)
+    options.u_trans = np.zeros(1)
+
+    # settings for using Zonotope
+    Zonotope.ORDER = 50
+    Zonotope.INTERMEDIATE_ORDER = 50
+    Zonotope.ERROR_ORDER = 20
+
+    # reachable sets
+    ti, tp, _, _ = ALTHOFF2013HSCC.reach(system, options)
 
     # visualize the results
     plot(tp, [0, 1])
@@ -39,33 +64,22 @@ def test_van_der_pol_using_polyzonotope():
     system = NonLinSys(Model(vanderpol, [2, 1]))
 
     # settings for the computation
-    options = HSCC2013.Options()
+    options = ALTHOFF2013HSCC.Options()
     options.t_end = 6.74
     options.step = 0.005
     options.taylor_terms = 4
     options.tensor_order = 3
     poly_zono = cvt2(
-        Zonotope([1.4, 2.4], np.diag([0.17, 0.06])), Geometry.TYPE.POLY_ZONOTOPE
-    )
+        Zonotope([1.4, 2.4], np.diag([0.17, 0.06])), Geometry.TYPE.POLY_ZONOTOPE)
     options.r0 = [poly_zono]
     options.u = Zonotope.zero(1, 1)
     options.u_trans = np.zeros(1)
 
-    # settings for poly_zonotope
-    # PolyZonotope.MAX_DEPTH_GEN_ORDER = 50
-    # PolyZonotope.MAX_POLY_ZONO_RATIO = 0.01
-    # PolyZonotope.RESTRUCTURE_TECH = PolyZonotope.METHOD.RESTRUCTURE.REDUCE_PCA
-
     # reachable sets
-    results = HSCC2013.reach(system, options)
-
-    geos = []
-    for tps in results.tps:
-        for tp in tps:
-            geos.append(tp.geometry)
+    ti, tp, _, _ = ALTHOFF2013HSCC.reach(system, options)
 
     # visualize the results
-    plot(geos, [0, 1])
+    plot(tp, [0, 1])
 
 
 def test_tank6eq():
@@ -73,7 +87,7 @@ def test_tank6eq():
     system = NonLinSys(Model(tank6eq, [6, 1]))
 
     # settings for the computations
-    options = HSCC2013.Options()
+    options = ALTHOFF2013HSCC.Options()
     options.t_end = 400
     options.step = 4
     options.tensor_order = 3
@@ -89,13 +103,8 @@ def test_tank6eq():
     Zonotope.INTERMEDIATE_ORDER = 50
     Zonotope.ERROR_ORDER = 20
 
-    results = HSCC2013.reach(system, options)
+    ti, tp, _, _ = ALTHOFF2013HSCC.reach(system, options)
 
-    geos = []
-    for tps in results.tps:
-        for tp in tps:
-            geos.append(tp.geometry)
-
-    plot(geos, [0, 1])
-    plot(geos, [2, 3])
-    plot(geos, [4, 5])
+    plot(tp, [0, 1])
+    plot(tp, [2, 3])
+    plot(tp, [4, 5])

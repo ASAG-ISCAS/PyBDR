@@ -18,7 +18,7 @@ from .alk2011hscc import ALK2011HSCC
 from .asb2008cdc import ASB2008CDC
 
 
-class HSCC2013:
+class ALTHOFF2013HSCC:
     class Options(Algorithm.Options):
         taylor_terms: int = 4
         tensor_order: int = 3

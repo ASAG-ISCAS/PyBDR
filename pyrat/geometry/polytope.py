@@ -176,25 +176,5 @@ class Polytope(Geometry.Base):
         return vs[idx]
 
     def proj(self, dims):
+        # TODO
         raise NotImplementedError
-
-    def boundary(self, max_dist: float, element: Geometry.TYPE):
-        from pyrat.util.functional import CSPSolver
-        from pyrat.geometry import Interval, cvt2
-
-        def f(x):
-            z = Interval.zeros(self._a.shape[0])
-            for i in range(self.a.shape[0]):
-                for j in range(self.a.shape[1]):
-                    z[i] += self.a[i, j] * x[j]
-                z[i] -= self._b[i]
-
-            ind0 = np.logical_and(z.inf <= 0, z.sup >= 0)
-            ind1 = z.inf > 0
-            sum = np.sum(ind0)
-            return 0 < sum and np.sum(ind1) <= 0
-
-        lb = np.min(self.vertices, axis=0) - max_dist
-        ub = np.max(self.vertices, axis=0) + max_dist
-        boxes = CSPSolver.solve(f, lb, ub, max_dist)
-        return [cvt2(box, element) for box in boxes]

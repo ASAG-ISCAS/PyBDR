@@ -1,5 +1,4 @@
 from sympy import *
-from pyrat.deprecated.model_old import ModelOld
 
 """
 NOTE: 
@@ -9,7 +8,7 @@ performance. Proc. IEEE 100, 225–239 (2012)
 """
 
 
-def synchronousmachine(x, u):
+def synchronous_machine(x, u):
     dxdt = [None] * 2
 
     dxdt[0] = x[1]

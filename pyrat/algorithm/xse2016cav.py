@@ -47,7 +47,7 @@ class XSE2016CAV:
         return cvt2(pts, Geometry.TYPE.POLYTOPE)
 
     @classmethod
-    def contraction(cls, omega, o, opt: Options):
+    def contraction(cls, omega, o):
         num_box = len(omega)
         bj = []
         for i in range(num_box):
@@ -71,7 +71,7 @@ class XSE2016CAV:
 
             cost = c @ x
             prob = cp.Problem(cp.Minimize(cost), constraints)
-            prob.solve()
+            prob.solve(solver=cp.GLPK)
             assert prob.status == "optimal"  # ensure valid solution for LP problem
             bj.append(x.value[-1])
         bu = np.min(bj)
@@ -91,7 +91,7 @@ class XSE2016CAV:
 
         cost = c @ x
         prob = cp.Problem(cp.Minimize(cost), constraints)
-        prob.solve()
+        prob.solve(solver=cp.GLPK)
         assert prob.status == "optimal"  # ensure valid solution for LP
         return x.value[-1]  # which is d
 

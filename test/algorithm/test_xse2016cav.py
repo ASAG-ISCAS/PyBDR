@@ -9,7 +9,7 @@ from pyrat.util.visualization import plot
 
 def test_synchronous_machine():
     # init dynamic system
-    system = NonLinSys(Model(synchronousmachine, [2, 1]))
+    system = NonLinSys(Model(synchronous_machine, [2, 1]))
 
     # settings for the under approximation computation
     options = XSE2016CAV.Options()
