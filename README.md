@@ -11,7 +11,18 @@ Boundary analysis based Reachability analysis Toolbox for dynamic systems in Pyt
 
 # Motivation
 
-Reachability analysis, which involves computing reachable state sets, plays a fundamental role in the temporal verification of nonlinear systems. Overly pessimistic over-approximations, however, render many temporal properties unverifiable in practice. This pessimism mainly arises due to the wrapping effect, which is the propagation and accumulation of over-approximation error through the iterative computation in the construction of reachable sets. As the extent of the wrapping effect correlates strongly with the volume of the initial set, techniques that partition the initial state space and independently compute reachable sets of those partitions are often used to reduce the wrapping effect, especially for large initial sets or/and large time horizons. Such partitioning may, however, induce extensive demand on computation time and memory, often rendering the existing reachability analysis techniques not suitable for complex real-world applications. Not being forced to explore the full, i.g. exponential in the dimensionality, number of partitions could help such procedures tremendously. This is the theme of this tool, which explores means of computing the full reachable state space based on state-exploratory analysis of just a small sub-volume of the initial state set, namely a set enclosing its boundary.
+Reachability analysis, which involves computing reachable state sets, plays a fundamental role in the temporal
+verification of nonlinear systems. Overly pessimistic over-approximations, however, render many temporal properties
+unverifiable in practice. This pessimism mainly arises due to the wrapping effect, which is the propagation and
+accumulation of over-approximation error through the iterative computation in the construction of reachable sets. As the
+extent of the wrapping effect correlates strongly with the volume of the initial set, techniques that partition the
+initial state space and independently compute reachable sets of those partitions are often used to reduce the wrapping
+effect, especially for large initial sets or/and large time horizons. Such partitioning may, however, induce extensive
+demand on computation time and memory, often rendering the existing reachability analysis techniques not suitable for
+complex real-world applications. Not being forced to explore the full, i.g. exponential in the dimensionality, number of
+partitions could help such procedures tremendously. This is the theme of this tool, which explores means of computing
+the full reachable state space based on state-exploratory analysis of just a small sub-volume of the initial state set,
+namely a set enclosing its boundary.
 
 # Installation
 
