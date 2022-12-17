@@ -150,7 +150,7 @@ it is inevitable that the range of
   reachable state sets is too conservative under inappropriate settings, making it impossible to
   obtain a reachable
   state set that meets the requirements.  If these problems occur, -->
-  we can further improve  the accuracy of the reachable set calculation based on splitting boundaries of initial sets, or by reducing the step and
+  One can further improve  the accuracy of the reachable set calculation based on splitting boundaries of initial sets, or by reducing the step and
   increasing the
   order of the Taylor expansion. 
   
