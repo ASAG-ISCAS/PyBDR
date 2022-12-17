@@ -22,7 +22,8 @@ demand on computation time and memory, often rendering the existing reachability
 complex real-world applications. Not being forced to explore the full, i.g. exponential in the dimensionality, number of
 partitions could help such procedures tremendously. This is the theme of this tool, which explores means of computing
 the full reachable state space based on state-exploratory analysis of just a small sub-volume of the initial state set,
-namely a set enclosing its boundary.
+namely a set enclosing its boundary. For theoretical analysis, please refer to 
+<a href="https://ieeexplore.ieee.org/document/7585104"><strong>'Bai Xue, Arvind Easwaran, Nam-Joon Cho and Martin Fränzle.Reach-Avoid Verification for Nonlinear Systems Based on Boundary Analysis. IEEE Transactions on Automatic Control (IEEE TAC), vol. 62: 3518--3523, 2017.'</strong></a>
 
 # Installation
 
