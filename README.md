@@ -1,5 +1,5 @@
 <p align="center">
-The Set-boundary based Reachability analysis Toolbox in Python
+The Set-boundary based Reachability Analysis Toolbox in Python
 </p>
 
 
