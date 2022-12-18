@@ -175,5 +175,5 @@ details.
 
 ## Acknowledgement
 
-This tool has been developed with reference to models used in tools such as Flow*, CORA and other
+This tool has been developed with reference to models in tools such as Flow*, CORA and other
 reachable set calculation tools.
