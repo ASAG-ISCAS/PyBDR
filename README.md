@@ -26,7 +26,7 @@ namely a set enclosing its boundary. For theoretical analysis, please refer to
 <a href="https://ieeexplore.ieee.org/document/7585104"><strong>'Bai Xue, Arvind Easwaran, Nam-Joon Cho and Martin Fränzle.Reach-Avoid Verification for Nonlinear Systems Based on Boundary Analysis. IEEE Transactions on Automatic Control (IEEE TAC), vol. 62: 3518--3523, 2017.'</strong></a> and
 <a href="https://ieeexplore.ieee.org/document/7585104"><strong>'Bai Xue, Qiuye Wang, Shenghua Feng, and Naijun Zhan. Over-and underapproximating reach sets for perturbed delay differential equations. IEEE Transactions on Automatic Control (IEEE TAC), vol.66: 283--290,2020.'</strong></a>
 
-The set-boundary based method is applicable to 
+The set-boundary based method can be used to perform reachability analysis for systems modelled by
 <ol> 
         <li>ordinary differential equations (subject to Lispchitz continuous perturbations)</li> 
         <li>delay differential equations (subject to Lispchitz continuous perturbations)</li> 
