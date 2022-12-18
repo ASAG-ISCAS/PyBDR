@@ -30,7 +30,7 @@ The set-boundary based method is applicable to
 <ol> 
         <li>ordinary differential equations (subject to Lispchitz continuous perturbations)</li> 
         <li>delay differential equations (subject to Lispchitz continuous perturbations)</li> 
-        <li>neural ordinary differential Equations</li> 
+        <li>neural ordinary differential equations</li> 
     </ol> 
 
 # Installation
