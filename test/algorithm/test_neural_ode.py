@@ -25,10 +25,10 @@ if __name__=="__main__":
     Z = Zonotope([0.5, 0], np.diag([0.5, 0.5]))
     
     # Reachable sets computed with boundary analysis
-    options.r0 = boundary(Z,1,Geometry.TYPE.ZONOTOPE)
+    # options.r0 = boundary(Z,1,Geometry.TYPE.ZONOTOPE)
 
     # Reachable sets computed without boundary analysis
-    # options.r0 = [Z]
+    options.r0 = [Z]
 
     options.u = Zonotope.zero(1, 1)
     options.u_trans = np.zeros(1)
