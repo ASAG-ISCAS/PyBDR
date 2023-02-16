@@ -285,7 +285,7 @@ it is inevitable that the range of
 
 -This warning may be reported on the paltforms with Windows operating system. It does not affect the running of the tool and it can be eliminiated with 
 ```python
-  nnumpy.seterr(divide='ignore',invalid='ignore')
+  numpy.seterr(divide='ignore',invalid='ignore')
 ```
 in the decalration.
 
