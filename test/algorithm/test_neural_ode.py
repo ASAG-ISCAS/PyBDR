@@ -18,11 +18,11 @@ if __name__=="__main__":
 
     # settings for the computation
     options = ASB2008CDC.Options()
-    options.t_end = 6
+    options.t_end = 1
     options.step = 0.01
     options.tensor_order = 2
     options.taylor_terms = 2
-    Z = Zonotope([0.5, 0], np.diag([1, 0.5]))
+    Z = Zonotope([0.5, 0], np.diag([0.5, 0.5]))
     # options.r0 = boundary(Z,1,Geometry.TYPE.ZONOTOPE)
 
     options.r0 = [Z]
