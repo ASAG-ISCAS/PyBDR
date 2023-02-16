@@ -18,14 +18,18 @@ if __name__=="__main__":
 
     # settings for the computation
     options = ASB2008CDC.Options()
-    options.t_end = 2
+    options.t_end = 0.5
     options.step = 0.01
     options.tensor_order = 2
     options.taylor_terms = 2
     Z = Zonotope([0.5, 0], np.diag([0.5, 0.5]))
-    # options.r0 = boundary(Z,1,Geometry.TYPE.ZONOTOPE)
+    
+    # Reachable sets computed with boundary analysis
+    options.r0 = boundary(Z,1,Geometry.TYPE.ZONOTOPE)
 
-    options.r0 = [Z]
+    # Reachable sets computed without boundary analysis
+    # options.r0 = [Z]
+
     options.u = Zonotope.zero(1, 1)
     options.u_trans = np.zeros(1)
 
