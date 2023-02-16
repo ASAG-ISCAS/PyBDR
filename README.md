@@ -165,7 +165,7 @@ $$
  \end{equation*}
 
 
-\\
+
 \begin{equation*}
  w_2 = \left[
  \begin{array}{ccccc}
@@ -177,7 +177,6 @@ $$
  \right]        
  \end{equation*}
 
-\\
 
  b_1 =  \begin{bmatrix}
     0.0038677& -0.00026365& -0.007168970&  0.02469357&  0.01338706\\
