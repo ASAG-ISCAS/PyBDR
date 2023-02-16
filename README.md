@@ -133,8 +133,10 @@ ti, tp, _, _ = ASB2008CDC.reach(system, options)
 # visualize the results
 plot(tp, [0, 1])
 ```
+| With Boundary Analysis     | Without Boundary Analysis |
+|  :-----------: | :-----------: |
+| ![](doc/imgs/vanderpol_example.png)      | ![](doc/imgs/vanderpol_example.png)  |
 
-![](doc/imgs/vanderpol_example.png)
 
 ## Computing Reachable Sets based on Boundary Analysis for Neural ODE
 
@@ -145,7 +147,7 @@ see the effect of using different settings for calculating reachable sets.
 For example, consider a neural ODE with following parameters and $\textit{sigmoid}$ activation function:
 
 $$
- \begin{equation}
+ \begin{equation*}
  w_1 = \left[
  \begin{array}{cc}
     0.2911133 &  0.12008807\\
@@ -160,19 +162,11 @@ $$
     0.24873598 &  0.21018365
  \end{array}
  \right]        
- \end{equation}
-
-\begin{equation}
- b_1 = \left[
- \begin{array}{ccccc}
-    0.0038677& -0.00026365& -0.007168970&  0.02469357&  0.01338706\\
-    0.00856025& -0.00888401&  0.00516089& -0.00634514& -0.01914518
- \end{array}
- \right]        
- \end{equation}
+ \end{equation*}
 
 
-\begin{equation}
+\\
+\begin{equation*}
  w_2 = \left[
  \begin{array}{ccccc}
     -0.58693904& -0.814841 & -0.8175157&  0.97060364&  0.6908913\\
@@ -181,15 +175,26 @@ $$
     0.8984464& -1.0766245& -0.238209 & -0.5233613&  0.8886671
  \end{array}
  \right]        
- \end{equation}
+ \end{equation*}
 
-\begin{equation}
+\\
+\begin{equation*}
+ b_1 = \left[
+ \begin{array}{ccccc}
+    0.0038677& -0.00026365& -0.007168970&  0.02469357&  0.01338706\\
+    0.00856025& -0.00888401&  0.00516089& -0.00634514& -0.01914518
+ \end{array}
+ \right]        
+ \end{equation*}
+
+\\
+\begin{equation*}
  b_2 = \left[
  \begin{array}{cc}
     -0.04129209& -0.01508532
  \end{array}
  \right]        
- \end{equation}
+ \end{equation*}
 $$
 
 ```python
@@ -199,6 +204,7 @@ from pyrat.geometry import Zonotope, Interval, Geometry
 from pyrat.model import *
 from pyrat.util.visualization import plot
 from pyrat.neural_ode.model_generate import neuralODE
+from pyrat.geometry.operation import boundary
 
 
 # init neural ODE
@@ -206,17 +212,18 @@ system = NonLinSys(Model(neuralODE, [2,1]))
 
 # settings for the computation
 options = ASB2008CDC.Options()
-options.t_end = 8
-options.step = 0.02
+options.t_end = 6
+options.step = 0.01
 options.tensor_order = 2
 options.taylor_terms = 2
-options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
-from pyrat.geometry.operation import boundary
+Z = Zonotope([0.5, 0], np.diag([1, 0.5]))
 
-c = np.array([1.4, 2.4], dtype=float)
-inf = c - [0.17, 0.06]
-sup = c + [0.17, 0.06]
-box = Interval(inf, sup)
+# Reachable sets computed with boundary analysis
+# options.r0 = boundary(Z,1,Geometry.TYPE.ZONOTOPE)
+
+# Reachable sets computed without boundary analysis
+options.r0 = [Z]
+
 
 options.u = Zonotope.zero(1, 1)
 options.u_trans = np.zeros(1)
@@ -231,8 +238,13 @@ ti, tp, _, _ = ASB2008CDC.reach(system, options)
 # visualize the results
 plot(tp, [0, 1])
 ```
+|Time | With Boundary Analysis     | Without Boundary Analysis |
+|  :-----------: |  :-----------: | :-----------: |
+|t=2s| ![](doc/imgs/neural_ode_example.png)     |![](doc/imgs/neural_ode_example.png) 
+|t=4s| ![](doc/imgs/neural_ode_example.png)     |![](doc/imgs/neural_ode_example.png) 
+|t=8s| ![](doc/imgs/neural_ode_example.png)     |![](doc/imgs/neural_ode_example.png) 
 
-![](doc/imgs/neural_ode_example.png)
+
 
 ## Frequently Asked Questions and Troubleshooting
 

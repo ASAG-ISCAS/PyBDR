@@ -10,6 +10,7 @@ from pyrat.geometry import Zonotope, Interval, Geometry
 from pyrat.model import *
 from pyrat.util.visualization import plot
 from pyrat.neural_ode.model_generate import neuralODE
+from pyrat.geometry.operation import boundary
 
 if __name__=="__main__":
     # init neural ODE
@@ -17,18 +18,14 @@ if __name__=="__main__":
 
     # settings for the computation
     options = ASB2008CDC.Options()
-    options.t_end = 8
-    options.step = 0.02
+    options.t_end = 6
+    options.step = 0.01
     options.tensor_order = 2
     options.taylor_terms = 2
-    options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
-    from pyrat.geometry.operation import boundary
+    Z = Zonotope([0.5, 0], np.diag([1, 0.5]))
+    # options.r0 = boundary(Z,1,Geometry.TYPE.ZONOTOPE)
 
-    c = np.array([1.4, 2.4], dtype=float)
-    inf = c - [0.17, 0.06]
-    sup = c + [0.17, 0.06]
-    box = Interval(inf, sup)
-
+    options.r0 = [Z]
     options.u = Zonotope.zero(1, 1)
     options.u_trans = np.zeros(1)
 
