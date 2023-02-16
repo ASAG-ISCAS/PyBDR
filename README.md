@@ -206,7 +206,7 @@ system = NonLinSys(Model(neuralODE, [2,1]))
 
 # settings for the computation
 options = ASB2008CDC.Options()
-options.t_end = 6
+options.t_end = 1.5
 options.step = 0.01
 options.tensor_order = 2
 options.taylor_terms = 2
@@ -232,6 +232,7 @@ ti, tp, _, _ = ASB2008CDC.reach(system, options)
 # visualize the results
 plot(tp, [0, 1])
 ```
+In the following table, we show the reachable computed with boundary analysis and without boundary analysis on different time instance cases.
 
 |Time | With Boundary Analysis     | Without Boundary Analysis |
 |  :-----------: |  :-----------: | :-----------: |
