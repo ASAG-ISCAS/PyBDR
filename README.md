@@ -147,9 +147,8 @@ see the effect of using different settings for calculating reachable sets.
 For example, consider a neural ODE with following parameters and $\textit{sigmoid}$ activation function:
 
 $$
- \begin{equation*}
  w_1 = \left[
- \begin{array}{cc}
+ \begin{align*}
     0.2911133 &  0.12008807\\
     -0.24582624 &  0.23181419\\
     -0.25797904 &  0.21687193\\
@@ -160,35 +159,36 @@ $$
     -0.04514714 &  0.29514763\\
     -0.15318371 & -0.275755 \\
     0.24873598 &  0.21018365
- \end{array}
+ \end{align*}
  \right]        
- \end{equation*}
 $$
 $$
-\begin{equation*}
+
  w_2 = \left[
- \begin{array}{ccccc}
+ \begin{align*}
     -0.58693904& -0.814841 & -0.8175157&  0.97060364&  0.6908913\\
     -0.92446184& -0.79249185& -1.1507587&  1.2072723& -0.7983982\\
     1.1564877& -0.8991244& -1.0774536& -0.6731967&  1.0154784\\
     0.8984464& -1.0766245& -0.238209 & -0.5233613&  0.8886671
- \end{array}
- \right]        
- \end{equation*}
+ \end{align*}
+ \right]
 $$
 $$
- b_1 =  \begin{bmatrix}
+ b_1 =  \left[
+ \begin{align*}
     0.0038677& -0.00026365& -0.007168970&  0.02469357&  0.01338706\\
     0.00856025& -0.00888401&  0.00516089& -0.00634514& -0.01914518
- \end{bmatrix}
+ \end{align*}
+ \right]
 
 $$
-$$
 
-b_2 = \begin{bmatrix}
+$$
+b_2 =  \left[
+ \begin{align*}
     -0.04129209& -0.01508532
- \end{bmatrix}
-
+  \end{align*}
+ \right]
 $$
 
 ```python
