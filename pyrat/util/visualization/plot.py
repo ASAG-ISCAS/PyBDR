@@ -12,7 +12,7 @@ def __3d_plot(objs, dims: list, width: int, height: int):
     raise NotImplementedError
 
 
-def __2d_plot(objs, dims: list, width: int, height: int):
+def __2d_plot(objs, dims: list, width: int, height: int, xlim=None, ylim=None):
     assert len(dims) == 2
     px = 1 / plt.rcParams["figure.dpi"]
     fig, ax = plt.subplots(figsize=(width * px, height * px), layout="constrained")
@@ -84,13 +84,19 @@ def __2d_plot(objs, dims: list, width: int, height: int):
     ax.set_xlabel("x" + str(dims[0]))
     ax.set_ylabel("x" + str(dims[1]))
 
+    if xlim is not None:
+        plt.xlim(xlim)
+
+    if ylim is not None:
+        plt.ylim(ylim)
+
     plt.show()
     # plt.savefig("temp.svg", dpi=300, transparent=True)
 
 
-def plot(objs, dims: list, mod: str = "2d", width: int = 800, height: int = 800):
+def plot(objs, dims: list, mod: str = "2d", width: int = 800, height: int = 800, xlim=None, ylim=None):
     if mod == "2d":
-        return __2d_plot(objs, dims, width, height)
+        return __2d_plot(objs, dims, width, height, xlim, ylim)
     elif mod == "3d":
         return __3d_plot(objs, dims, width, height)
     else:
