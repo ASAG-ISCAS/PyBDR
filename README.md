@@ -281,6 +281,14 @@ it is inevitable that the range of
   <!--then the set explosion problem can be avoided in the computation
   possibly.-->
 
+### RuntimeWarning: divide by zero encountered in true_divide
+
+-This warning may be reported on the paltforms with Windows operating system. It does not affect the running of the tool and it can be eliminiated with 
+```python
+  nnumpy.seterr(divide='ignore',invalid='ignore')
+```
+in the decalration.
+
 > Feel free to contact [dingjianqiang0x@gmail.com](mailto:dingjianqiang0x@gmail.com) if you find any
 > issues or bugs in this code, or you struggle to run it in any way.
 
