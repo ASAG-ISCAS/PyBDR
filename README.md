@@ -236,11 +236,11 @@ plot(tp, [0, 1])
 In the following table, we show the reachable computed with boundary analysis and without boundary analysis on different time instance cases.
 
 
-|  Time  |    With Boundary Analysis     |  Without Boundary Analysis   |
-| :----: | :---------------------------: | :--------------------------: |
-| t=0.5s | ![](doc/imgs/Neural_BA05.png) | ![](doc/imgs/Neural_E05.png) |
-| t=1.0s | ![](doc/imgs/Neural_BA1.png)  | ![](doc/imgs/Neural_E1.png)  |
-| t=1.5s | ![](doc/imgs/Neural_BA15.png) |  __Set Explosion Occured!__  |
+| Time Instance |    With Boundary Analysis     |  Without Boundary Analysis   |
+| :-----------: | :---------------------------: | :--------------------------: |
+|    t=0.5s     | ![](doc/imgs/Neural_BA05.png) | ![](doc/imgs/Neural_E05.png) |
+|    t=1.0s     | ![](doc/imgs/Neural_BA1.png)  | ![](doc/imgs/Neural_E1.png)  |
+|    t=1.5s     | ![](doc/imgs/Neural_BA15.png) |  __Set Explosion Occured!__  |
 
 ## Frequently Asked Questions and Troubleshooting
 
