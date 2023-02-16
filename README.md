@@ -188,13 +188,12 @@ $$
  \end{equation*}
 
 \\
-\begin{align*}
+
  b_2 = \left[
- \begin{array}{cc}
+\begin{array}{cc}
     -0.04129209& -0.01508532
  \end{array}
- \right]        
- \end{align*}
+ \right] 
 $$
 
 ```python
