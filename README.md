@@ -244,7 +244,7 @@ In the following table, we show the reachable computed with boundary analysis an
 
 ## Frequently Asked Questions and Troubleshooting
 
-### the computation is slow
+### The computation is slow
 
 - The tool supports two modes of computation for reachable sets, one is to compute the reachable set
   of evolved states
@@ -264,7 +264,7 @@ In the following table, we show the reachable computed with boundary analysis an
   reachable states at a
   suitable time consumption.
 
-### controlling the wrapping effect
+### Controlling the wrapping effect
 
 <!--  Due to the wrapping effect of set propagation based algorithms, 
 it is inevitable that the range of
