@@ -283,7 +283,7 @@ it is inevitable that the range of
 
 ### RuntimeWarning: divide by zero encountered in true_divide
 
--This warning may be reported on the paltforms with Windows operating system. It does not affect the running of the tool and it can be eliminiated with 
+- This warning may be reported on the paltforms with Windows operating system. It does not affect the running of the tool and it can be eliminiated with 
 ```python
   numpy.seterr(divide='ignore',invalid='ignore')
 ```
