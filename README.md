@@ -86,7 +86,7 @@ at [this link](https://docs.mosek.com/10.0/licensing/index.html).
 
 # How to use
 
-## Computing Reachable Sets based on Boundary
+## Computing Reachable Sets based on Boundary Analysis for Nonlinear Systems
 
 Example files are provided to show how to use the tool to calculate reachable sets. Users can refer
 to the example files provided and modify the dynamics and parameters required for the calculation to
@@ -135,6 +135,8 @@ plot(tp, [0, 1])
 ```
 
 ![](doc/imgs/vanderpol_example.png)
+
+## Computing Reachable Sets based on Boundary Analysis for Neural ODE
 
 ## Frequently Asked Questions and Troubleshooting
 
