@@ -178,22 +178,17 @@ $$
  \end{equation*}
 
 \\
-\begin{equation*}
- b_1 = \left[
- \begin{array}{ccccc}
+
+ b_1 =  \begin{bmatrix}
     0.0038677& -0.00026365& -0.007168970&  0.02469357&  0.01338706\\
     0.00856025& -0.00888401&  0.00516089& -0.00634514& -0.01914518
- \end{array}
- \right]        
- \end{equation*}
+ \end{bmatrix}
 
 \\
 
- b_2 = \left[
-\begin{array}{cc}
+b_2 = \begin{bmatrix}
     -0.04129209& -0.01508532
- \end{array}
- \right] 
+ \end{bmatrix}
 $$
 
 ```python
