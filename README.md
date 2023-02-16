@@ -240,7 +240,7 @@ In the following table, we show the reachable computed with boundary analysis an
 | :----: | :---------------------------: | :--------------------------: |
 | t=0.5s | ![](doc/imgs/Neural_BA05.png) | ![](doc/imgs/Neural_E05.png) |
 | t=1.0s | ![](doc/imgs/Neural_BA1.png)  | ![](doc/imgs/Neural_E1.png)  |
-| t=1.5s | ![](doc/imgs/Neural_BA15.png) |    Set Explosion Occured!    |
+| t=1.5s | ![](doc/imgs/Neural_BA15.png) |  __Set Explosion Occured!__  |
 
 ## Frequently Asked Questions and Troubleshooting
 
