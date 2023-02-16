@@ -138,6 +138,77 @@ plot(tp, [0, 1])
 
 ## Computing Reachable Sets based on Boundary Analysis for Neural ODE
 
+An example for computing the reachable sets of neural ODEs with the tool is also provided. Users can refer
+to the example files provided and modify the neural network parameters to compute the reachable sets of other neural odes. Moreover,  it is also enabled for users to modify the required caluculation parameters to
+see the effect of using different settings for calculating reachable sets.
+
+For example, consider a neural ODE with following parameters and $\textit{sigmoid}$ activation function:
+
+$$
+w1 = [[0.2911133 ,  0.12008807],
+       [-0.24582624,  0.23181419],
+       [-0.25797904,  0.21687193],
+       [-0.19282854, -0.2602416 ],
+       [ 0.26780415, -0.20697702],
+       [ 0.23462369,  0.2294843 ],
+      [ -0.2583547 ,  0.21444395],
+      [ -0.04514714,  0.29514763],
+       [-0.15318371, -0.275755]  ,
+      [ 0.24873598,  0.21018365]]
+
+b1 = [0.0038677 , -0.00026365, -0.007168970,  0.02469357,  0.01338706,
+            0.00856025, -0.00888401,  0.00516089, -0.00634514, -0.01914518]
+
+w2 = [[-0.58693904, -0.814841  , -0.8175157 ,  0.97060364,  0.6908913 ,
+            -0.92446184, -0.79249185, -1.1507587 ,  1.2072723 , -0.7983982],
+        [1.1564877 , -0.8991244 , -1.0774536 , -0.6731967 ,  1.0154784 ,
+            0.8984464 , -1.0766245 , -0.238209  , -0.5233613 ,  0.8886671]]
+            
+b2 = [-0.04129209, -0.01508532]
+$$
+
+```python
+from pyrat.algorithm import ASB2008CDC
+from pyrat.dynamic_system import NonLinSys
+from pyrat.geometry import Zonotope, Interval, Geometry
+from pyrat.model import *
+from pyrat.util.visualization import plot
+from pyrat.neural_ode.model_generate import neuralODE
+
+
+# init neural ODE
+system = NonLinSys(Model(neuralODE, [2,1]))
+
+# settings for the computation
+options = ASB2008CDC.Options()
+options.t_end = 8
+options.step = 0.02
+options.tensor_order = 2
+options.taylor_terms = 2
+options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
+from pyrat.geometry.operation import boundary
+
+c = np.array([1.4, 2.4], dtype=float)
+inf = c - [0.17, 0.06]
+sup = c + [0.17, 0.06]
+box = Interval(inf, sup)
+
+options.u = Zonotope.zero(1, 1)
+options.u_trans = np.zeros(1)
+
+# settings for the using geometry
+Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+Zonotope.ORDER = 50
+
+# reachable sets computation
+ti, tp, _, _ = ASB2008CDC.reach(system, options)
+
+# visualize the results
+plot(tp, [0, 1])
+```
+
+![](doc/imgs/neural_ode_example.png)
+
 ## Frequently Asked Questions and Troubleshooting
 
 ### the computation is slow
