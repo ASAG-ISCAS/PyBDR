@@ -20,11 +20,17 @@ initial state space and independently compute reachable sets of those partitions
 effect, especially for large initial sets or/and large time horizons. Such partitioning may, however, induce extensive
 demand on computation time and memory, often rendering the existing reachability analysis techniques not suitable for
 complex real-world applications. Not being forced to explore the full, i.g. exponential in the dimensionality, number of
-partitions could help such procedures tremendously. This is the theme of this tool, which implements the so-called <a href="http://lcs.ios.ac.cn/~xuebai/publication.html"><strong>'set-boundary based method'</strong></a> that explores means of computing
+partitions could help such procedures tremendously. This is the theme of this tool, which implements the
+so-called <a href="http://lcs.ios.ac.cn/~xuebai/publication.html"><strong>'set-boundary based method'</strong></a> that
+explores means of computing
 the full reachable state space based on state-exploratory analysis of just a small sub-volume of the initial state set,
-namely a set enclosing its boundary. For theoretical analysis, please refer to 
-<a href="https://ieeexplore.ieee.org/document/7585104"><strong>'Bai Xue, Arvind Easwaran, Nam-Joon Cho and Martin Fränzle.Reach-Avoid Verification for Nonlinear Systems Based on Boundary Analysis. IEEE Transactions on Automatic Control (IEEE TAC), vol. 62: 3518--3523, 2017.'</strong></a> and
-<a href="https://ieeexplore.ieee.org/document/7585104"><strong>'Bai Xue, Qiuye Wang, Shenghua Feng, and Naijun Zhan. Over-and underapproximating reach sets for perturbed delay differential equations. IEEE Transactions on Automatic Control (IEEE TAC), vol.66: 283--290,2020.'</strong></a>
+namely a set enclosing its boundary. For theoretical analysis, please refer to
+<a href="https://ieeexplore.ieee.org/document/7585104"><strong>'Bai Xue, Arvind Easwaran, Nam-Joon Cho and Martin
+Fränzle.Reach-Avoid Verification for Nonlinear Systems Based on Boundary Analysis. IEEE Transactions on Automatic
+Control (IEEE TAC), vol. 62: 3518--3523, 2017.'</strong></a> and
+<a href="https://ieeexplore.ieee.org/document/7585104"><strong>'Bai Xue, Qiuye Wang, Shenghua Feng, and Naijun Zhan.
+Over-and underapproximating reach sets for perturbed delay differential equations. IEEE Transactions on Automatic
+Control (IEEE TAC), vol.66: 283--290,2020.'</strong></a>
 
 The set-boundary based method can be used to perform reachability analysis for systems modelled by
 <ol> 
@@ -79,6 +85,8 @@ an official personal licence, the steps for which can be found
 at [this link](https://docs.mosek.com/10.0/licensing/index.html).
 
 # How to use
+
+## Computing Reachable Sets based on Boundary
 
 Example files are provided to show how to use the tool to calculate reachable sets. Users can refer
 to the example files provided and modify the dynamics and parameters required for the calculation to
@@ -158,10 +166,12 @@ it is inevitable that the range of
   reachable state sets is too conservative under inappropriate settings, making it impossible to
   obtain a reachable
   state set that meets the requirements.  If these problems occur, -->
- - One can further improve  the accuracy of the reachable set calculation based on splitting boundaries of initial sets, or by reducing the step and
+
+- One can further improve the accuracy of the reachable set calculation based on splitting boundaries of initial sets,
+  or by reducing the step and
   increasing the
-  order of the Taylor expansion. 
-  
+  order of the Taylor expansion.
+
   <!--then the set explosion problem can be avoided in the computation
   possibly.-->
 
