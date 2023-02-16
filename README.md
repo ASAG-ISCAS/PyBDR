@@ -145,7 +145,7 @@ An example for computing the reachable sets of neural ODEs with the tool is also
 to the example files provided and modify the neural network parameters to compute the reachable sets of other neural odes. Moreover,  it is also enabled for users to modify the required caluculation parameters to
 see the effect of using different settings for calculating reachable sets.
 
-For example, consider a neural ODE with following parameters and $\textit{sigmoid}$ activation function:
+For example, consider a neural ODE with following parameters and $\textit{sigmoid}$ activation function, also evaluated in <a href="https://link.springer.com/content/pdf/10.1007/978-3-031-15839-1_15.pdf"><strong>'Manzanas Lopez, D., Musau, P., Hamilton, N. P., & Johnson, T. T. Reachability analysis of a general class of neural ordinary differential equations. In Formal Modeling and Analysis of Timed Systems: 20th International Conference, FORMATS 2022, Warsaw, Poland, September 13–15, 2022, Proceedings (pp. 258-277).'</strong></a>:
 
 $$
  w_1 = \left[
