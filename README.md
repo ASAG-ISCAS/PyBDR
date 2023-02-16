@@ -236,9 +236,9 @@ In the following table, we show the reachable computed with boundary analysis an
 
 |Time | With Boundary Analysis     | Without Boundary Analysis |
 |  :-----------: |  :-----------: | :-----------: |
-|t=0.5s| ![](doc/imgs/neural_BA05.png)     |![](doc/imgs/neural_E05.png) 
-|t=1s| ![](doc/imgs/neural_BA1.png)     |![](doc/imgs/neural_E1.png) 
-|t=1.5s| ![](doc/imgs/neural_BA15.png) | __Set Explosion Occured!__     
+|t=0.5s| ![](doc/imgs/neural_BA05.png)     |![](doc/imgs/neural_E05.png) |
+|t=1s| ![](doc/imgs/neural_BA1.png)     |![](doc/imgs/neural_E1.png) |
+|t=1.5s| ![](doc/imgs/neural_BA15.png) | __Set Explosion Occured!__   |  
 
 
 
