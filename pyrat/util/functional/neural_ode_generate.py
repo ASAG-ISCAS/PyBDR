@@ -1,12 +1,18 @@
 from sympy import *
 import sys 
+sys.path.append("./../../")
 import numpy as np
 import math 
 # import model_description as md
-import pyrat.neural_ode.model_description as md
+import pyrat.model.neural_ode.neural_ode_model1 as md
+#import pyrat.neural_ode.model_description as md
+
 
 def sigmoid(x):
     return (1 / (1 + exp(-x)))
+
+def purelin(x):
+    return x
 
 def neuralODE (x, u):
     weight, bias, func_list = md.get_param()
@@ -26,6 +32,8 @@ def neuralODE (x, u):
                 vecF = np.vectorize(tanh)
             elif act_func == "sigmoid":
                 vecF = np.vectorize(sigmoid)
+            elif act_func == "purelin":
+                vecF = np.vectorize(purelin)
             else:
                 raise NotImplementedError
             if (i == 0):

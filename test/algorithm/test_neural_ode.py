@@ -9,7 +9,7 @@ from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Zonotope, Interval, Geometry
 from pyrat.model import *
 from pyrat.util.visualization import plot
-from pyrat.neural_ode.model_generate import neuralODE
+from pyrat.util.functional.neural_ode_generate import neuralODE
 from pyrat.geometry.operation import boundary
 
 if __name__=="__main__":
@@ -18,7 +18,7 @@ if __name__=="__main__":
 
     # settings for the computation
     options = ASB2008CDC.Options()
-    options.t_end = 0.5
+    options.t_end = 0.1
     options.step = 0.01
     options.tensor_order = 2
     options.taylor_terms = 2
