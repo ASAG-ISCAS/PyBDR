@@ -5,7 +5,6 @@ import numpy as np
 import math 
 # import model_description as md
 import pyrat.model.neural_ode.neural_ode_model1 as md
-#import pyrat.neural_ode.model_description as md
 
 
 def sigmoid(x):

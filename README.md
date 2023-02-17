@@ -193,12 +193,16 @@ b_2 =  \left[
 $$
 
 ```python
+import numpy as np
+np.seterr(divide='ignore',invalid='ignore')
+import sys
+sys.path.append("./../../")
 from pyrat.algorithm import ASB2008CDC
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Zonotope, Interval, Geometry
 from pyrat.model import *
 from pyrat.util.visualization import plot
-from pyrat.neural_ode.model_generate import neuralODE
+from pyrat.util.functional.neural_ode_generate import neuralODE
 from pyrat.geometry.operation import boundary
 
 
