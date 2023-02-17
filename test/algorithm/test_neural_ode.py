@@ -18,7 +18,7 @@ if __name__=="__main__":
 
     # settings for the computation
     options = ASB2008CDC.Options()
-    options.t_end = 0.1
+    options.t_end = 1
     options.step = 0.01
     options.tensor_order = 2
     options.taylor_terms = 2
