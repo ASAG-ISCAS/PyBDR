@@ -57,8 +57,8 @@ class Model:
 
     def __take_derivative(self, order: int, v: int):
         if (
-            order - 1 not in self.__inr_series
-            or v not in self.__inr_series[order - 1]["sym"]
+                order - 1 not in self.__inr_series
+                or v not in self.__inr_series[order - 1]["sym"]
         ):
             self.__take_derivative(order - 1, v)
         start, end = self.__inr_idx[v]
@@ -82,7 +82,7 @@ class Model:
                 d = d if order == 0 else d.squeeze(axis=-1)
                 d = ImmutableDenseNDimArray(d)
                 self.__inr_series[order][mod] = {v: lambdify(self.__inr_x, d, "numpy")}
-            r = np.asarray(self.__series(order, mod, v)(*np.concatenate(xs)))
+            r = np.asarray(self.__series(order, mod, v)(*np.concatenate(xs, axis=-1)))
             return r.squeeze(axis=-1) if order == 0 else r
 
         def _eval_interval():

@@ -1,10 +1,165 @@
+import matplotlib.pyplot as plt
 import numpy as np
+import sympy
 
 from pyrat.algorithm import ASB2008CDC
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Zonotope, Interval, Geometry
+from pyrat.geometry.operation import boundary
 from pyrat.model import *
-from pyrat.util.visualization import plot
+from pyrat.util.visualization import plot, plot_cmp
+
+
+def test_lotka_volterra_cmp():
+    # init dynamic system
+    system = NonLinSys(Model(synchronous_machine, [2, 1]))
+
+    # settings for the computation
+    options = ASB2008CDC.Options()
+    options.t_end = 3
+    options.step = 0.01
+    options.tensor_order = 3
+    options.taylor_terms = 4
+
+    options.u = Zonotope.zero(1, 1)
+    options.u_trans = np.zeros(1)
+
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+    Zonotope.ORDER = 50
+
+    z = Zonotope([0, 3], np.diag([0.1, 0.1]))
+
+    # reachable sets computation without boundary analysis
+    options.r0 = [z]
+    ti_whole, tp_whole, _, _ = ASB2008CDC.reach(system, options)
+
+    # reachable sets computation with boundary analysis
+    options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+    ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
+
+    # visualize the results
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
+
+
+def test_synchronous_machine_cmp():
+    # init dynamic system
+    system = NonLinSys(Model(synchronous_machine, [2, 1]))
+
+    # settings for the computation
+    options = ASB2008CDC.Options()
+    options.t_end = 3
+    options.step = 0.01
+    options.tensor_order = 3
+    options.taylor_terms = 4
+
+    options.u = Zonotope.zero(1, 1)
+    options.u_trans = np.zeros(1)
+
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+    Zonotope.ORDER = 50
+
+    z = Zonotope([0, 3], np.diag([0.1, 0.1]))
+
+    # reachable sets computation without boundary analysis
+    options.r0 = [z]
+    ti_whole, tp_whole, _, _ = ASB2008CDC.reach(system, options)
+
+    # reachable sets computation with boundary analysis
+    options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+    ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
+
+    # visualize the results
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
+
+
+def test_2d_ode_vector_field():
+    x = np.linspace(-10, 10, 200)
+    y = np.linspace(-10, 10, 200)
+    xx, yy = np.meshgrid(x, y)
+    xy = np.vstack([xx.reshape(-1), yy.reshape(-1)]).T
+    us = np.zeros((xy.shape[0], 1))
+    print(xy.shape)
+    print(us.shape)
+    model = Model(ode2d, [2, 1])
+    model.reverse()
+
+    results = []
+    for i in range(xy.shape[0]):
+        this_xy = xy[i]
+        this_u = us[i]
+        this_v = model.evaluate((this_xy, this_u), 'numpy', 0, 0)
+        results.append(this_v)
+    uv = np.vstack(results)
+
+    plt.streamplot(xx, yy, uv[:, 0].reshape(xx.shape), uv[:, 1].reshape(xx.shape), linewidth=1)
+    plt.scatter(-3, 5, c='red')
+    plt.scatter(-3, -3, c='red')
+    plt.scatter(3, -3, c='red')
+    plt.scatter(3, 3, c='red')
+    plt.axis('equal')
+    plt.show()
+
+
+def test_ode_2d_cmp():
+    # init dynamic system
+    system = NonLinSys(Model(ode2d, [2, 1]))
+
+    # settings for the computation
+    options = ASB2008CDC.Options()
+    options.t_end = 3
+    options.step = 0.01
+    options.tensor_order = 3
+    options.taylor_terms = 4
+
+    options.u = Zonotope.zero(1, 1)
+    options.u_trans = np.zeros(1)
+
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+    Zonotope.ORDER = 50
+
+    z = Zonotope([10, -5], np.diag([0.1, 2]))
+
+    # reachable sets computation without boundary analysis
+    options.r0 = [z]
+    ti_whole, tp_whole, _, _ = ASB2008CDC.reach(system, options)
+
+    # reachable sets computation with boundary analysis
+    options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+    ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
+
+    # visualize the results
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FFBE7A', '#8ECFC9'])
+
+
+def test_2d_ode():
+    # init dynamic system
+    system = NonLinSys(Model(ode2d, [2, 1]))
+
+    # settings for the computation
+    options = ASB2008CDC.Options()
+    options.t_end = 1
+    options.step = 0.02
+    options.tensor_order = 3
+    options.taylor_terms = 4
+    options.r0 = [Zonotope([0.05, 0.1], np.diag([0.01, 0.01]))]
+
+    options.u = Zonotope.zero(1, 1)
+    # options.u = Zonotope([0], [[0.05]])
+    options.u_trans = np.zeros(1)
+
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+    Zonotope.ORDER = 50
+
+    # reachable sets computation
+    ti, tp, _, _ = ASB2008CDC.reach(system, options)
+
+    # visualize the results
+    plot(tp, [0, 1], c='red')
+    # plot(tp, [0, 1], xlim=[-5, 2], ylim=[-5, 2])
 
 
 def test_van_der_pol():
@@ -30,10 +185,10 @@ def test_van_der_pol():
     ti, tp, _, _ = ASB2008CDC.reach(system, options)
 
     # visualize the results
-    plot(tp, [0, 1])
+    plot(tp, [0, 1], xlim=[-3.5, 3.5], ylim=[-3, 4])
 
 
-def test_van_der_pol_comp():
+def test_vanderpol_bound_reach():
     # init dynamic system
     system = NonLinSys(Model(vanderpol, [2, 1]))
 
@@ -43,7 +198,8 @@ def test_van_der_pol_comp():
     options.step = 0.005
     options.tensor_order = 3
     options.taylor_terms = 4
-    options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
+    z = Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))
+    options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
 
     options.u = Zonotope.zero(1, 1)
     options.u_trans = np.zeros(1)
@@ -53,59 +209,42 @@ def test_van_der_pol_comp():
     Zonotope.ORDER = 50
 
     # reachable sets computation
-    ti, tp0, _, _ = ASB2008CDC.reach(system, options)
+    ti, tp, _, _ = ASB2008CDC.reach(system, options)
 
-    from pyrat.geometry.operation import boundary
+    # visualize the results
+    plot(tp, [0, 1], xlim=[-3.5, 3.5], ylim=[-3, 4])
 
-    c = np.array([1.4, 2.4], dtype=float)
-    inf = c - [0.17, 0.06]
-    sup = c + [0.17, 0.06]
-    box = Interval(inf, sup)
 
-    # box=Interval()
-    options.r0 = boundary(box, 1, Geometry.TYPE.ZONOTOPE)
+def test_vanderpol_cmp():
+    # init dynamic system
+    system = NonLinSys(Model(vanderpol, [2, 1]))
 
-    ti, tp1, _, _ = ASB2008CDC.reach(system, options)
+    # settings for the computation
+    options = ASB2008CDC.Options()
+    options.t_end = 6.74
+    options.step = 0.005
+    options.tensor_order = 3
+    options.taylor_terms = 4
 
-    import matplotlib.pyplot as plt
-    from matplotlib.patches import Polygon
+    options.u = Zonotope.zero(1, 1)
+    options.u_trans = np.zeros(1)
 
-    px = 1 / plt.rcParams["figure.dpi"]
-    width, height = 800, 800
-    dims = [0, 1]
-    fig, ax = plt.subplots(figsize=(width * px, height * px), layout="constrained")
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+    Zonotope.ORDER = 50
 
-    def __add_zonotope(zono: "Zonotope", color, is_filled, alpha):
-        g = zono.proj(dims)
-        p = Polygon(
-            g.polygon(),
-            closed=True,
-            alpha=alpha,
-            fill=is_filled,
-            linewidth=1,
-            edgecolor=color,
-            facecolor=color,
-            color=color,
-        )
-        ax.add_patch(p)
+    z = Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))
 
-    assert len(tp0) == len(tp1)
+    # reachable sets computation without boundary analysis
+    options.r0 = [z]
+    ti_whole, tp_whole, _, _ = ASB2008CDC.reach(system, options)
 
-    # show tp0 & tp1
-    for idx in range(len(tp0)):
-        c = plt.cm.turbo(idx / len(tp0))
-        for r in tp1[idx]:
-            __add_zonotope(r, "blue", True, 1)
-        for r in tp0[idx]:
-            __add_zonotope(r, c, False, 0.7)
+    # reachable sets computation with boundary analysis
+    options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+    ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
-    ax.autoscale_view()
-    ax.axis("equal")
-    ax.set_xlabel("x" + str(dims[0]))
-    ax.set_ylabel("x" + str(dims[1]))
-
-    # plt.show()
-    plt.savefig("asb_cmp.svg", dpi=300, transparent=True)
+    # visualize the results
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
 
 
 def test_tank6eq():
@@ -119,6 +258,35 @@ def test_tank6eq():
     options.tensor_order = 3
     options.taylor_terms = 4
     options.r0 = [Zonotope([2, 4, 4, 2, 10, 4], np.eye(6) * 0.2)]
+    options.u = Zonotope([0], [[0.005]])
+    options.u = Zonotope.zero(1, 1)
+    options.u_trans = np.zeros(1)
+
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.METHOD.REDUCE.GIRARD
+    Zonotope.ORDER = 50
+
+    # reachable sets computation
+    ti, tp, _, _ = ASB2008CDC.reach(system, options)
+
+    # visualize the results
+    plot(tp, [0, 1])
+    plot(tp, [2, 3])
+    plot(tp, [4, 5])
+
+
+def test_tank6eq_bound_reach():
+    # init dynamic system
+    system = NonLinSys(Model(tank6eq, [6, 1]))
+
+    # settings for the computation
+    options = ASB2008CDC.Options()
+    options.t_end = 400
+    options.step = 1
+    options.tensor_order = 3
+    options.taylor_terms = 4
+    z = Zonotope([2, 4, 4, 2, 10, 4], np.eye(6) * 0.2)
+    options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
     options.u = Zonotope([0], [[0.005]])
     options.u = Zonotope.zero(1, 1)
     options.u_trans = np.zeros(1)

@@ -190,7 +190,7 @@ class ASB2008CDC:
             next_ti, next_tp = cls.reach_one_step(sys, tp_set[-1], err[-1], opt)
             opt.step_idx += 1
             ti_set.append(next_ti)
-            ti_time.append(time_pts[opt.step_idx - 1 : opt.step_idx + 1])
+            ti_time.append(time_pts[opt.step_idx - 1: opt.step_idx + 1])
             tp_set.append(next_tp)
             tp_time.append(time_pts[opt.step_idx])
 

@@ -7,6 +7,7 @@ from .genetic_model import genetic_model
 from .p53_small import p53_small
 from .synchronous_machine import synchronous_machine
 from .vmodelABicycleLinearControlled import vmodela_bicycle_linear_controlled
+from .ode2d import ode2d
 
 __all__ = [
     "Model",
@@ -17,5 +18,6 @@ __all__ = [
     "genetic_model",
     "p53_small",
     "synchronous_machine",
-    "vmodela_bicycle_linear_controlled"
+    "vmodela_bicycle_linear_controlled",
+    "ode2d"
 ]
