@@ -158,11 +158,6 @@ And more :smirk_cat:
 
 ## Computing Reachable Sets based on Boundary Analysis for Neural ODE
 
-An example for computing the reachable sets of neural ODEs with the tool is also provided. Users can refer
-to the example files provided and modify the neural network parameters to compute the reachable sets of other neural
-odes. Moreover, it is also enabled for users to modify the required caluculation parameters to
-see the effect of using different settings for calculating reachable sets.
-
 For example, consider a neural ODE with following parameters and $\textit{sigmoid}$ activation function, also evaluated
 in <a href="https://link.springer.com/content/pdf/10.1007/978-3-031-15839-1_15.pdf"><strong>'Manzanas Lopez, D., Musau,
 P., Hamilton, N. P., & Johnson, T. T. Reachability analysis of a general class of neural ordinary differential
@@ -220,7 +215,7 @@ import numpy as np
 np.seterr(divide='ignore', invalid='ignore')
 import sys
 
-sys.path.append("./../../")
+# sys.path.append("./../../") uncomment this line if you need to add path manually
 from pyrat.algorithm import ASB2008CDC
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Zonotope, Interval, Geometry
