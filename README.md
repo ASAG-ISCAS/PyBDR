@@ -150,12 +150,12 @@ plot(tp, [0, 1])
 
 And more :smirk_cat:
 
-|                                         Dynamic System                                         |                                                            Implementation                                                            |   Reachable Sets (Orange-NBA,Blue-BA)   |
-|:----------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------:|
-|                 [synchronous machine](docs/misc/models.md#synchronous-machine)                 | [benchmark_synchronous_machine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_synchronous_machine_cmp.py) |   ![](doc/imgs/sync_machine_cmp.png)    |
-| [Lotka Volterra model of 2 variables](docs/misc/models.md#lotka-volterra-model-of-2-variables) |   [benchmark_lotka_volterra_2d_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_lotka_volterra_2d_cmp.py)   | ![](doc/imgs/lotka_volterra_2d_cmp.png) |
-|                          [Jet engine](docs/misc/models.md#jet-engine)                          |          [benchmark_jet_engine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_jet_engine_cmp.py)          |    ![](doc/imgs/jet_engine_cmp.png)     |
-|                         [Brusselator](docs/misc/models.md#brusselator)                         |         [benchmark_brusselator_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_brusselator_cmp.py)         |    ![](doc/imgs/brusselator_cmp.png)    |
+|                                                     Dynamic System                                                      |                                                            Implementation                                                            |   Reachable Sets (Orange-NBA,Blue-BA)   |
+|:-----------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------:|
+|        [synchronous machine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/synchronous_machine.py)        | [benchmark_synchronous_machine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_synchronous_machine_cmp.py) |   ![](doc/imgs/sync_machine_cmp.png)    |
+| [Lotka Volterra model of 2 variables](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/lotka_volterra_2d.py) |   [benchmark_lotka_volterra_2d_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_lotka_volterra_2d_cmp.py)   | ![](doc/imgs/lotka_volterra_2d_cmp.png) |
+|                 [Jet engine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/jet_engine.py)                 |          [benchmark_jet_engine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_jet_engine_cmp.py)          |    ![](doc/imgs/jet_engine_cmp.png)     |
+|                [Brusselator](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/brusselator.py)                |         [benchmark_brusselator_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_brusselator_cmp.py)         |    ![](doc/imgs/brusselator_cmp.png)    |
 
 ## Computing Reachable Sets based on Boundary Analysis for Neural ODE
 
