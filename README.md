@@ -144,9 +144,9 @@ ti, tp, _, _ = ASB2008CDC.reach(system, options)
 plot(tp, [0, 1])
 ```
 
-|    With Boundary Analysis (BA)    |      No Boundary Analysis (NBA)      |
-|:---------------------------------:|:------------------------------------:|
-| ![](doc/imgs/vanderpol_bound.png) | ![](doc/imgs/vanderpol_no_bound.png) |
+|     With Boundary Analysis (BA)     |       No Boundary Analysis (NBA)       |
+|:-----------------------------------:|:--------------------------------------:|
+| ![](./doc/imgs/vanderpol_bound.png) | ![](./doc/imgs/vanderpol_no_bound.png) |
 
 And more :smirk_cat:
 
