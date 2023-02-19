@@ -328,4 +328,4 @@ details.
 ## Acknowledgement
 
 This tool has been developed with reference to models in tools such as Flow*, CORA and other
-reachable set calculation tools.
+reachable set computing tools.
