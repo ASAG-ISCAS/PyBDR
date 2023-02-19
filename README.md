@@ -315,7 +315,9 @@ it is inevitable that the range of
   tool and it can be eliminiated with the decalration:
 
 ```python
-  numpy.seterr(divide='ignore', invalid='ignore')
+import numpy
+
+numpy.seterr(divide='ignore', invalid='ignore')
 ```
 
 > Feel free to contact [dingjianqiang0x@gmail.com](mailto:dingjianqiang0x@gmail.com) if you find any
