@@ -4,7 +4,7 @@ from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Geometry, Zonotope
 from pyrat.geometry.operation import cvt2, boundary
 from pyrat.model import *
-from pyrat.util.visualization import plot
+from pyrat.util.visualization import plot, plot_cmp
 
 
 def test_case_0():
@@ -16,7 +16,7 @@ def test_case_0():
     options.t_end = 6.74
     options.step = 0.005
     options.taylor_terms = 4
-    options.tensor_order = 2
+    options.tensor_order = 3
     options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
     options.u = Zonotope.zero(1, 1)
     options.u_trans = np.zeros(1)
@@ -31,6 +31,42 @@ def test_case_0():
 
     # visualize the results
     plot(tp, [0, 1])
+
+
+def test_pi_controller_with_disturbance_cmp():
+    # init dynamic system
+    system = NonLinSys(Model(pi_controller_with_disturbance, [2, 1]))
+
+    # settings for the computation
+    options = ALTHOFF2013HSCC.Options()
+    options.t_end = 2
+    options.step = 0.005
+    options.tensor_order = 3
+    options.taylor_terms = 4
+
+    options.u = Zonotope([0], np.diag([0]))
+    options.u_trans = options.u.c
+
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+    Zonotope.ORDER = 50
+
+    z = Zonotope([1, 0], np.diag([0.1, 0.1]))
+
+    # reachable sets computation without boundary analysis
+    options.r0 = [z]
+    ti_whole, tp_whole, _, _ = ALTHOFF2013HSCC.reach(system, options)
+
+    with_bound = False
+
+    tp_bound = []
+    if with_bound:
+        # reachable sets computation with boundary analysis
+        options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+        ti_bound, tp_bound, _, _ = ALTHOFF2013HSCC.reach(system, options)
+
+    # visualize the results
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
 
 
 def test_vanderpol_bound_reach():
@@ -96,9 +132,7 @@ def test_van_der_pol_using_polyzonotope():
     options.step = 0.005
     options.taylor_terms = 4
     options.tensor_order = 3
-    poly_zono = cvt2(
-        Zonotope([1.4, 2.4], np.diag([0.17, 0.06])), Geometry.TYPE.POLY_ZONOTOPE)
-    options.r0 = [poly_zono]
+    options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
     options.u = Zonotope.zero(1, 1)
     options.u_trans = np.zeros(1)
 

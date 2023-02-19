@@ -51,8 +51,8 @@ def _zonotope2polytope(source: Zonotope):
 
 
 def _zonotope2polyzonotope(source: Zonotope):
-    exp_mat = np.eye(source.gen_num)
-    return PolyZonotope(source.c, source.gen, None, exp_mat)
+    # TODO
+    raise NotImplementedError
 
 
 def _vertices2interval(source: np.ndarray):
@@ -119,13 +119,13 @@ def cvt2(source, target: Geometry.TYPE):
         elif source.type == Geometry.TYPE.ZONOTOPE and target == Geometry.TYPE.POLYTOPE:
             return _zonotope2polytope(source)
         elif (
-            source.type == Geometry.TYPE.ZONOTOPE
-            and target == Geometry.TYPE.POLY_ZONOTOPE
+                source.type == Geometry.TYPE.ZONOTOPE
+                and target == Geometry.TYPE.POLY_ZONOTOPE
         ):
             return _zonotope2polyzonotope(source)
         elif (
-            source.type == Geometry.TYPE.POLY_ZONOTOPE
-            and target == Geometry.TYPE.ZONOTOPE
+                source.type == Geometry.TYPE.POLY_ZONOTOPE
+                and target == Geometry.TYPE.ZONOTOPE
         ):
             return _polyzonotope2zonotope(source)
     else:
