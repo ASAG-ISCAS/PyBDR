@@ -33,11 +33,10 @@ Over-and underapproximating reach sets for perturbed delay differential equation
 Control (IEEE TAC), vol.66: 283--290,2020.'</strong></a>
 
 The set-boundary based method can be used to perform reachability analysis for systems modelled by
-<ol> 
-        <li>ordinary differential equations (subject to Lispchitz continuous perturbations)</li> 
-        <li>delay differential equations (subject to Lispchitz continuous perturbations)</li> 
-        <li>neural ordinary differential equations</li> 
-    </ol> 
+
+1. ordinary differential equations (subject to Lispchitz continuous perturbations)
+2. delay differential equations (subject to Lispchitz continuous perturbations)
+3. neural ordinary differential equations
 
 # Installation
 
@@ -88,9 +87,9 @@ at [this link](https://docs.mosek.com/10.0/licensing/index.html).
 
 ## Computing Reachable Sets based on Boundary Analysis for Nonlinear Systems
 
-Example files are provided to show how to use the tool to calculate reachable sets. Users can refer
-to the example files provided and modify the dynamics and parameters required for the calculation to
-see the effect of using different settings for calculating system reachable sets.
+Sample files are provided to show how to use the tool to compute reachable sets. One can refer
+to the sample files provided and modify the dynamics and parameters required for the computation to
+see the effect of using different settings for doing reachability analysis.
 
 For example, consider following dynamic system:
 
@@ -314,11 +313,9 @@ it is inevitable that the range of
 - This warning may be reported on the paltforms with Windows operating system. It does not affect the running of the
   tool and it can be eliminiated with the decalration:
 
-```python
-import numpy
-
-numpy.seterr(divide='ignore', invalid='ignore')
-```
+  ```python
+  numpy.seterr(divide='ignore', invalid='ignore')
+  ```
 
 > Feel free to contact [dingjianqiang0x@gmail.com](mailto:dingjianqiang0x@gmail.com) if you find any
 > issues or bugs in this code, or you struggle to run it in any way.
