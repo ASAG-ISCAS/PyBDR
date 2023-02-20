@@ -14,7 +14,7 @@ system = NonLinSys(Model(lotka_volterra_2d, [2, 1]))
 
 # settings for the computation
 options = ASB2008CDC.Options()
-options.t_end = 3
+options.t_end = 2.2
 options.step = 0.005
 options.tensor_order = 3
 options.taylor_terms = 4
@@ -26,7 +26,7 @@ options.u_trans = np.zeros(1)
 Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
 Zonotope.ORDER = 50
 
-z = Zonotope([3, 3], np.diag([0.1, 0.1]))
+z = Zonotope([3, 3], np.diag([0.5, 0.5]))
 
 # reachable sets computation without boundary analysis
 options.r0 = [z]
