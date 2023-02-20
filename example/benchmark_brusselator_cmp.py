@@ -14,7 +14,7 @@ system = NonLinSys(Model(brusselator, [2, 1]))
 
 # settings for the computation
 options = ASB2008CDC.Options()
-options.t_end = 5.8
+options.t_end = 6.0
 options.step = 0.02
 options.tensor_order = 2
 options.taylor_terms = 4
@@ -28,13 +28,22 @@ Zonotope.ORDER = 50
 
 z = Zonotope([0.2, 0.2], np.diag([0.1, 0.1]))
 
-# reachable sets computation without boundary analysis
-options.r0 = [z]
-ti_whole, tp_whole, _, _ = ASB2008CDC.reach(system, options)
+no_boundary_analysis = True
 
-# reachable sets computation with boundary analysis
-options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
-ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
+tp_whole, tp_bound = None, None
+xlim, ylim = [0, 2], [0, 2.4]
+
+if no_boundary_analysis:
+    # reachable sets computation without boundary analysis
+    options.r0 = [z]
+    ti_whole, tp_whole, _, _ = ASB2008CDC.reach(system, options)
+else:
+    # reachable sets computation with boundary analysis
+    options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+    ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
 # visualize the results
-plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
+if no_boundary_analysis:
+    plot(tp_whole, [0, 1], xlim=xlim, ylim=ylim)
+else:
+    plot(tp_bound, [0, 1], xlim=xlim, ylim=ylim)
