@@ -14,8 +14,8 @@ system = NonLinSys(Model(jet_engine, [2, 1]))
 
 # settings for the computation
 options = ASB2008CDC.Options()
-options.t_end = 5
-options.step = 0.005
+options.t_end = 10
+options.step = 0.01
 options.tensor_order = 2
 options.taylor_terms = 4
 
