@@ -17,7 +17,8 @@ unverifiable in practice. This pessimism mainly arises due to the wrapping effec
 accumulation of over-approximation error through the iterative computation in the construction of reachable sets. As the
 extent of the wrapping effect correlates strongly with the volume of the initial set, techniques that partition the
 initial state space and independently compute reachable sets of those partitions are often used to reduce the wrapping
-effect, especially for large initial sets or/and large time horizons. Such partitioning may, however, induce extensive
+effect, <span style="color:red">especially for large initial sets or/and large time horizons</span>.
+Such partitioning may, however, induce extensive
 demand on computation time and memory, often rendering the existing reachability analysis techniques not suitable for
 complex real-world applications. Not being forced to explore the full, i.g. exponential in the dimensionality, number of
 partitions could help such procedures tremendously. This is the theme of this tool, which implements the
@@ -28,7 +29,7 @@ namely a set enclosing its boundary. For theoretical analysis, please refer to
 <a href="https://ieeexplore.ieee.org/document/7585104"><strong>'Bai Xue, Arvind Easwaran, Nam-Joon Cho and Martin
 Fränzle.Reach-Avoid Verification for Nonlinear Systems Based on Boundary Analysis. IEEE Transactions on Automatic
 Control (IEEE TAC), vol. 62: 3518--3523, 2017.'</strong></a> and
-<a href="https://ieeexplore.ieee.org/document/7585104"><strong>'Bai Xue, Qiuye Wang, Shenghua Feng, and Naijun Zhan.
+<a href="https://ieeexplore.ieee.org/document/9023360"><strong>'Bai Xue, Qiuye Wang, Shenghua Feng, and Naijun Zhan.
 Over-and underapproximating reach sets for perturbed delay differential equations. IEEE Transactions on Automatic
 Control (IEEE TAC), vol.66: 283--290,2020.'</strong></a>
 
