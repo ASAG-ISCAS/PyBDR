@@ -26,7 +26,7 @@ options.u_trans = options.u.c
 Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
 Zonotope.ORDER = 50
 
-z = Zonotope([1, 1], np.diag([0.1, 0.1]))
+z = Zonotope([1, 1], np.diag([0.2, 0.2]))
 
 # reachable sets computation without boundary analysis
 options.r0 = [z]

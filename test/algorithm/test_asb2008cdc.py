@@ -119,8 +119,8 @@ def test_jet_engine_cmp():
 
     # settings for the computation
     options = ASB2008CDC.Options()
-    options.t_end = 5
-    options.step = 0.005
+    options.t_end = 10
+    options.step = 0.01
     options.tensor_order = 2
     options.taylor_terms = 4
 
@@ -131,7 +131,7 @@ def test_jet_engine_cmp():
     Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
     Zonotope.ORDER = 50
 
-    z = Zonotope([1, 1], np.diag([0.1, 0.1]))
+    z = Zonotope([1, 1], np.diag([0.2, 0.2]))
 
     # reachable sets computation without boundary analysis
     options.r0 = [z]
