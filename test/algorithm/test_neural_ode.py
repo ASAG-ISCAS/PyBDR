@@ -1,7 +1,8 @@
 import numpy as np
-np.seterr(divide='ignore',invalid='ignore')
+
+np.seterr(divide='ignore', invalid='ignore')
 import sys
-sys.path.append("./../../")
+# sys.path.append("./../../") # add directory 'pyrat' into system path
 from pyrat.algorithm import ASB2008CDC
 from pyrat.dynamic_system import NonLinSys
 from pyrat.geometry import Zonotope, Interval, Geometry
@@ -10,9 +11,9 @@ from pyrat.util.visualization import plot
 from pyrat.util.functional.neural_ode_generate import neuralODE
 from pyrat.geometry.operation import boundary
 
-if __name__=="__main__":
+if __name__ == "__main__":
     # init neural ODE
-    system = NonLinSys(Model(neuralODE, [2,1]))
+    system = NonLinSys(Model(neuralODE, [2, 1]))
 
     # settings for the computation
     options = ASB2008CDC.Options()
@@ -21,7 +22,7 @@ if __name__=="__main__":
     options.tensor_order = 2
     options.taylor_terms = 2
     Z = Zonotope([0.5, 0], np.diag([0.5, 0.5]))
-    
+
     # Reachable sets computed with boundary analysis
     # options.r0 = boundary(Z,1,Geometry.TYPE.ZONOTOPE)
 
