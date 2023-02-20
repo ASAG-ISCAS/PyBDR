@@ -17,7 +17,7 @@ unverifiable in practice. This pessimism mainly arises due to the wrapping effec
 accumulation of over-approximation error through the iterative computation in the construction of reachable sets. As the
 extent of the wrapping effect correlates strongly with the volume of the initial set, techniques that partition the
 initial state space and independently compute reachable sets of those partitions are often used to reduce the wrapping
-effect, ${\color{red} \textsf{\large especially for large initial sets or/and large time horizons especially}}$.
+effect, ${\color{red} \textsf{\large especially for large initial sets or/and large time horizons}}$.
 Such partitioning may, however, induce extensive demand on computation time and memory, often rendering the existing
 reachability analysis techniques not suitable for
 complex real-world applications. Not being forced to explore the full, i.g. exponential in the dimensionality, number of
@@ -163,10 +163,10 @@ the system [Brusselator](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/m
 
 | Time instance | With Boundary Analysis                |        Without Boundary Analysi         |
 |:-------------:|---------------------------------------|:---------------------------------------:|
-|    t=5.4s     | ![](doc/imgs/brusselator_ba_t5.4.png) | ![](doc/imgs/brusselator_nba_t5.4.png)' |
-|    t=5.7s     | ![](doc/imgs/brusselator_ba_t5.7.png) | ![](doc/imgs/brusselator_nba_t5.7.png)  |
-|    t=6.0s     | ![](doc/imgs/brusselator_ba_t6.png)   |  ![](doc/imgs/brusselator_nba_t6.png)   |
-|    t=6.1s     | ![](doc/imgs/brusselator_ba_t6.1.png) |       __Set Explosion Occurred!__       |
+|     t=5.4     | ![](doc/imgs/brusselator_ba_t5.4.png) | ![](doc/imgs/brusselator_nba_t5.4.png)' |
+|     t=5.7     | ![](doc/imgs/brusselator_ba_t5.7.png) | ![](doc/imgs/brusselator_nba_t5.7.png)  |
+|     t=6.0     | ![](doc/imgs/brusselator_ba_t6.png)   |  ![](doc/imgs/brusselator_nba_t6.png)   |
+|     t=6.1     | ![](doc/imgs/brusselator_ba_t6.1.png) |       __Set Explosion Occurred!__       |
 
 ## Computing Reachable Sets based on Boundary Analysis for Neural ODE
 
