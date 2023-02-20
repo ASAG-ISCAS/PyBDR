@@ -14,8 +14,8 @@ system = NonLinSys(Model(brusselator, [2, 1]))
 
 # settings for the computation
 options = ASB2008CDC.Options()
-options.t_end = 1
-options.step = 0.002
+options.t_end = 5.8
+options.step = 0.02
 options.tensor_order = 2
 options.taylor_terms = 4
 
@@ -26,7 +26,7 @@ options.u_trans = options.u.c
 Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
 Zonotope.ORDER = 50
 
-z = Zonotope([-1, -3], np.diag([0.05, 0.01]))
+z = Zonotope([0.2, 0.2], np.diag([0.1, 0.1]))
 
 # reachable sets computation without boundary analysis
 options.r0 = [z]

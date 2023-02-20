@@ -147,14 +147,23 @@ plot(tp, [0, 1])
 |:-----------------------------------:|:--------------------------------------:|
 | ![](./doc/imgs/vanderpol_bound.png) | ![](./doc/imgs/vanderpol_no_bound.png) |
 
-And more :smirk_cat:
+For large initial sets,
 
-|                                                     Dynamic System                                                      |                                                            Implementation                                                            |   Reachable Sets (Orange-NBA,Blue-BA)   |
+|                                                         System                                                          |                                                                 Code                                                                 |   Reachable Sets (Orange-NBA,Blue-BA)   |
 |:-----------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------:|
 |        [synchronous machine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/synchronous_machine.py)        | [benchmark_synchronous_machine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_synchronous_machine_cmp.py) |   ![](doc/imgs/sync_machine_cmp.png)    |
 | [Lotka Volterra model of 2 variables](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/lotka_volterra_2d.py) |   [benchmark_lotka_volterra_2d_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_lotka_volterra_2d_cmp.py)   | ![](doc/imgs/lotka_volterra_2d_cmp.png) |
 |                 [Jet engine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/jet_engine.py)                 |          [benchmark_jet_engine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_jet_engine_cmp.py)          |    ![](doc/imgs/jet_engine_cmp.png)     |
-|                [Brusselator](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/brusselator.py)                |         [benchmark_brusselator_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_brusselator_cmp.py)         |    ![](doc/imgs/brusselator_cmp.png)    |
+
+For large time horizons, i.e. consider
+system [Brusselator](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/brusselator.py)
+
+| Time instance | With Boundary Analysis                |        Without Boundary Analysi         |
+|:-------------:|---------------------------------------|:---------------------------------------:|
+|    t=5.4s     | ![](doc/imgs/brusselator_ba_t5.4.png) | ![](doc/imgs/brusselator_nba_t5.4.png)' |
+|    t=5.7s     | ![](doc/imgs/brusselator_ba_t5.7.png) | ![](doc/imgs/brusselator_nba_t5.7.png)  |
+|    t=6.0s     | ![](doc/imgs/brusselator_ba_t6.png)   |  ![](doc/imgs/brusselator_nba_t6.png)   |
+|    t=6.1s     | ![](doc/imgs/brusselator_ba_t6.1.png) |              Set Explosion              |
 
 ## Computing Reachable Sets based on Boundary Analysis for Neural ODE
 

@@ -38,14 +38,14 @@ def test_2d_vector_field():
     plt.show()
 
 
-def test_brusselator():
+def test_brusselator_large_time_horizon_cmp():
     # init dynamic system
     system = NonLinSys(Model(brusselator, [2, 1]))
 
     # settings for the computation
     options = ASB2008CDC.Options()
-    options.t_end = 1
-    options.step = 0.002
+    options.t_end = 5.4
+    options.step = 0.02
     options.tensor_order = 2
     options.taylor_terms = 4
 
@@ -56,7 +56,111 @@ def test_brusselator():
     Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
     Zonotope.ORDER = 50
 
-    z = Zonotope([-1, -3], np.diag([0.05, 0.01]))
+    z = Zonotope([0.2, 0.2], np.diag([0.1, 0.1]))
+
+    no_boundary_analysis = True
+    tp_whole, tp_bound = None, None
+    # xlim, ylim = None, None
+    xlim, ylim = [0, 2], [0, 2.4]
+
+    if no_boundary_analysis:
+        # reachable sets computation without boundary analysis
+        options.r0 = [z]
+        ti_whole, tp_whole, _, _ = ASB2008CDC.reach(system, options)
+    else:
+        # reachable sets computation with boundary analysis
+        options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+        ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
+
+    # visualize the results
+    if no_boundary_analysis:
+        plot(tp_whole, [0, 1], xlim=xlim, ylim=ylim)
+    else:
+        plot(tp_bound, [0, 1], xlim=xlim, ylim=ylim)
+
+
+def test_brusselator_large_time_horizon_nba():
+    # init dynamic system
+    system = NonLinSys(Model(brusselator, [2, 1]))
+
+    # settings for the computation
+    options = ASB2008CDC.Options()
+    options.t_end = 5.8
+    options.step = 0.02
+    options.tensor_order = 2
+    options.taylor_terms = 4
+
+    options.u = Zonotope([0], np.diag([0]))
+    options.u_trans = options.u.c
+
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+    Zonotope.ORDER = 50
+
+    z = Zonotope([0.2, 0.2], np.diag([0.1, 0.1]))
+
+    # reachable sets computation without boundary analysis
+    options.r0 = [z]
+    ti_whole, tp_whole, _, _ = ASB2008CDC.reach(system, options)
+
+    plot([tp_whole], [0, 1])
+
+
+def test_brusselator_large_time_horizon_ba():
+    # init dynamic system
+    system = NonLinSys(Model(brusselator, [2, 1]))
+
+    # settings for the computation
+    options = ASB2008CDC.Options()
+    options.t_end = 5.8
+    options.step = 0.02
+    options.tensor_order = 2
+    options.taylor_terms = 4
+
+    options.u = Zonotope([0], np.diag([0]))
+    options.u_trans = options.u.c
+
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+    Zonotope.ORDER = 50
+
+    z = Zonotope([0.2, 0.2], np.diag([0.1, 0.1]))
+
+    # reachable sets computation without boundary analysis
+    options.r0 = [z]
+    ti_whole, tp_whole, _, _ = ASB2008CDC.reach(system, options)
+
+    with_bound = True
+
+    tp_bound = []
+    if with_bound:
+        # reachable sets computation with boundary analysis
+        options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+        ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
+
+    # visualize the results
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
+
+
+def test_brusselator():
+    # init dynamic system
+    system = NonLinSys(Model(brusselator, [2, 1]))
+
+    # settings for the computation
+    options = ASB2008CDC.Options()
+    options.t_end = 5.8
+    options.step = 0.02
+    options.tensor_order = 2
+    options.taylor_terms = 4
+
+    options.u = Zonotope([0], np.diag([0]))
+    options.u_trans = options.u.c
+
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+    Zonotope.ORDER = 50
+
+    z = Zonotope([0.2, 0.2], np.diag([0.1, 0.1]))
 
     # reachable sets computation without boundary analysis
     options.r0 = [z]

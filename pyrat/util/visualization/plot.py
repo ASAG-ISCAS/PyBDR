@@ -87,7 +87,6 @@ def __2d_plot(objs, dims: list, width: int, height: int, xlim=None, ylim=None, c
                 raise NotImplementedError
 
     ax.autoscale_view()
-    ax.axis("equal")
     ax.set_xlabel("x" + str(dims[0]))
     ax.set_ylabel("x" + str(dims[1]))
 
@@ -98,7 +97,6 @@ def __2d_plot(objs, dims: list, width: int, height: int, xlim=None, ylim=None, c
         plt.ylim(ylim)
 
     plt.show()
-    # plt.savefig("temp.svg", dpi=300, transparent=True)
 
 
 def plot(objs, dims: list, mod: str = "2d", width: int = 800, height: int = 800, xlim=None, ylim=None, c=None,
