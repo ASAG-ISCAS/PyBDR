@@ -272,9 +272,9 @@ time instance cases.
 
 | Time Instance |    With Boundary Analysis     |  Without Boundary Analysis   |
 |:-------------:|:-----------------------------:|:----------------------------:|
-|    t=0.5s     | ![](doc/imgs/Neural_BA05.png) | ![](doc/imgs/Neural_E05.png) |
-|    t=1.0s     | ![](doc/imgs/Neural_BA1.png)  | ![](doc/imgs/Neural_E1.png)  |
-|    t=1.5s     | ![](doc/imgs/Neural_BA15.png) |  __Set Explosion Occured!__  |
+|     t=0.5     | ![](doc/imgs/Neural_BA05.png) | ![](doc/imgs/Neural_E05.png) |
+|     t=1.0     | ![](doc/imgs/Neural_BA1.png)  | ![](doc/imgs/Neural_E1.png)  |
+|     t=1.5     | ![](doc/imgs/Neural_BA15.png) |  __Set Explosion Occured!__  |
 
 ## Frequently Asked Questions and Troubleshooting
 
