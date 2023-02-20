@@ -315,7 +315,7 @@ def test_synchronous_machine_cmp():
     Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
     Zonotope.ORDER = 50
 
-    z = Zonotope([0, 3], np.diag([0.1, 0.1]))
+    z = Zonotope([0, 3], np.diag([0.2, 0.2]))
 
     # reachable sets computation without boundary analysis
     options.r0 = [z]
