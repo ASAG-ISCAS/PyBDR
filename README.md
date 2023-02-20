@@ -36,6 +36,10 @@ Control (IEEE TAC), vol. 62: 3518--3523, 2017.'</strong></a> and
 Over-and underapproximating reach sets for perturbed delay differential equations. IEEE Transactions on Automatic
 Control (IEEE TAC), vol.66: 283--290,2020.'</strong></a>
 
+$${\color{purple} \boxed{ \frak{ \color{orange}Rise \space \color{cyan}and \space \color{magenta}Rise \space
+\color{lime}again \space \color{violet}until \space \color{lightgray}Lambs \space \color{teal}become \space
+\color{red}Lions !} } }$$
+
 The set-boundary based method can be used to perform reachability analysis for systems modelled by
 
 1. ordinary differential equations (subject to Lispchitz continuous perturbations)
