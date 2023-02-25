@@ -24,16 +24,18 @@ def test_2d_vector_field():
     for i in range(xy.shape[0]):
         this_xy = xy[i]
         this_u = us[i]
-        this_v = model.evaluate((this_xy, this_u), 'numpy', 0, 0)
+        this_v = model.evaluate((this_xy, this_u), "numpy", 0, 0)
         results.append(this_v)
     uv = np.vstack(results)
 
-    plt.streamplot(xx, yy, uv[:, 0].reshape(xx.shape), uv[:, 1].reshape(xx.shape), linewidth=1)
-    plt.scatter(-3, 5, c='red')
-    plt.scatter(-3, -3, c='red')
-    plt.scatter(5, -5, c='red')
-    plt.scatter(5, 5, c='red')
-    plt.scatter(0.9, 0.1, c='red')
+    plt.streamplot(
+        xx, yy, uv[:, 0].reshape(xx.shape), uv[:, 1].reshape(xx.shape), linewidth=1
+    )
+    plt.scatter(-3, 5, c="red")
+    plt.scatter(-3, -3, c="red")
+    plt.scatter(5, -5, c="red")
+    plt.scatter(5, 5, c="red")
+    plt.scatter(0.9, 0.1, c="red")
     # plt.axis('equal')
     plt.show()
 
@@ -139,7 +141,7 @@ def test_brusselator_large_time_horizon_ba():
         ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
     # visualize the results
-    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FF5722", "#303F9F"])
 
 
 def test_brusselator():
@@ -175,7 +177,7 @@ def test_brusselator():
         ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
     # visualize the results
-    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FF5722", "#303F9F"])
 
 
 def test_ltv_cmp():
@@ -212,9 +214,9 @@ def test_ltv_cmp():
         ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
     # visualize the results
-    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
-    plot_cmp([tp_whole, tp_bound], [2, 0], cs=['#FF5722', '#303F9F'])
-    plot_cmp([tp_whole, tp_bound], [2, 1], cs=['#FF5722', '#303F9F'])
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FF5722", "#303F9F"])
+    plot_cmp([tp_whole, tp_bound], [2, 0], cs=["#FF5722", "#303F9F"])
+    plot_cmp([tp_whole, tp_bound], [2, 1], cs=["#FF5722", "#303F9F"])
 
 
 def test_jet_engine_cmp():
@@ -250,7 +252,7 @@ def test_jet_engine_cmp():
         ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
     # visualize the results
-    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FF5722", "#303F9F"])
 
 
 def test_pi_controller_with_disturbance_cmp():
@@ -286,7 +288,7 @@ def test_pi_controller_with_disturbance_cmp():
         ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
     # visualize the results
-    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FF5722", "#303F9F"])
 
 
 def test_rossler_attractor_cmp():
@@ -322,9 +324,9 @@ def test_rossler_attractor_cmp():
         ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
     # visualize the results
-    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'], filled=False)
-    plot_cmp([tp_whole, tp_bound], [0, 2], cs=['#FF5722', '#303F9F'], filled=False)
-    plot_cmp([tp_whole, tp_bound], [1, 2], cs=['#FF5722', '#303F9F'], filled=False)
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FF5722", "#303F9F"], filled=False)
+    plot_cmp([tp_whole, tp_bound], [0, 2], cs=["#FF5722", "#303F9F"], filled=False)
+    plot_cmp([tp_whole, tp_bound], [1, 2], cs=["#FF5722", "#303F9F"], filled=False)
 
 
 def test_lorentz_cmp():
@@ -360,9 +362,9 @@ def test_lorentz_cmp():
         ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
     # visualize the results
-    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
-    plot_cmp([tp_whole, tp_bound], [0, 2], cs=['#FF5722', '#303F9F'])
-    plot_cmp([tp_whole, tp_bound], [1, 2], cs=['#FF5722', '#303F9F'])
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FF5722", "#303F9F"])
+    plot_cmp([tp_whole, tp_bound], [0, 2], cs=["#FF5722", "#303F9F"])
+    plot_cmp([tp_whole, tp_bound], [1, 2], cs=["#FF5722", "#303F9F"])
 
 
 def test_lotka_volterra_2d_cmp():
@@ -398,7 +400,7 @@ def test_lotka_volterra_2d_cmp():
         ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
     # visualize the results
-    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FF5722", "#303F9F"])
 
 
 def test_synchronous_machine_cmp():
@@ -430,7 +432,7 @@ def test_synchronous_machine_cmp():
     ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
     # visualize the results
-    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FF5722", "#303F9F"])
 
 
 def test_ode_2d_cmp():
@@ -462,7 +464,7 @@ def test_ode_2d_cmp():
     ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
     # visualize the results
-    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FFBE7A', '#8ECFC9'])
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FFBE7A", "#8ECFC9"])
 
 
 def test_2d_ode():
@@ -489,7 +491,7 @@ def test_2d_ode():
     ti, tp, _, _ = ASB2008CDC.reach(system, options)
 
     # visualize the results
-    plot(tp, [0, 1], c='red')
+    plot(tp, [0, 1], c="red")
     # plot(tp, [0, 1], xlim=[-5, 2], ylim=[-5, 2])
 
 
@@ -575,7 +577,7 @@ def test_vanderpol_cmp():
     ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
     # visualize the results
-    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FF5722", "#303F9F"])
 
 
 def test_tank6eq():
