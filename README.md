@@ -17,7 +17,8 @@ unverifiable in practice. This pessimism mainly arises due to the wrapping effec
 accumulation of over-approximation error through the iterative computation in the construction of reachable sets. As the
 extent of the wrapping effect correlates strongly with the volume of the initial set, techniques that partition the
 initial state space and independently compute reachable sets of those partitions are often used to reduce the wrapping
-effect, **especially for large initial sets or/and large time horizons**.
+effect, <a href="https://ieeexplore.ieee.org/document/7585104"><strong>'especially for large initial sets or/and large
+time horizons'</strong></a>.
 Such partitioning may, however, induce extensive demand on computation time and memory, often rendering the existing
 reachability analysis techniques not suitable for
 complex real-world applications. Not being forced to explore the full, i.g. exponential in the dimensionality, number of
