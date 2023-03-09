@@ -175,12 +175,12 @@ the system [Brusselator](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/m
 > For more details about the following example, please refer to
 > our [code](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_brusselator_cmp.py).
 
-| Time instance | With Boundary Analysis                |        Without Boundary Analysi         |
-|:-------------:|---------------------------------------|:---------------------------------------:|
-|     t=5.4     | ![](doc/imgs/brusselator_ba_t5.4.png) | ![](doc/imgs/brusselator_nba_t5.4.png)' |
-|     t=5.7     | ![](doc/imgs/brusselator_ba_t5.7.png) | ![](doc/imgs/brusselator_nba_t5.7.png)  |
-|     t=6.0     | ![](doc/imgs/brusselator_ba_t6.png)   |  ![](doc/imgs/brusselator_nba_t6.png)   |
-|     t=6.1     | ![](doc/imgs/brusselator_ba_t6.1.png) |       __Set Explosion Occurred!__       |
+| Time instance | With Boundary Analysis                |        Without Boundary Analysi        |
+|:-------------:|---------------------------------------|:--------------------------------------:|
+|     t=5.4     | ![](doc/imgs/brusselator_ba_t5.4.png) | ![](doc/imgs/brusselator_nba_t5.4.png) |
+|     t=5.7     | ![](doc/imgs/brusselator_ba_t5.7.png) | ![](doc/imgs/brusselator_nba_t5.7.png) |
+|     t=6.0     | ![](doc/imgs/brusselator_ba_t6.png)   |  ![](doc/imgs/brusselator_nba_t6.png)  |
+|     t=6.1     | ![](doc/imgs/brusselator_ba_t6.1.png) |      __Set Explosion Occurred!__       |
 
 ## Computing Reachable Sets based on Boundary Analysis for Neural ODE
 
