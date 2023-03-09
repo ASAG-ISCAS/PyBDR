@@ -42,33 +42,45 @@ The set-boundary based method can be used to perform reachability analysis for s
 
 # Installation
 
-No need to do installation, just copy the source code into appropriate directory, like using some
-Matlab third-party library. We highly recommend you to use `Pycharm` as an IDE for development and
-testing.
+The installation process is unnecessary as the source code needs to be copied into the appropriate directory, similar to
+how a third-party library in MATLAB works. We strongly recommend developers to utilize `Pycharm` as the IDE for
+development and testing purposes. By using `Pycharm`, developers can benefit from various advanced features that
+facilitate testing, debugging, and code analysis.
 
 ## Virtual Environment
 
-We recommend that users use miniconda to initialise a virtual environment for the subsequent
-installation and running of third party libraries. The steps are as follows.
+The installation process is unnecessary as the source code needs to be copied into the appropriate directory, similar to
+how a third-party library in MATLAB works. We strongly recommend developers to utilize `Pycharm` as the IDE for
+development and testing purposes. By using `Pycharm`, developers can benefit from various advanced features that
+facilitate testing, debugging, and code analysis.
 
-In the user's current working directory, the user can initialise a virtual test environment called
-`pybdr_lab` using the following command.
+### Virtual Environment
+
+To ensure a smoother installation and running of third-party libraries, we advise users to
+use [miniconda](https://docs.conda.io/en/latest/miniconda.html) and create a virtual environment. The steps for this
+process are as follows:
+
+First, open the user's current working directory, and use the command
 
 ```shell
 conda create -n pybdr_lab
 ```
 
-After the virtual environment has been initialized, the user activates the virtual test environment
-named pybdr_lab that has just been initialized with the following command.
+to initialize a virtual test environment called "pybdr_lab".
+
+After the virtual environment has been created, the user needs to activate it before running any third-party libraries.
+This can be done using the command
 
 ```shell
 conda activate pybdr_lab
 ```
 
+By activating the virtual environment, the user ensures that any package installations and other commands will run
+within the virtual environment, rather than the system environment.
+
 ## Dependencies
 
-Now, you can install the necessary third party libraries in this virtual environment using the
-following series of commands.
+Now, the user can install the necessary third party libraries in this virtual environment using the following commands.
 
 ```shell
 conda install matplotlib
@@ -89,9 +101,10 @@ at [this link](https://docs.mosek.com/10.0/licensing/index.html).
 
 ## Computing Reachable Sets based on Boundary Analysis for Nonlinear Systems
 
-Sample files are provided to show how to use the tool to compute reachable sets. One can refer
-to the sample files provided and modify the dynamics and parameters required for the computation to
-see the effect of using different settings for doing reachability analysis.
+The tool comes with sample files that demonstrate how it should be utilized to compute reachable sets. By referring to
+these sample files, users can gain an understanding of how to modify the dynamics and parameters required for
+reachability analysis. This feature helps users experiment with their analysis by using different settings to assess
+their effects on the overall computation of the reachable sets.
 
 For example, consider following dynamic system:
 
@@ -281,49 +294,32 @@ time instance cases.
 
 ### The computation is slow
 
-- The tool supports two modes of computation for reachable sets, one is to compute the reachable set
-  of evolved states
-  based on the entire initial set in a set propagation manner, and the other is to compute the
-  reachable set of
-  evolved states based on the boundary of the initial state set.
+Two modes of computation are supported by the tool for reachable sets. One mode is to compute the reachable set of
+evolved states using the entire initial set in a set propagation manner, while the other mode is to compute the
+reachable set of evolved states based on the boundary of the initial state set.
 
-  There are several reasons for slow computations: large computational time intervals,
-  small step,
-  high Taylor expansion orders, and a large number of state variables.
+The computation may be slow for several reasons such as large computational time intervals, small steps, high Taylor
+expansion orders, or a large number of state variables.
 
-  In order to speed up the computations, experiments can be carried out using a smaller computational time
-  horizon, a smaller order of
-  expansion such as 2, and a larger time step, and then gradually increase the computational time
-  horizon and the order
-  of expansion according to the results of this setting, in order to obtain the desired set of
-  reachable states at a
-  suitable time consumption.
+To accelerate the computations, experiments can be performed with a smaller computational time horizon, a smaller
+order
+of expansion (such as 2), and a larger time step. Then gradually increase the computational time horizon and order of
+expansion based on the results of this setting to achieve the desired set of reachable states at an acceptable time
+consumption.
 
 ### Controlling the wrapping effect
 
-<!--  Due to the wrapping effect of set propagation based algorithms, 
-it is inevitable that the range of
-  the computed
-  reachable state sets is too conservative under inappropriate settings, making it impossible to
-  obtain a reachable
-  state set that meets the requirements.  If these problems occur, -->
-
-- One can further improve the accuracy of the reachable set calculation based on splitting boundaries of initial sets,
-  or by reducing the step and
-  increasing the
-  order of the Taylor expansion.
-
-  <!--then the set explosion problem can be avoided in the computation
-  possibly.-->
+To enhance the precision of the reachable set computation, one can split the boundaries of initial sets or increase the
+order of the Taylor expansion while reducing the step size.
 
 ### RuntimeWarning: divide by zero encountered in true_divide
 
-- This warning may be reported on the paltforms with Windows operating system. It does not affect the running of the
-  tool and it can be eliminiated with the decalration:
+This warning may appear on platforms using the Windows operating system. However, it won't impact the operation of the
+tool and can be eliminated by declaring it.
 
-  ```python
-  numpy.seterr(divide='ignore', invalid='ignore')
-  ```
+```python
+numpy.seterr(divide='ignore', invalid='ignore')
+```
 
 > Feel free to contact [dingjianqiang0x@gmail.com](mailto:dingjianqiang0x@gmail.com) if you find any
 > issues or bugs in this code, or you struggle to run it in any way.
@@ -335,5 +331,5 @@ details.
 
 ## Acknowledgement
 
-This tool has been developed with reference to models in tools such as Flow*, CORA and other
-reachable set computing tools.
+When creating this tool, reference was made to models utilized in other reachable set calculation tools such as Flow*,
+CORA, and others.
