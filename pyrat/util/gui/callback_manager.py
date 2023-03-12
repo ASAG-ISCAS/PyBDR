@@ -1,5 +1,5 @@
-import open3d as o3d
-import open3d.visualization.gui as gui
+# import open3d as o3d
+# import open3d.visualization.gui as gui
 import numpy as np
 from typing import TYPE_CHECKING
 

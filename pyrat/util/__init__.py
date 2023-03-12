@@ -1,5 +1,5 @@
 __all__ = [
     "functional",
-    "gui",
+    # "gui",
     "visualization",
 ]
