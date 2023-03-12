@@ -338,7 +338,7 @@ class Interval(Geometry.Base):
                 return (1 / self) ** (-x)
 
         def _pow_num(x):
-            if abs(round(x) - x) <= np.finfo(np.float).eps:
+            if abs(round(x) - x) <= np.finfo(float).eps:
                 return _pow_int(int(x))
             else:
                 return _pow_real(x)
