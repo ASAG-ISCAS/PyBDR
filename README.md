@@ -101,10 +101,12 @@ at [this link](https://docs.mosek.com/10.0/licensing/index.html).
 
 ## Computing Reachable Sets based on Boundary Analysis for Nonlinear Systems
 
-The tool comes with sample files that demonstrate how it should be utilized to compute reachable sets. By referring to
+The tool provides sample files which serve as demonstrations of the proper utilization for computing reachable sets. These sample files serve as a reference point for users to grasp the process of modifying the dynamics and parameters necessary for reachability analysis. This feature aids users in experimenting with their analyses, allowing them to assess the impact of different settings on the overall computation of the reachable sets
+
+<!--The tool comes with sample files that demonstrate how it should be utilized to compute reachable sets. By referring to
 these sample files, users can gain an understanding of how to modify the dynamics and parameters required for
 reachability analysis. This feature helps users experiment with their analysis by using different settings to assess
-their effects on the overall computation of the reachable sets.
+their effects on the overall computation of the reachable sets.-->
 
 For example, consider following dynamic system:
 
