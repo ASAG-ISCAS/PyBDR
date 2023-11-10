@@ -41,11 +41,11 @@ The set-boundary based method can be used to perform reachability analysis for s
 3. neural ordinary differential equations
 
 # Installation
-
-The installation process is unnecessary as the source code needs to be copied into the appropriate directory, similar to
+The installation process is deemed unnecessary as it only involves copying the source code to the proper directory, much like how a third-party library in MATLAB functions. We highly recommend developers to utilize Pycharm as the integrated development environment (IDE) for their development and testing needs. Pycharm offers a range of advanced features that greatly aid in testing, debugging, and code analysis.
+<!--The installation process is unnecessary as the source code needs to be copied into the appropriate directory, similar to
 how a third-party library in MATLAB works. We strongly recommend developers to utilize `Pycharm` as the IDE for
 development and testing purposes. By using `Pycharm`, developers can benefit from various advanced features that
-facilitate testing, debugging, and code analysis.
+facilitate testing, debugging, and code analysis.-->
 
 ## Virtual Environment
 
