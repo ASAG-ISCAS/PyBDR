@@ -49,12 +49,12 @@ facilitate testing, debugging, and code analysis.-->
 
 ## Virtual Environment
 
-The installation process is unnecessary as the source code needs to be copied into the appropriate directory, similar to
+<!--The installation process is unnecessary as the source code needs to be copied into the appropriate directory, similar to
 how a third-party library in MATLAB works. We strongly recommend developers to utilize `Pycharm` as the IDE for
 development and testing purposes. By using `Pycharm`, developers can benefit from various advanced features that
 facilitate testing, debugging, and code analysis.
 
-### Virtual Environment
+### Virtual Environment-->
 
 To ensure a smoother installation and running of third-party libraries, we advise users to
 use [miniconda](https://docs.conda.io/en/latest/miniconda.html) and create a virtual environment. The steps for this
