@@ -296,7 +296,13 @@ time instance cases.
 
 ### The computation is slow
 
-Two modes of computation are supported by the tool for reachable sets. One mode is to compute the reachable set of
+Two modes of computation are supported by the tool for reachable sets. One mode is to compute the reachable set of evolved states using the entire initial set in a set propagation manner, while the other mode is to compute the reachable set of evolved states based on the boundary of the initial state set.
+
+The computation may be slow for several reasons such as large computational time intervals, small steps, high Taylor expansion orders, or a large number of state variables.
+
+To accelerate the computations, experiments can be performed with a smaller computational time horizon, a smaller order of expansion (such as 2), and a larger time step. Then gradually increase the computational time horizon and order of expansion based on the results of this setting to achieve the desired set of reachable states at an acceptable time consumption.
+
+<!--Two modes of computation are supported by the tool for reachable sets. One mode is to compute the reachable set of
 evolved states using the entire initial set in a set propagation manner, while the other mode is to compute the
 reachable set of evolved states based on the boundary of the initial state set.
 
@@ -307,17 +313,15 @@ To accelerate the computations, experiments can be performed with a smaller comp
 order
 of expansion (such as 2), and a larger time step. Then gradually increase the computational time horizon and order of
 expansion based on the results of this setting to achieve the desired set of reachable states at an acceptable time
-consumption.
+consumption.-->
 
 ### Controlling the wrapping effect
 
-To enhance the precision of the reachable set computation, one can split the boundaries of initial sets or increase the
-order of the Taylor expansion while reducing the step size.
+In order to improve the precision of computing the reachable sets, one can achieve this by further subdividing the boundaries of the initial sets or increasing the order of the Taylor expansion, both in conjunction with reducing the step size.
 
 ### RuntimeWarning: divide by zero encountered in true_divide
 
-This warning may appear on platforms using the Windows operating system. However, it won't impact the operation of the
-tool and can be eliminated by declaring it.
+This warning message may be displayed on platforms utilizing the Windows operating system. Nevertheless, it will not affect the functionality of the tool and can be resolved by declaring it.
 
 ```python
 numpy.seterr(divide='ignore', invalid='ignore')
@@ -333,5 +337,7 @@ details.
 
 ## Acknowledgement
 
-When creating this tool, reference was made to models utilized in other reachable set calculation tools such as Flow*,
-CORA, and others.
+When developing this tool, we drew upon models used in other tools for calculating reachable sets, including Flow*, CORA, and various others.
+
+<!--When creating this tool, reference was made to models utilized in other reachable set calculation tools such as Flow*,
+CORA, and others.-->
