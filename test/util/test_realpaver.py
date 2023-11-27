@@ -33,12 +33,9 @@ def test_00():
 
 def test_01():
     from pyrat.geometry import Polytope
-    a = np.array([[-3, 0], [2, 4], [1, -2], [1, 1]])
+    a = np.array([[-3, 0.0000000001], [2, 4], [1, -2], [1, 1]])
     b = np.array([-1, 14, 1, 4])
     p = Polytope(a, b)
-    plot([p], [0, 1])
-    print(a.shape)
-    print(b.shape)
 
     real_paver = RealPaver()
     assert (a.ndim == 2 and b.ndim == 1)
@@ -52,8 +49,9 @@ def test_01():
     for idx_const in range(num_const):
         this_const = ''
         for idx_var in range(num_var):
-            this_const += str(a[idx_const, idx_var]) + "*x" + str(idx_var) + "+"
-        this_const = this_const[:-1] + "<=" + str(b[idx_const])
+            this_const += "{:.20e}".format(a[idx_const, idx_var]) + "*x" + str(idx_var) + "+"
+            # this_const += str(a[idx_const, idx_var]) + "*x" + str(idx_var) + "+"
+        this_const = this_const[:-1] + "<=" + "{:.20e}".format(b[idx_const])
         real_paver.add_constraint(this_const)
 
     real_paver.set_branch(precision=0.1)

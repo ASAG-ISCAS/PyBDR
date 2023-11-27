@@ -119,6 +119,7 @@ class RealPaver:
 
     def _solve(self):
         assert self.__input is not None
+        print(self.__input)
         with tempfile.NamedTemporaryFile('wt') as file:
             file.write(self.__input)
             file.flush()
