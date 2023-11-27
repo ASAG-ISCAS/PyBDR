@@ -1,4 +1,6 @@
 import numpy as np
+
+import pyrat
 from pyrat.geometry import Interval
 
 np.set_printoptions(precision=5, suppress=True)
@@ -303,6 +305,15 @@ def test_partition():
     plot(parts, [0, 1])
     zonos = partition(a, 0.1, Geometry.TYPE.ZONOTOPE)
     plot(zonos, [0, 1])
+
+
+def test_boundary():
+    a = Interval.rand(2)
+    from pyrat.geometry.operation import boundary
+    bounds = boundary(a, 0.01, pyrat.Geometry.TYPE.INTERVAL)
+    print(len(bounds))
+    from pyrat.util.visualization import plot
+    plot(bounds, [0, 1])
 
 
 def test_temp():
