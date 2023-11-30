@@ -1,6 +1,6 @@
 from scipy.sparse import csc_matrix, csr_matrix
 
-from pyrat.util.functional.auxiliary import *
+from pybdr.util.functional.auxiliary import *
 
 
 def test_conditional_getting():

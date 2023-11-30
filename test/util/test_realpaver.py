@@ -3,11 +3,11 @@ import os
 import numpy as np
 import sympy
 
-import pyrat
-from pyrat.geometry import Interval, Zonotope
-from pyrat.util.visualization import plot
+import pybdr
+from pybdr.geometry import Interval, Zonotope
+from pybdr.util.visualization import plot
 from sympy import symbols
-from pyrat.util.functional import RealPaver
+from pybdr.util.functional import RealPaver
 
 
 def test_00():
@@ -32,7 +32,7 @@ def test_00():
 
 
 def test_01():
-    from pyrat.geometry import Polytope
+    from pybdr.geometry import Polytope
 
     a = np.array([[-3, 0.000000000 + 1e-10], [2, 4], [1, -2], [1, 1]])
     b = np.array([-1, 14, 1, 4])

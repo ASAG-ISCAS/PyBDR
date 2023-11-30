@@ -1,15 +1,15 @@
 from __future__ import annotations
 import numpy as np
 
-np.seterr(divide='ignore', invalid='ignore')
-from pyrat.geometry import Geometry, Zonotope, Interval
-from pyrat.dynamic_system import NonLinSys
-from pyrat.model import vanderpol, Model
-from pyrat.algorithm import ASB2008CDC
-from pyrat.geometry.operation import boundary
-from pyrat.util.visualization import plot_cmp
+np.seterr(divide="ignore", invalid="ignore")
+from pybdr.geometry import Geometry, Zonotope, Interval
+from pybdr.dynamic_system import NonLinSys
+from pybdr.model import vanderpol, Model
+from pybdr.algorithm import ASB2008CDC
+from pybdr.geometry.operation import boundary
+from pybdr.util.visualization import plot_cmp
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # init dynamic system
     system = NonLinSys(Model(vanderpol, [2, 1]))
 
@@ -38,4 +38,4 @@ if __name__ == '__main__':
     ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
     # visualize the results
-    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FF5722", "#303F9F"])

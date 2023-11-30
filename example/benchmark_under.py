@@ -2,16 +2,16 @@ from __future__ import annotations
 
 import numpy as np
 
-np.seterr(divide='ignore', invalid='ignore')
+np.seterr(divide="ignore", invalid="ignore")
 
-from pyrat.geometry import Geometry, Zonotope, Interval
-from pyrat.geometry.operation import cvt2, boundary
-from pyrat.algorithm import ASB2008CDC, XSE2016CAV
-from pyrat.dynamic_system import NonLinSys
-from pyrat.model import Model, synchronous_machine
-from pyrat.util.visualization import plot
+from pybdr.geometry import Geometry, Zonotope, Interval
+from pybdr.geometry.operation import cvt2, boundary
+from pybdr.algorithm import ASB2008CDC, XSE2016CAV
+from pybdr.dynamic_system import NonLinSys
+from pybdr.model import Model, synchronous_machine
+from pybdr.util.visualization import plot
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # init system
     system = NonLinSys(Model(synchronous_machine, [2, 1]))
 

@@ -1,15 +1,16 @@
 import numpy as np
 
-np.seterr(divide='ignore', invalid='ignore')
+np.seterr(divide="ignore", invalid="ignore")
 import sys
-# sys.path.append("./../../") # add directory 'pyrat' into system path
-from pyrat.algorithm import ASB2008CDC
-from pyrat.dynamic_system import NonLinSys
-from pyrat.geometry import Zonotope, Interval, Geometry
-from pyrat.model import *
-from pyrat.util.visualization import plot
-from pyrat.util.functional.neural_ode_generate import neuralODE
-from pyrat.geometry.operation import boundary
+
+# sys.path.append("./../../") # add directory 'pybdr' into system path
+from pybdr.algorithm import ASB2008CDC
+from pybdr.dynamic_system import NonLinSys
+from pybdr.geometry import Zonotope, Interval, Geometry
+from pybdr.model import *
+from pybdr.util.visualization import plot
+from pybdr.util.functional.neural_ode_generate import neuralODE
+from pybdr.geometry.operation import boundary
 
 if __name__ == "__main__":
     # init neural ODE

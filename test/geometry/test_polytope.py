@@ -1,8 +1,8 @@
 import numpy as np
 
-from pyrat.geometry import Polytope, Geometry
-from pyrat.geometry.operation import cvt2, boundary
-from pyrat.util.visualization import vis2dGeo, plot
+from pybdr.geometry import Polytope, Geometry
+from pybdr.geometry.operation import cvt2, boundary
+from pybdr.util.visualization import vis2dGeo, plot
 
 
 def test_construction():
@@ -57,9 +57,9 @@ def test_construction_from_vertices():
 def test_temp():
     import numpy as np
 
-    from pyrat.geometry import Polytope, Geometry
-    from pyrat.geometry.operation import cvt2
-    from pyrat.util.visualization import plot
+    from pybdr.geometry import Polytope, Geometry
+    from pybdr.geometry.operation import cvt2
+    from pybdr.util.visualization import plot
 
     # initial from linearly ineqalities Ax <= b
     a = np.array(

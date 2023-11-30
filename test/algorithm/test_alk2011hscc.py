@@ -1,10 +1,10 @@
 def test_case_0():
     import numpy as np
-    from pyrat.geometry import Zonotope
-    from pyrat.dynamic_system import LinSys
-    from pyrat.model import Model, vanderpol
-    from pyrat.algorithm import ALK2011HSCC
-    from pyrat.util.visualization import plot
+    from pybdr.geometry import Zonotope
+    from pybdr.dynamic_system import LinSys
+    from pybdr.model import Model, vanderpol
+    from pybdr.algorithm import ALK2011HSCC
+    from pybdr.util.visualization import plot
 
     # init dynamic system
     system = LinSys(Model(vanderpol, [2, 1]))

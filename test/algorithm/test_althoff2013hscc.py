@@ -1,10 +1,10 @@
 import numpy as np
-from pyrat.algorithm import ALTHOFF2013HSCC
-from pyrat.dynamic_system import NonLinSys
-from pyrat.geometry import Geometry, Zonotope
-from pyrat.geometry.operation import cvt2, boundary
-from pyrat.model import *
-from pyrat.util.visualization import plot, plot_cmp
+from pybdr.algorithm import ALTHOFF2013HSCC
+from pybdr.dynamic_system import NonLinSys
+from pybdr.geometry import Geometry, Zonotope
+from pybdr.geometry.operation import cvt2, boundary
+from pybdr.model import *
+from pybdr.util.visualization import plot, plot_cmp
 
 
 def test_case_0():
@@ -66,7 +66,7 @@ def test_pi_controller_with_disturbance_cmp():
         ti_bound, tp_bound, _, _ = ALTHOFF2013HSCC.reach(system, options)
 
     # visualize the results
-    plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
+    plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FF5722", "#303F9F"])
 
 
 def test_vanderpol_bound_reach():

@@ -1,7 +1,7 @@
 import numpy as np
 
-from pyrat.util.functional import CSPSolver
-from pyrat.util.visualization import plot
+from pybdr.util.functional import CSPSolver
+from pybdr.util.visualization import plot
 
 
 def test_case_0():

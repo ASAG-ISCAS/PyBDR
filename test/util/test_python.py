@@ -117,9 +117,9 @@ def test_static_class_variables():
 
 
 def test_random_pts():
-    from pyrat.geometry import Zonotope, Geometry
-    from pyrat.geometry.operation import cvt2
-    from pyrat.util.visualization import plot
+    from pybdr.geometry import Zonotope, Geometry
+    from pybdr.geometry.operation import cvt2
+    from pybdr.util.visualization import plot
     from scipy import interpolate
 
     z = Zonotope.rand(2, 8)

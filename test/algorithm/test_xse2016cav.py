@@ -1,10 +1,10 @@
 import numpy as np
 
-from pyrat.algorithm import XSE2016CAV, ASB2008CDC
-from pyrat.dynamic_system import NonLinSys
-from pyrat.geometry import Interval, Zonotope
-from pyrat.model import *
-from pyrat.util.visualization import plot
+from pybdr.algorithm import XSE2016CAV, ASB2008CDC
+from pybdr.dynamic_system import NonLinSys
+from pybdr.geometry import Interval, Zonotope
+from pybdr.model import *
+from pybdr.util.visualization import plot
 
 
 def test_synchronous_machine():

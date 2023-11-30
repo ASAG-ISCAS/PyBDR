@@ -1,7 +1,7 @@
 import numpy as np
 
-from pyrat.geometry import HalfSpace
-from pyrat.util.visualization import vis2d_old
+from pybdr.geometry import HalfSpace
+from pybdr.util.visualization import vis2d_old
 
 
 def test_python():

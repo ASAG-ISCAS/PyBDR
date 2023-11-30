@@ -1,7 +1,7 @@
 import numpy as np
 
-from pyrat.geometry import *
-from pyrat.util.visualization import plot
+from pybdr.geometry import *
+from pybdr.util.visualization import plot
 
 
 def test_plot_interval():
@@ -17,7 +17,7 @@ def test_plot_zonotope():
 
 
 def test_plot_polytope():
-    from pyrat.geometry.operation import cvt2
+    from pybdr.geometry.operation import cvt2
 
     pts = np.random.rand(100, 2)
     a = cvt2(pts, Geometry.TYPE.ZONOTOPE)

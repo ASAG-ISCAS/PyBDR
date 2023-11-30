@@ -1,7 +1,7 @@
 import numpy as np
 
-import pyrat
-from pyrat.geometry import Interval
+import pybdr
+from pybdr.geometry import Interval
 
 np.set_printoptions(precision=5, suppress=True)
 
@@ -297,10 +297,12 @@ def test_mm():
 
 def test_partition():
     a = Interval.rand(2)
-    from pyrat.util.visualization import plot
+    from pybdr.util.visualization import plot
+
     plot([a], [0, 1])
-    from pyrat.geometry import Geometry
-    from pyrat.geometry.operation import partition
+    from pybdr.geometry import Geometry
+    from pybdr.geometry.operation import partition
+
     parts = partition(a, 0.1, Geometry.TYPE.INTERVAL)
     plot(parts, [0, 1])
     zonos = partition(a, 0.1, Geometry.TYPE.ZONOTOPE)
@@ -309,18 +311,20 @@ def test_partition():
 
 def test_boundary():
     a = Interval.rand(2)
-    from pyrat.geometry.operation import boundary
-    bounds = boundary(a, 0.01, pyrat.Geometry.TYPE.INTERVAL)
+    from pybdr.geometry.operation import boundary
+
+    bounds = boundary(a, 0.01, pybdr.Geometry.TYPE.INTERVAL)
     print(len(bounds))
-    from pyrat.util.visualization import plot
+    from pybdr.util.visualization import plot
+
     plot(bounds, [0, 1])
 
 
 def test_temp():
-    from pyrat.geometry import Interval
-    from pyrat.util.visualization import plot
-    from pyrat.geometry import Geometry
-    from pyrat.geometry.operation import partition
+    from pybdr.geometry import Interval
+    from pybdr.util.visualization import plot
+    from pybdr.geometry import Geometry
+    from pybdr.geometry.operation import partition
 
     a = Interval([-1, -2], [3, 5])
     parts = partition(a, 0.1, Geometry.TYPE.INTERVAL)

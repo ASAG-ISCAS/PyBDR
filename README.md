@@ -118,12 +118,12 @@ $$
 ```python
 import numpy as np
 
-from pyrat.algorithm import ASB2008CDC
-from pyrat.dynamic_system import NonLinSys
-from pyrat.geometry import Zonotope, Interval, Geometry
-from pyrat.geometry.operation import boundary
-from pyrat.model import *
-from pyrat.util.visualization import plot
+from pybdr.algorithm import ASB2008CDC
+from pybdr.dynamic_system import NonLinSys
+from pybdr.geometry import Zonotope, Interval, Geometry
+from pybdr.geometry.operation import boundary
+from pybdr.model import *
+from pybdr.util.visualization import plot
 
 # init dynamic system
 system = NonLinSys(Model(vanderpol, [2, 1]))
@@ -242,13 +242,13 @@ np.seterr(divide='ignore', invalid='ignore')
 import sys
 
 # sys.path.append("./../../") uncomment this line if you need to add path manually
-from pyrat.algorithm import ASB2008CDC
-from pyrat.dynamic_system import NonLinSys
-from pyrat.geometry import Zonotope, Interval, Geometry
-from pyrat.model import *
-from pyrat.util.visualization import plot
-from pyrat.util.functional.neural_ode_generate import neuralODE
-from pyrat.geometry.operation import boundary
+from pybdr.algorithm import ASB2008CDC
+from pybdr.dynamic_system import NonLinSys
+from pybdr.geometry import Zonotope, Interval, Geometry
+from pybdr.model import *
+from pybdr.util.visualization import plot
+from pybdr.util.functional.neural_ode_generate import neuralODE
+from pybdr.geometry.operation import boundary
 
 # init neural ODE
 system = NonLinSys(Model(neuralODE, [2, 1]))

@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Polygon, Circle
 
-from pyrat.algorithm import SCS2022
-from pyrat.geometry import Zonotope
+from pybdr.algorithm import SCS2022
+from pybdr.geometry import Zonotope
 from .value_function import vx0
 
 
@@ -39,7 +39,7 @@ def vis(trajectory, reachable_sets, dims, width=800, height=800):
 
     # visualize the RA region
     x, y = np.ogrid[-1:1:100j, -1:1:100j]
-    ax.contour(x.ravel(), y.ravel(), vx0(y,x), [-0.06, 0, 0.2])
+    ax.contour(x.ravel(), y.ravel(), vx0(y, x), [-0.06, 0, 0.2])
 
     # misc
     ax.autoscale_view()
@@ -55,6 +55,7 @@ def test_computer_based_model():
 
     test case for reach avoid analysis for stochastic discrete time system
     """
+
     # init model
     def f(x, px: Callable[[np.ndarray], float]):
         dxdt = [None] * 2

@@ -2,12 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sympy
 
-from pyrat.algorithm import ASB2008CDC
-from pyrat.dynamic_system import NonLinSys
-from pyrat.geometry import Zonotope, Interval, Geometry
-from pyrat.geometry.operation import boundary
-from pyrat.model import *
-from pyrat.util.visualization import plot, plot_cmp
+from pybdr.algorithm import ASB2008CDC
+from pybdr.dynamic_system import NonLinSys
+from pybdr.geometry import Zonotope, Interval, Geometry
+from pybdr.geometry.operation import boundary
+from pybdr.model import *
+from pybdr.util.visualization import plot, plot_cmp
 
 # init dynamic system
 system = NonLinSys(Model(jet_engine, [2, 1]))
@@ -37,4 +37,4 @@ options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
 ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
 
 # visualize the results
-plot_cmp([tp_whole, tp_bound], [0, 1], cs=['#FF5722', '#303F9F'])
+plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FF5722", "#303F9F"])

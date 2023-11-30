@@ -1,10 +1,10 @@
 import numpy as np
 
-from pyrat.dynamic_system import NonLinSysOld
-from pyrat.geometry import Zonotope, PolyZonotope
-from pyrat.misc import Reachable
-from pyrat.model import *
-from pyrat.util.visualization import vis2d
+from pybdr.dynamic_system import NonLinSysOld
+from pybdr.geometry import Zonotope, PolyZonotope
+from pybdr.misc import Reachable
+from pybdr.model import *
+from pybdr.util.visualization import vis2d
 
 
 def test_tank6Eq():

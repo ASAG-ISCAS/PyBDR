@@ -150,7 +150,7 @@ def test_sympy_using_custom_interval_arithmetic():
 
 
 def test_sympy_derivative_tensor():
-    from pyrat.model import Tank6Eq, RandModel, LaubLoomis, VanDerPol
+    from pybdr.model import Tank6Eq, RandModel, LaubLoomis, VanDerPol
 
     model = VanDerPol()
     j = np.asarray(derive_by_array(model.f, model.vars[0])).squeeze()

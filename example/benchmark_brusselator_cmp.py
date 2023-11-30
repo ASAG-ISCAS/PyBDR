@@ -2,12 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sympy
 
-from pyrat.algorithm import ASB2008CDC
-from pyrat.dynamic_system import NonLinSys
-from pyrat.geometry import Zonotope, Interval, Geometry
-from pyrat.geometry.operation import boundary
-from pyrat.model import *
-from pyrat.util.visualization import plot, plot_cmp
+from pybdr.algorithm import ASB2008CDC
+from pybdr.dynamic_system import NonLinSys
+from pybdr.geometry import Zonotope, Interval, Geometry
+from pybdr.geometry.operation import boundary
+from pybdr.model import *
+from pybdr.util.visualization import plot, plot_cmp
 
 # init dynamic system
 system = NonLinSys(Model(brusselator, [2, 1]))

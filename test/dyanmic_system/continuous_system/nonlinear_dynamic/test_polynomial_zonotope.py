@@ -1,8 +1,8 @@
 import numpy as np
-from pyrat.dynamic_system import NonLinSysOld
-from pyrat.geometry import Zonotope
-from pyrat.model import *
-from pyrat.util.visualization import vis2d
+from pybdr.dynamic_system import NonLinSysOld
+from pybdr.geometry import Zonotope
+from pybdr.model import *
+from pybdr.util.visualization import vis2d
 
 
 def test_vanDerPol():

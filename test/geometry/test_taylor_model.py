@@ -1,4 +1,4 @@
-from pyrat.geometry import TaylorModel
+from pybdr.geometry import TaylorModel
 
 
 def test_basic():

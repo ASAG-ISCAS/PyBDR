@@ -1,4 +1,4 @@
-from pyrat.util.gui import Window
+from pybdr.util.gui import Window
 
 
 def test_case_0():

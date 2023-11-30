@@ -1,12 +1,12 @@
 import inspect
 
 import numpy as np
-from pyrat.model import Model
+from pybdr.model import Model
 from sympy import *
 
 
 def test_fxu():
-    import pyrat.util.functional.auxiliary as aux
+    import pybdr.util.functional.auxiliary as aux
 
     def f(x, u):
         # parameters
@@ -35,7 +35,7 @@ def test_fxu():
     tt = modelref.evaluate((x, u), "numpy", 0, 0)
     print(tt.shape)
 
-    from pyrat.geometry import Interval
+    from pybdr.geometry import Interval
 
     x, u = Interval.rand(6), Interval.rand(1)
 

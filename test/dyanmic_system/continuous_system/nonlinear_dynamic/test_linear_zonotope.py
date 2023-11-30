@@ -1,11 +1,11 @@
 import inspect
 
 import numpy as np
-from pyrat.dynamic_system import NonLinSysOld
-from pyrat.model import *
-from pyrat.geometry import Zonotope
-from pyrat.misc import Reachable, Set
-from pyrat.util.visualization import vis2d
+from pybdr.dynamic_system import NonLinSysOld
+from pybdr.model import *
+from pybdr.geometry import Zonotope
+from pybdr.misc import Reachable, Set
+from pybdr.util.visualization import vis2d
 
 
 def test_vanDerPol():

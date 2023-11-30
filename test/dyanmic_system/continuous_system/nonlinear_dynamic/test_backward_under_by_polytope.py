@@ -1,8 +1,8 @@
 import numpy as np
-from pyrat.dynamic_system import NonLinSysOld
-from pyrat.model import *
-from pyrat.geometry import IntervalOld
-from pyrat.util.visualization import vis2d
+from pybdr.dynamic_system import NonLinSysOld
+from pybdr.model import *
+from pybdr.geometry import IntervalOld
+from pybdr.util.visualization import vis2d
 
 
 def test_synchronous_machine():
