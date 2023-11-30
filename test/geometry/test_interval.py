@@ -329,3 +329,16 @@ def test_temp():
     a = Interval([-1, -2], [3, 5])
     parts = partition(a, 0.1, Geometry.TYPE.INTERVAL)
     plot([*parts, a], [0, 1])
+
+
+def test_proj():
+    from pybdr.geometry import Interval
+    from pybdr.util.visualization import plot
+
+    a = Interval.rand(5)
+    print(a)
+    a0 = a.proj([0, 1])
+    a1 = a.proj([1, 2])
+    a2 = a.proj([2, 3])
+    a3 = a.proj([3, 4])
+    plot([a0, a1, a2, a3], [0, 1])
