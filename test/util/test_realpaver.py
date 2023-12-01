@@ -1,13 +1,7 @@
-import os
-
 import numpy as np
-import sympy
 
-import pybdr
-from pybdr.geometry import Interval, Zonotope
-from pybdr.util.visualization import plot
-from sympy import symbols
 from pybdr.util.functional import RealPaver
+from pybdr.util.visualization import plot
 
 
 def test_00():
