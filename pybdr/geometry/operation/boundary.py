@@ -2,8 +2,9 @@ from itertools import chain
 
 import numpy as np
 
-from pybdr.geometry import *
-from pybdr.util.functional import CSPSolver
+from pybdr.geometry import Geometry, Interval, Polytope, Zonotope
+from pybdr.util.functional import CSPSolver, RealPaver
+
 from .convert import cvt2
 
 
@@ -49,6 +50,43 @@ def __polytope2interval(src: Polytope, r: float):
     ub = np.max(src.vertices, axis=0) + r
     boxes = CSPSolver.solve(f, lb, ub, r)
     return boxes
+
+
+def __polytope2interval_realpaver(src: Polytope, r: float):
+    # using realpaver to get the boundary
+    realpaver = RealPaver()
+    num_const, num_var = src.a.shape
+
+    # fix bugs when part of the boundary parallel to some axis，make it slightly tilted
+    def refine_const(arr: np.array, tol: float):
+        ind = np.where((np.abs(arr)) <= tol)
+        arr[ind] += tol
+        return arr
+
+    mat_a = refine_const(src.a, 1e-20)
+    vec_b = refine_const(src.b, 1e-20)
+
+    # set variables
+    for idx in range(num_var):
+        realpaver.add_variable("x" + str(idx), -np.inf, np.inf, "]", "[")
+
+    # set constraints
+    for idx_const in range(num_const):
+        this_const = ""
+        for idx_var in range(num_var):
+            this_const += (
+                "{:.20e}".format(mat_a[idx_const, idx_var]) + "*x" + str(idx_var) + "+"
+            )
+        this_const = this_const[:-1] + "<=" + "{:.20e}".format(vec_b[idx_const])
+        realpaver.add_constraint(this_const)
+
+    realpaver.set_branch(precision=r)
+    boxes = realpaver.solve()
+    bound_boxes = []
+    for b in boxes:
+        if b[0] == "OUTER":
+            bound_boxes.append((b[2]))
+    return bound_boxes
 
 
 def __polytope2zonotope(src: Polytope, r: float):
@@ -124,16 +162,22 @@ def __zonotope2zonotope(src: Zonotope, r: float):
     return boundaries
 
 
+def __zonotope2interval(src: Zonotope, r: float):
+    pass
+
+
 def boundary(src: Geometry.Base, r: float, elem: Geometry.TYPE):
     if src.type == Geometry.TYPE.INTERVAL and elem == Geometry.TYPE.INTERVAL:
         return __interval2interval(src, r)
     elif src.type == Geometry.TYPE.INTERVAL and elem == Geometry.TYPE.ZONOTOPE:
         return __interval2zonotope(src, r)
     elif src.type == Geometry.TYPE.POLYTOPE and elem == Geometry.TYPE.INTERVAL:
-        return __polytope2interval(src, r)
+        return __polytope2interval_realpaver(src, r)
     elif src.type == Geometry.TYPE.POLYTOPE and elem == Geometry.TYPE.ZONOTOPE:
         return __polytope2zonotope(src, r)
     elif src.type == Geometry.TYPE.ZONOTOPE and elem == Geometry.TYPE.ZONOTOPE:
         return __zonotope2zonotope(src, r)
+    elif src.type == Geometry.TYPE.ZONOTOPE and elem == Geometry.TYPE.INTERVAL:
+        return __zonotope2interval(src, r)
     else:
         raise NotImplementedError

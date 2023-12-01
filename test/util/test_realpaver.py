@@ -60,3 +60,43 @@ def test_01():
     all_boxes = [b[2] for b in boxes]
     plot([p, *bound_boxes], [0, 1])
     plot([p, *all_boxes], [0, 1])
+
+
+# %%
+if __name__ == "__main__":
+    import sys
+
+    sys.path.append("../../")
+
+    import numpy as np
+
+    from pybdr.geometry import Geometry, Polytope
+    from pybdr.geometry.operation import boundary
+    from pybdr.util.visualization import plot
+
+    p = Polytope.rand(2)
+    plot([p], [0, 1])
+    boxes = boundary(p, 0.02, Geometry.TYPE.INTERVAL)
+
+    plot([*boxes, p], [0, 1])
+
+    # a = Interval.rand(3)
+    # # print(a)
+    # # plot([a], [0, 1])
+    # b = np.random.rand(2, 3)
+    # print(b.shape)
+    # print(b)
+    # ind = np.where(np.abs(b) <= 0.5)
+    # print(ind)
+    # b[ind] = 10
+    # print(b)
+
+
+# # %%
+# if __name__ == "__main__":
+#     import sys
+
+#     sys.path.append(("../../"))
+#     import numpy as np
+
+# %%

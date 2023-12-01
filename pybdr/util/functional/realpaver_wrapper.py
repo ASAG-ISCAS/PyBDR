@@ -5,12 +5,14 @@ http://pagesperso.lina.univ-nantes.fr/~granvilliers-l/realpaver/src/realpaver-0.
 
 """
 
-import numpy as np
-import tempfile
-import subprocess
 import re
-from pybdr.util.functional.auxiliary import get_system
+import subprocess
+import tempfile
+
+import numpy as np
+
 from pybdr.geometry import Interval
+from pybdr.util.functional.auxiliary import get_system
 
 _constraint_pat = r"([a-zA-Z\d_]+)\s+in\s+(\[|\])(.*),(.*)(\]|\[)"
 _box_name_pat = r"(INNER|OUTER|INITIAL)\sBOX(\s\d+)*"
@@ -130,7 +132,6 @@ class RealPaver:
 
     def _solve(self):
         assert self.__input is not None
-        print(self.__input)
         with tempfile.NamedTemporaryFile("wt") as file:
             file.write(self.__input)
             file.flush()

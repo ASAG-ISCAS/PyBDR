@@ -6,6 +6,7 @@ import numpy as np
 import pypoman.polyhedron
 
 import pybdr.util.functional.auxiliary as aux
+
 from .geometry import Geometry
 
 if TYPE_CHECKING:
@@ -148,7 +149,10 @@ class Polytope(Geometry.Base):
 
     @staticmethod
     def rand(dim: int):
-        raise NotImplementedError
+        num_vs = np.random.randint(5, 50)
+        vs = np.random.rand(num_vs, dim)
+        a, b = pypoman.compute_polytope_halfspaces(vs)
+        return Polytope(a, b)
 
     # =============================================== public method
     def enclose(self, other):
