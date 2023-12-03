@@ -29,7 +29,7 @@ class Constant:
 
 class Variable:
     def __init__(
-        self, var_name, lower_bound, upper_bound, lower_bracket, upper_bracket
+            self, var_name, lower_bound, upper_bound, lower_bracket, upper_bracket
     ):
         assert lower_bound <= upper_bound
         self._lower_bound = lower_bound
@@ -74,7 +74,7 @@ class RealPaver:
         self.__input += "choice = " + self._search_choice + ",\n"
         self.__input += "parts = " + str(self._search_parts) + ",\n"
         self.__input += (
-            "precision = " + "{:.20e}".format(self._search_precision) + ",\n"
+                "precision = " + "{:.20e}".format(self._search_precision) + ",\n"
         )
         self.__input += "mode = " + self._search_mode + ",\n"
         self.__input += "number = "
@@ -132,6 +132,7 @@ class RealPaver:
 
     def _solve(self):
         assert self.__input is not None
+
         with tempfile.NamedTemporaryFile("wt") as file:
             file.write(self.__input)
             file.flush()
@@ -187,7 +188,7 @@ class RealPaver:
         self.__constants.append(Constant(name, value))
 
     def add_variable(
-        self, name, lower_bound, upper_bound, lower_bracket, upper_bracket
+            self, name: str, lower_bound, upper_bound, lower_bracket, upper_bracket
     ):
         self.__variables.append(
             Variable(name, lower_bound, upper_bound, lower_bracket, upper_bracket)
@@ -202,7 +203,7 @@ class RealPaver:
         self._output_style = style
 
     def set_branch(
-        self, choice="lf", parts=2, precision=1e-8, mode="paving", number=1024
+            self, choice="lf", parts=2, precision=1e-8, mode="paving", number=1024
     ):
         self._search_choice = choice
         self._search_parts = parts

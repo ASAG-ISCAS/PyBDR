@@ -1,3 +1,4 @@
+import pypoman
 from numpy import array, eye, ones, vstack, zeros
 from pypoman import plot_polygon, project_polytope
 
@@ -24,10 +25,23 @@ proj = (E, f)  # proj(x) = E * x + f
 vertices = project_polytope(proj, ineq, eq, method="bretl")
 
 
-if __name__ == "__main__":
-
+def test_00():
     import pylab
 
     pylab.ion()
     pylab.figure()
     plot_polygon(vertices)
+    pylab.show()
+
+
+def test_01():
+    import numpy as np
+
+    vs = np.random.rand(10, 3)
+    A, b = pypoman.compute_polytope_halfspaces(vs)
+
+    import pylab
+    pylab.ion()
+    pylab.figure()
+    plot_polygon(vs[:, :2])
+    pylab.show()

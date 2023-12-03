@@ -28,9 +28,12 @@ def test_00():
 def test_01():
     from pybdr.geometry import Polytope
 
-    a = np.array([[-3, 0.000000000 + 1e-10], [2, 4], [1, -2], [1, 1]])
+    a = np.array([[-3, 0 + 1e-10], [2, 4], [1, -2], [1, 1]])
     b = np.array([-1, 14, 1, 4])
     p = Polytope(a, b)
+
+    num_const, num_var = a.shape
+    print(num_const, num_var)
 
     real_paver = RealPaver()
     assert a.ndim == 2 and b.ndim == 1
@@ -45,7 +48,7 @@ def test_01():
         this_const = ""
         for idx_var in range(num_var):
             this_const += (
-                "{:.20e}".format(a[idx_const, idx_var]) + "*x" + str(idx_var) + "+"
+                    "{:.20e}".format(a[idx_const, idx_var]) + "*x" + str(idx_var) + "+"
             )
             # this_const += str(a[idx_const, idx_var]) + "*x" + str(idx_var) + "+"
         this_const = this_const[:-1] + "<=" + "{:.20e}".format(b[idx_const])
@@ -60,6 +63,18 @@ def test_01():
     all_boxes = [b[2] for b in boxes]
     plot([p, *bound_boxes], [0, 1])
     plot([p, *all_boxes], [0, 1])
+
+
+def test_03():
+    from pybdr.geometry import Geometry, Polytope
+    from pybdr.geometry.operation import boundary
+    from pybdr.util.visualization import plot
+
+    p = Polytope.rand(2)
+    plot([p], [0, 1])
+    boxes = boundary(p, 0.1, Geometry.TYPE.INTERVAL)
+
+    plot([*boxes, p], [0, 1])
 
 
 # %%
@@ -90,7 +105,6 @@ if __name__ == "__main__":
     # print(ind)
     # b[ind] = 10
     # print(b)
-
 
 # # %%
 # if __name__ == "__main__":

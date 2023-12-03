@@ -1,27 +1,8 @@
 # ----------------------------------------------------------------------------
 # -                        Open3D: www.open3d.org                            -
 # ----------------------------------------------------------------------------
-# The MIT License (MIT)
-#
-# Copyright (c) 2018-2021 www.open3d.org
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-# IN THE SOFTWARE.
+# Copyright (c) 2018-2023 www.open3d.org
+# SPDX-License-Identifier: MIT
 # ----------------------------------------------------------------------------
 
 import open3d.visualization.gui as gui
@@ -299,22 +280,22 @@ class ExampleWindow:
         tab2.add_child(gui.Label("No plugins detected"))
         tab2.add_stretch()
         tabs.add_tab("Plugins", tab2)
-        # tab3 = gui.RadioButton(gui.RadioButton.VERT)
-        # tab3.set_items(["Apple", "Orange"])
+        tab3 = gui.RadioButton(gui.RadioButton.VERT)
+        tab3.set_items(["Apple", "Orange"])
 
-        # def vt_changed(idx):
-        #     print(f"current cargo: {tab3.selected_value}")
+        def vt_changed(idx):
+            print(f"current cargo: {tab3.selected_value}")
 
-        # tab3.set_on_selection_changed(vt_changed)
-        # tabs.add_tab("Cargo", tab3)
-        # tab4 = gui.RadioButton(gui.RadioButton.HORIZ)
-        # tab4.set_items(["Air plane", "Train", "Bus"])
+        tab3.set_on_selection_changed(vt_changed)
+        tabs.add_tab("Cargo", tab3)
+        tab4 = gui.RadioButton(gui.RadioButton.HORIZ)
+        tab4.set_items(["Air plane", "Train", "Bus"])
 
-        # def hz_changed(idx):
-        #     print(f"current traffic plan: {tab4.selected_value}")
+        def hz_changed(idx):
+            print(f"current traffic plan: {tab4.selected_value}")
 
-        # tab4.set_on_selection_changed(hz_changed)
-        # tabs.add_tab("Traffic", tab4)
+        tab4.set_on_selection_changed(hz_changed)
+        tabs.add_tab("Traffic", tab4)
         collapse.add_child(tabs)
 
         # Quit button. (Typically this is a menu item)
@@ -486,5 +467,9 @@ def main():
     gui.Application.instance.run()
 
 
-def test_case_0():
+if __name__ == "__main__":
+    main()
+
+
+def test_00():
     main()

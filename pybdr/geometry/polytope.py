@@ -6,7 +6,7 @@ import numpy as np
 import pypoman.polyhedron
 
 import pybdr.util.functional.auxiliary as aux
-
+from scipy.spatial import ConvexHull
 from .geometry import Geometry
 
 if TYPE_CHECKING:
@@ -22,8 +22,8 @@ class Polytope(Geometry.Base):
         assert not aux.is_empty(b)
         assert a.ndim == 2 and a.shape[0] > 0
         assert b.ndim == 1 and a.shape[0] == b.shape[0]
-        self._a = a
-        self._b = b
+        self._a = a.astype(dtype=float)
+        self._b = b.astype(dtype=float)
         self._c = None
         self._vs = None
         self._type = Geometry.TYPE.POLYTOPE
@@ -47,7 +47,7 @@ class Polytope(Geometry.Base):
         return self._c
 
     @property
-    def dim(self) -> int:
+    def shape(self) -> int:
         assert not self.is_empty
         return self._a.shape[1]
 
@@ -68,7 +68,7 @@ class Polytope(Geometry.Base):
     def info(self):
         info = "\n ----------------- Polytope BEGIN -----------------\n"
         info += ">>> dimension -- constraints num\n"
-        info += str(self.dim) + "\n"
+        info += str(self.shape) + "\n"
         info += str(self._a.shape[0]) + "\n"
         info += "\n ----------------- Polytope END -----------------\n"
         return info
@@ -162,23 +162,30 @@ class Polytope(Geometry.Base):
         raise NotImplementedError
 
     def polygon(self, dims):
+        assert len(dims) == 2
         ineq = (self._a, self._b)
-        e = np.zeros((2, self.dim))
-        e[0, dims[0]] = 1
-        e[1, dims[1]] = 1
+        e = np.zeros((2, self.shape))
+        print(self.shape)
+        e[[0, 1], dims] = 1
 
         f = np.zeros(2)
         proj = (e, f)
 
-        vs, _ = pypoman.projection.project_polyhedron(proj, ineq)
-        vs = np.vstack(vs)
-        center = np.sum(vs, axis=0) / vs.shape[0]
-
-        angles = np.arctan2(vs[:, 1] - center[1], vs[:, 0] - center[0])
-        angles[angles < 0] += 2 * np.pi
-        idx = np.argsort(angles)
-        return vs[idx]
+        vs = pypoman.projection.project_polytope(proj, ineq)
+        hull = ConvexHull(vs)
+        vs = np.asarray(vs)[hull.vertices, :]
+        return vs
 
     def proj(self, dims):
-        # TODO
-        raise NotImplementedError
+        ineq = (self._a, self._b)
+        e = np.zeros((len(dims), self.shape))
+        e[np.arange(len(dims)), dims] = 1
+
+        f = np.zeros(2)
+        proj = (e, f)
+
+        vs = pypoman.projection.project_polytope(proj, ineq)
+        hull = ConvexHull(vs)
+        vs = np.asarray(vs)[hull.vertices, :]
+        a, b = pypoman.compute_polytope_halfspaces(vs)
+        return Polytope(a, b)

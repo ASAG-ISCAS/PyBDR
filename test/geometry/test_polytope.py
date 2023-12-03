@@ -33,6 +33,7 @@ def test_construction():
     p = Polytope(a, b)
 
     plot([p], [0, 1])
+    plot([p], [1, 2])
 
     # vis2dGeo([p], [0, 1])
 
@@ -41,8 +42,8 @@ def test_vis():
     a = np.array([[-3, 0], [2, 4], [1, -2], [1, 1]])
     b = np.array([-1, 14, 1, 4])
     p = Polytope(a, b)
-    boxes = boundary(p, 0.05, Geometry.TYPE.INTERVAL)
-    vis2dGeo([p, *boxes], [0, 1])
+    boxes = boundary(p, 0.1, Geometry.TYPE.INTERVAL)
+    plot([p, *boxes], [0, 1])
 
 
 def test_construction_from_vertices():
@@ -92,3 +93,10 @@ def test_temp():
     p_from_vertices = cvt2(points, Geometry.TYPE.POLYTOPE)
 
     plot([p_from_inequalities, p_from_vertices], [0, 1])
+
+
+def test_proj():
+    poly = Polytope.rand(3)
+    vs = poly.vertices
+    proj_poly = poly.proj([0, 1])
+    plot([proj_poly, poly, vs], [0, 1])

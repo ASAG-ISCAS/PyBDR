@@ -10,7 +10,7 @@ from scipy.linalg import block_diag
 import pybdr.util.functional.auxiliary as aux
 from .geometry import Geometry
 
-if TYPE_CHECKING:  # for type hint, easy coding ：)
+if TYPE_CHECKING:  # for type hint, easy coding :)
     from pybdr.geometry.interval import Interval
 
 
@@ -225,8 +225,8 @@ class Zonotope(Geometry.Base):
         return Zonotope(np.empty(dim, dtype=float), np.empty((dim, 0), dtype=float))
 
     @staticmethod
-    def rand(dim: int, gen_num: int = 0):
-        assert dim >= 1 and gen_num >= 0
+    def rand(dim: int, gen_num: int = 1):
+        assert dim >= 1 and gen_num > 0
         return Zonotope(np.random.rand(dim), np.random.rand(dim, gen_num))
 
     @staticmethod
@@ -356,8 +356,73 @@ class Zonotope(Geometry.Base):
         # TODO
         raise NotImplementedError
 
-    def boundary(self, max_dist: float, element: Geometry.TYPE):
-        raise NotImplementedError
+    def intrisic_boundary(self, element: Geometry.TYPE):
+        def __matrix_cross_product(x: np.ndarray):
+            from itertools import combinations
+
+            # only care about n by n-1 matrix
+            assert x.ndim == 2 and x.shape[0] == x.shape[1] + 1
+            # generate appropriate indices
+            ind = np.asarray(list(combinations(np.arange(x.shape[0]), x.shape[1])))
+            ind = ind[np.argsort(np.sum(ind, axis=-1))[::-1]]
+            # extract sub-matrices
+            subx = x[ind, :]
+            # compute det for all sub-matrices
+            dets = np.linalg.det(subx)
+            coeffs = np.power(-1, np.arange(ind.shape[0]))
+            # return the final results
+            return coeffs * dets
+
+        def __linearly_independent_base(x: np.ndarray):
+            from itertools import combinations
+
+            ind = np.asarray(list(combinations(np.arange(x.shape[1]), x.shape[0] - 1)))
+            subx = x.T[ind]
+            rank = np.linalg.matrix_rank(subx)
+            return ind[rank >= x.shape[0] - 1]
+
+        def __is_valid_base(bounds, bound_gen):
+            if len(bounds) <= 0:
+                return True
+            ind = [np.setdiff1d(bound_gen, bound).size <= 0 for bound in bounds]
+            return not np.any(ind)
+
+        def __boundary_gen(cx: np.ndarray, gx: np.ndarray, com: np.ndarray, bounds: list):
+            if not __is_valid_base(bounds, com):
+                return None, None
+            # else
+            sym_bounds = []
+            remain_ind = np.setdiff1d(np.arange(gx.shape[1]), com)
+            mcp = __matrix_cross_product(gx[:, com])
+            inn_prod = np.dot(mcp, gx[:, remain_ind])
+            gtz_mask = inn_prod > 0
+            ltz_mask = inn_prod < 0
+            ez_mask = np.logical_not(ltz_mask | gtz_mask)
+            col_ind = np.union1d(com, remain_ind[ez_mask])
+            gen = gx[:, col_ind]
+            c_gtz = gx[:, remain_ind[gtz_mask]].sum(axis=-1)
+            c_ltz = gx[:, remain_ind[ltz_mask]].sum(axis=-1)
+            sym_bounds.append(Zonotope(cx + c_gtz - c_ltz, gen))
+            sym_bounds.append(Zonotope(cx - c_gtz + c_ltz, gen))
+            return sym_bounds, col_ind
+
+        dim = self.gen.shape[0]
+        # check the rank of generator matrix
+        gen_rank = np.linalg.matrix_rank(self.gen)
+        if gen_rank < dim:
+            return self  # not full rank zonotope in N dimensional space, boundary is itself
+        # else we try to extract the boundary of this zonotope in the form of zonotope
+        bound_cols = []
+        boundaries = []
+        combs = __linearly_independent_base(self.gen)
+        for comb in combs:
+            bounds, cols = __boundary_gen(self.c, self.gen, comb, bound_cols)
+            if bounds is None:
+                continue
+            bound_cols.append(cols)
+            boundaries.extend(bounds)
+        from .operation import cvt2
+        return [cvt2(boundary, element) for boundary in boundaries]
 
     def card_prod(self, other):
         if isinstance(other, Zonotope):
@@ -373,7 +438,7 @@ class Zonotope(Geometry.Base):
         def _xTQx():
             dim_q = q[0].shape[0]
             c = np.zeros(dim_q)
-            gen_num = int(0.5 * (self.gen_num**2 + self.gen_num)) + self.gen_num
+            gen_num = int(0.5 * (self.gen_num ** 2 + self.gen_num)) + self.gen_num
             gens = self.gen_num
             gen = np.zeros((dim_q, gen_num))
 
@@ -390,7 +455,7 @@ class Zonotope(Geometry.Base):
                     qi = block_diag(*[iq[i] for iq in q])
                     quad_mat = z.T @ qi @ z
                     # faster method diag elements
-                    gen[i, :gens] = 0.5 * np.diag(quad_mat[1 : gens + 1, 1 : gens + 1])
+                    gen[i, :gens] = 0.5 * np.diag(quad_mat[1: gens + 1, 1: gens + 1])
                     # center
                     c[i] = quad_mat[0, 0] + np.sum(gen[i, 0:gens])
                     # off-diagonal elements added, pick via logical indexing
@@ -436,23 +501,23 @@ class Zonotope(Geometry.Base):
 
         return _xTQx() if rz is None else _x1TQx2()
 
-    def support_func(self, dir: np.ndarray, type: str = "u"):
+    def support_func(self, direction: np.ndarray, bound_type: str = "u"):
         """
         calculates the upper or lower bound of this zonotope along given direction
-        :param type: type of the calculation, "u" for upper bound, "l" for lower bound
+        :param bound_type: type of the calculation, "u" for upper bound, "l" for lower bound
         :param dir: given direction in numpy ndarray format
         :return:
 
         # TODO speed up this function !!!!!!!!!!
         """
-        proj_zono = dir @ self
+        proj_zono = direction @ self
         c, g = proj_zono.c, proj_zono.gen
-        if type == "u":
+        if bound_type == "u":
             val = c + np.sum(abs(g))
             fac = np.sign(g)
-        elif type == "l":
+        elif bound_type == "l":
             val = c - np.sum(abs(g))
             fac = -np.sign(g)
         else:
             raise NotImplementedError
-        return val
+        return val, fac

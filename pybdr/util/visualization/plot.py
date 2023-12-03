@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Polygon
 from pybdr.geometry import Geometry, Interval, Zonotope, Polytope
-from itertools import chain
 
 
 def __3d_plot(objs, dims: list, width: int, height: int):
@@ -60,14 +59,14 @@ def __2d_add_zonotope(ax, z: "Zonotope", dims, color, filled):
 
 
 def __2d_plot(
-    objs,
-    dims: list,
-    width: int,
-    height: int,
-    xlim=None,
-    ylim=None,
-    c=None,
-    filled=False,
+        objs,
+        dims: list,
+        width: int,
+        height: int,
+        xlim=None,
+        ylim=None,
+        c=None,
+        filled=False,
 ):
     assert len(dims) == 2
     px = 1 / plt.rcParams["figure.dpi"]
@@ -109,15 +108,15 @@ def __2d_plot(
 
 
 def plot(
-    objs,
-    dims: list,
-    mod: str = "2d",
-    width: int = 800,
-    height: int = 800,
-    xlim=None,
-    ylim=None,
-    c=None,
-    filled=False,
+        objs,
+        dims: list,
+        mod: str = "2d",
+        width: int = 800,
+        height: int = 800,
+        xlim=None,
+        ylim=None,
+        c=None,
+        filled=False,
 ):
     if mod == "2d":
         return __2d_plot(objs, dims, width, height, xlim, ylim, c, filled)
@@ -159,6 +158,7 @@ def __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled):
                 raise NotImplementedError
 
     ax.autoscale_view()
+    ax.axis("equal")
     ax.set_xlabel("x" + str(dims[0]))
     ax.set_ylabel("x" + str(dims[1]))
 
@@ -177,15 +177,15 @@ def __3d_plot_cmp(collections, dims, width, height, cs):
 
 
 def plot_cmp(
-    collections,
-    dims: list,
-    mod: str = "2d",
-    width=800,
-    height=800,
-    xlim=None,
-    ylim=None,
-    cs=None,
-    filled=False,
+        collections,
+        dims: list,
+        mod: str = "2d",
+        width=800,
+        height=800,
+        xlim=None,
+        ylim=None,
+        cs=None,
+        filled=False,
 ):
     if mod == "2d":
         return __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled)

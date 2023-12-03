@@ -2,7 +2,7 @@ import numpy as np
 
 from pybdr.geometry import Geometry, Zonotope, Interval
 from pybdr.geometry.operation import cvt2, boundary
-from pybdr.util.visualization import vis2dGeo
+from pybdr.util.visualization import plot
 
 
 def test_np_function():
@@ -89,7 +89,7 @@ def test_polygon():
 def test_vis_2d():
     data = np.array([[0, -2, 3, -7, 9], [0, -9, 6, -8, -5]])
     z = Zonotope(data[:, 0], data[:, 1:])
-    vis2dGeo([z], [0, 1])
+    plot([z], [0, 1])
 
 
 def test_enclose():
@@ -178,14 +178,31 @@ def test_partition_2d_case_1():
     plot([*zono_parts, z], [0, 1])
 
 
-def test_temp():
-    from itertools import combinations
+def test_vertices():
+    z = Zonotope.rand(3, 10)
+    p = cvt2(z, Geometry.TYPE.POLYTOPE)
+    plot([z], [0, 1])
+    plot([p, z], [0, 1])
+    plot([z, p, z.vertices, p.vertices], [0, 1])
 
-    x = np.asarray(list(combinations(np.arange(5), 4)))
-    y = np.sum(x, axis=-1)
-    # value = y.max() - y
-    ind = np.argsort(y)[::-1]
-    print(y)
-    print(ind)
-    print(x)
-    print(x[ind])
+
+def test_intrisic_boundary():
+    z = Zonotope.rand(2, 10)
+    intrisic_zonos = z.intrisic_boundary(Geometry.TYPE.ZONOTOPE)
+    intrisic_boxes = z.intrisic_boundary(Geometry.TYPE.INTERVAL)
+    plot([z, *intrisic_boxes, *intrisic_zonos], [0, 1])
+
+
+def test_proj():
+    c = np.array([0.60122748, 0.19493593, 0.18855327])
+    gen = np.array([[0.25371704, 0.04295793, 0.04083065, 0.79086446, 0.32886549],
+                    [0.91363304, 0.30904167, 0.28811848, 0.67091109, 0.35548784],
+                    [0.05673845, 0.61227726, 0.24386012, 0.57425124, 0.32115652]])
+
+    z = Zonotope(c, gen)
+    z00 = z.proj([0, 1])
+    z01 = z.proj([1, 2])
+    z02 = z.proj([0, 2])
+    p = cvt2(z, Geometry.TYPE.POLYTOPE)
+    plot([p, z], [0, 1])
+    plot([p, z00, z01, z02], [0, 1])
