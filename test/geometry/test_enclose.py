@@ -25,3 +25,10 @@ def test_01():
     b = a + np.ones(2) * 10
     c = enclose(a, b)
     plot([a, b, c], [0, 1])
+
+
+def test_02():
+    a = Zonotope.rand(2, 10)
+    b = Zonotope.rand(2, 3) + 10 * np.ones(2)
+    c = enclose(a, b)
+    plot([a, b, c], [0, 1])
