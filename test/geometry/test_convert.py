@@ -1,3 +1,5 @@
+import numpy as np
+
 from pybdr.geometry import Geometry, Interval, Polytope, Zonotope
 from pybdr.geometry.operation import cvt2
 from pybdr.util.visualization import plot
@@ -67,3 +69,9 @@ def test_zonotope2zonotope():
     c = a.reduce(Zonotope.REDUCE_METHOD.GIRARD, 3)
     plot([a, c], [0, 1])
     plot([a, c], [1, 2])
+
+
+def test_pts2polytope():
+    pts = np.random.rand(100, 2)
+    poly = cvt2(pts, Geometry.TYPE.POLYTOPE)
+    plot([pts, poly], [0, 1])

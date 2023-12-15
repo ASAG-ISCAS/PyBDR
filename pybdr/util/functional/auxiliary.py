@@ -45,6 +45,15 @@ def min_affine(arr: np.ndarray) -> np.ndarray:
     return arr[:, eig_v == 0]
 
 
+def mat_powers_2d(arr: np.ndarray, n: int):
+    assert arr.ndim == 2
+    m = np.eye(*arr.shape)
+    mat_powers = [m]
+    for idx in range(n):
+        mat_powers.append(mat_powers[-1] @ arr)
+    return np.stack(mat_powers)
+
+
 def mask_lt(m: coo_matrix, v: numbers.Real) -> coo_matrix:
     mask = m.data < v
     data = m.data[mask]

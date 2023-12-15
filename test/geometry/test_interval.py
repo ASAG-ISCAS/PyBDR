@@ -1,7 +1,8 @@
 import numpy as np
 
 import pybdr
-from pybdr.geometry import Interval
+from pybdr.geometry import Interval, Geometry
+from pybdr.util.visualization import plot
 
 np.set_printoptions(precision=5, suppress=True)
 
@@ -53,7 +54,7 @@ def test_interval():
     print(a.sup)
 
 
-def test_addition():
+def test_addition_00():
     print()
     a = random_interval(2, 4)
     out_interval(a, "a")
@@ -62,6 +63,14 @@ def test_addition():
     print("--------------------------")
     c = 1 + b
     print(c)
+
+
+def test_addition_case_01():
+    from pybdr.geometry import Zonotope
+    a = Interval.rand(2)
+    b = Zonotope.rand(2, 3)
+    c = a + b
+    plot([a, b, c], [0, 1])
 
 
 def test_subtraction():
@@ -120,6 +129,18 @@ def test_matrix_multiplication_case_1():
     c = a @ b
     print(c.shape)
     # print(c)
+
+
+def test_matrix_multiplication_case_2():
+    # Z = zonotope([1 1 0; 0 0 1]);
+    # Z.center
+    # Z.generators
+    # I = interval([0 1; 1 0], [1 2; 2 1]);
+    from pybdr.geometry import Zonotope
+    a = Interval([[0, 1], [1, 0]], [[1, 2], [2, 1]])
+    b = Zonotope([1, 0], [[1, 0], [0, 1]])
+    c = a @ b
+    plot([b, c], [0, 1])
 
 
 def test_abs():
@@ -342,3 +363,80 @@ def test_proj():
     a2 = a.proj([2, 3])
     a3 = a.proj([3, 4])
     plot([a0, a1, a2, a3], [0, 1])
+
+
+def test_decompose():
+    a = Interval.rand(2)
+    al, ar = a.decompose(0)
+    print(a)
+    print(al)
+    print(ar)
+    plot([a, al, ar], [0, 1])
+    ad, au = a.decompose(1)
+    plot([a], [0, 1])
+    plot([a, al, ar], [0, 1])
+    plot([a, ad, au], [0, 1])
+
+
+def test_split():
+    box = Interval.rand(10, 2, 30)
+    boxes_00 = Interval.split(box, box.shape[0], 0)
+    boxes_01 = Interval.split(box, box.shape[1], 1)
+    boxes_02 = Interval.split(box, box.shape[2], 2)
+
+    print(boxes_00[0].shape, len(boxes_00))
+    print(boxes_01[0].shape, len(boxes_01))
+    print(boxes_02[0].shape, len(boxes_02))
+
+
+def test_concatenate():
+    box = Interval.rand(10, 2, 30)
+    boxes_00 = Interval.split(box, box.shape[0], 0)
+    boxes_01 = Interval.split(box, box.shape[1], 1)
+    boxes_02 = Interval.split(box, box.shape[2], 2)
+
+    conc_box_00 = Interval.concatenate(boxes_00, 0)
+    conc_box_01 = Interval.concatenate(boxes_01, 0)
+    conc_box_02 = Interval.concatenate(boxes_02, 0)
+
+    print(conc_box_00.shape)
+    print(conc_box_01.shape)
+    print(conc_box_02.shape)
+
+
+def test_stack():
+    box = Interval.rand(10, 2, 30)
+    boxes_00 = Interval.split(box, box.shape[0], 0)
+
+    stack_box_00 = Interval.stack(boxes_00, axis=0)
+    stack_box_01 = Interval.stack(boxes_00, axis=1)
+    stack_box_02 = Interval.stack(boxes_00, axis=2)
+    print(stack_box_00.shape)
+    print(stack_box_01.shape)
+    print(stack_box_02.shape)
+
+
+def test_vstack():
+    box = Interval.rand(10, 2, 30)
+    boxes = Interval.split(box, box.shape[2], axis=2)
+
+    vstack_box = Interval.stack(boxes)
+    print(vstack_box.shape)
+
+
+def test_hstack():
+    box = Interval.rand(10, 2, 30, 50)
+    boxes = Interval.split(box, box.shape[2], axis=2)
+    hstack_box = Interval.hstack(boxes)
+    print(hstack_box.shape)
+
+
+def test_contains():
+    a = Interval(0, 1)
+    print(a.contains(0.5))
+    print(a.contains(2))
+    b = Interval([-1, -1], [2, 2])
+    print(b.contains([0, 0]))
+    print(b.contains([0, 3]))
+    print(b.contains(np.array([0, 0])))
+    print(b.contains(np.array([0, 3])))

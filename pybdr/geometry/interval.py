@@ -11,8 +11,8 @@ from .geometry import Geometry
 
 class Interval(Geometry.Base):
     def __init__(self, inf: ArrayLike, sup: ArrayLike):
-        inf = inf if isinstance(inf, np.ndarray) else np.asarray(inf, dtype=float)
-        sup = sup if isinstance(sup, np.ndarray) else np.asarray(sup, dtype=float)
+        inf = inf if isinstance(inf, np.ndarray) else np.atleast_1d(inf).astype(float)
+        sup = sup if isinstance(sup, np.ndarray) else np.atleast_1d(sup).astype(float)
         assert inf.shape == sup.shape
         mask = np.logical_not(np.isnan(inf) | np.isnan(sup))  # NAN indicates empty
         assert np.all(inf[mask] <= sup[mask])
@@ -120,7 +120,6 @@ class Interval(Geometry.Base):
 
     def __add__(self, other):
         def _add_interval(x: Interval):
-            assert np.allclose(self.shape, x.shape)
             return Interval(self.inf + x.inf, self.sup + x.sup)
 
         if isinstance(other, (Real, np.ndarray)):
@@ -128,6 +127,8 @@ class Interval(Geometry.Base):
         elif isinstance(other, Geometry.Base):
             if other.type == Geometry.TYPE.INTERVAL:
                 return _add_interval(other)
+            elif other.type == Geometry.TYPE.ZONOTOPE:
+                return other + self
             else:
                 raise NotImplementedError
 
@@ -284,7 +285,7 @@ class Interval(Geometry.Base):
         elif isinstance(other, Interval):
             return _matmul_interval(other)
         else:
-            raise NotImplementedError
+            return NotImplemented
 
     def __rmatmul__(self, other):
         def _rmm_matrix(x: np.ndarray):
@@ -318,7 +319,7 @@ class Interval(Geometry.Base):
     def __pow__(self, power, modulo=None):
         def _pow_int(x: int):
             if x >= 0:
-                inff, supp = self.inf**x, self.sup**x
+                inff, supp = self.inf ** x, self.sup ** x
                 inf, sup = np.minimum(inff, supp), np.maximum(inff, supp)
                 if x % 2 == 0 and x != 0:
                     ind = (self._inf <= 0) & (self._sup >= 0)
@@ -329,7 +330,7 @@ class Interval(Geometry.Base):
 
         def _pow_real(x):
             if x >= 0:
-                inf, sup = self.inf**x, self.sup**x
+                inf, sup = self.inf ** x, self.sup ** x
                 ind = self._inf < 0
                 inf[ind] = np.nan
                 sup[ind] = np.nan
@@ -352,7 +353,7 @@ class Interval(Geometry.Base):
         raise NotImplementedError
 
     def __ipow__(self, other):
-        return self**other
+        return self ** other
 
     @staticmethod
     def exp(x: Interval):
@@ -513,11 +514,11 @@ class Interval(Geometry.Base):
         sup[ind] = np.sin(yinf[ind])
 
         ind = (
-            ind0
-            | (ind1 & ind2 & ind7)
-            | (ind1 & ind6)
-            | (ind3 & ind4 & ind7)
-            | (ind5 & ind6 & ind7)
+                ind0
+                | (ind1 & ind2 & ind7)
+                | (ind1 & ind6)
+                | (ind3 & ind4 & ind7)
+                | (ind5 & ind6 & ind7)
         )
         inf[ind] = -1
         sup[ind] = 1
@@ -647,6 +648,70 @@ class Interval(Geometry.Base):
         inf, sup = np.ones(shape, dtype=float), np.ones(shape, dtype=float)
         return Interval(inf, sup)
 
+    @staticmethod
+    def identity(shape):
+        inf, sup = -np.ones(shape, dtype=float), np.ones(shape, dtype=float)
+        return Interval(inf, sup)
+
+    @staticmethod
+    def concatenate(boxes, axis=None):
+        """
+        concatenate boxes along specified axis
+        @param boxes: given list of boxes
+        @param axis: axis along
+        @return: concatenated boxes
+        """
+        infs = [box.inf for box in boxes]
+        sups = [box.sup for box in boxes]
+        return Interval(np.concatenate(infs, axis=axis), np.concatenate(sups, axis=axis))
+
+    @staticmethod
+    def stack(boxes, axis=0):
+        """
+        stack boxes along specified axis
+        @param boxes: given list of boxes
+        @param axis: axis along
+        @return: stacked boxes
+        """
+        infs = [box.inf for box in boxes]
+        sups = [box.sup for box in boxes]
+        return Interval(np.stack(infs, axis=axis), np.stack(sups, axis=axis))
+
+    @staticmethod
+    def vstack(boxes):
+        """
+        works for up to 3-dimensional arrays
+        @param boxes: given list of boxes
+        @return: vstack of boxes
+        """
+        infs = [box.inf for box in boxes]
+        sups = [box.sup for box in boxes]
+        return Interval(np.vstack(infs), np.vstack(sups))
+
+    @staticmethod
+    def hstack(boxes):
+        """
+        works for up to 3-dimensional arrays
+        @param boxes: given list of boxes
+        @return:  hstack of boxes
+        """
+        infs = [box.inf for box in boxes]
+        sups = [box.sup for box in boxes]
+        return Interval(np.hstack(infs), np.hstack(sups))
+
+    @staticmethod
+    def split(box: Interval, indices_or_sections, axis=0):
+        infs = np.split(box.inf, indices_or_sections, axis)
+        sups = np.split(box.sup, indices_or_sections, axis)
+        num_boxes = len(infs)
+        return [Interval(infs[box_idx].squeeze(axis), sups[box_idx].squeeze(axis)) for box_idx in range(num_boxes)]
+
+    @staticmethod
+    def squeeze(box: Interval, axis=None):
+        inf = np.squeeze(box.inf, axis)
+        sup = np.squeeze(box.sup, axis)
+        return Interval(inf, sup)
+
     # =============================================== public method
     def enclose(self, x):
         """
@@ -678,7 +743,12 @@ class Interval(Geometry.Base):
     def sum(self, axis=None):
         return Interval(self._inf.sum(axis), self._sup.sum(axis))
 
-    def split(self, index):
+    def decompose(self, index):
+        '''
+        decompse given interval along specific indices
+        @param index: specific index
+        @return: decomposed intervals
+        '''
         inf, sup = self.inf.copy(), self.sup.copy()
         c = (self.inf[index] + self.sup[index]) * 0.5
         inf[index] = c
@@ -751,5 +821,10 @@ class Interval(Geometry.Base):
         :param x:
         :return:
         """
-        # TODO
-        raise NotImplementedError
+        if isinstance(x, np.ndarray) or isinstance(x, (int, float)):
+            return np.all(x >= self.inf) and np.all(x <= self.sup)
+        elif isinstance(x, list):
+            x_arr = np.atleast_1d(x).astype(float)
+            return np.all(x_arr >= self.inf) and np.all(x_arr <= self.sup)
+        else:
+            raise NotImplementedError

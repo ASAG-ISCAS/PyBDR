@@ -42,21 +42,13 @@ def test_numeric_operations():
     print(z2)
 
 
-def test_python():
-    data = np.array(
-        [
-            [3, 0, 0, 0.24],
-            [4, 1, 1, 0.41],
-            [2, 1, 1, 0.63],
-            [1, 1, 3, 0.38],
-            [0, 0, 0, 1],
-        ]
-    )
-    ix = np.lexsort(data[::-1, :])
-    print()
-    print(data)
-    print(ix)
-    print(data[:, ix])
+def test_addition_case_00():
+    # I = interval([0.9; 0.7],[1.3; 2.5]);
+    # Z = zonotope([1 0.5 0; 0 3 1]);
+    a = Interval([0.9, 0.7], [1.3, 2.5])
+    b = Zonotope([1, 0], [[0.5, 0], [3, 1]])
+    c = a + b
+    plot([a, b, c], [0, 1])
 
 
 def test_auxiliary_functions():
@@ -124,6 +116,22 @@ def test_mul():
     print(b)
     print(a * b)
     print(b * a)
+
+
+def test_matmul_00():
+    a = np.random.rand(2, 3)
+    z = Zonotope.rand(3, 10)
+    b = a @ z
+    plot([z, b], [0, 1])
+
+
+def test_matmul_case_01():
+    a = Interval.rand(5, 3)
+    b = Zonotope.rand(3, 10)
+    c = a @ b
+    plot([b, c], [0, 1])
+    plot([b, c], [1, 2])
+    plot([b, c], [0, 2])
 
 
 def test_boundary_2d():

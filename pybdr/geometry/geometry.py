@@ -11,8 +11,7 @@ class Geometry:
         INTERVAL = 0
         ZONOTOPE = 1
         POLYTOPE = 2
-        POLY_ZONOTOPE = 3
-
+        
     class Base(ABC):
         __array_ufunc__ = None
 

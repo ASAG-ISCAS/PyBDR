@@ -1,17 +1,32 @@
 from __future__ import annotations
 import numpy as np
 
+"""
+x(t)' = A*x(t) + B*u(t) + c
+y(t) = C*x(t) + D*u(t) + k
+"""
+
 
 class LinSys:
     def __init__(
-        self,
-        xa,
-        ub: np.ndarray = None,
-        c: float = None,
-        xc: np.ndarray = None,
-        ud: np.ndarray = None,
-        k: float = None,
+            self,
+            xa: np.ndarray,
+            ub: np.ndarray = None,
+            c: float = None,
+            xc: np.ndarray = None,
+            ud: np.ndarray = None,
+            k: float = None,
     ):
+        """
+
+        @param xa: state matrix
+        @param ub: input matrix
+        @param c: constant input
+        @param xc: output matrix
+        @param ud: feedthrough matrix
+        @param k: output offset
+        """
+        assert isinstance(xa, np.ndarray)
         self._xa = xa
         self._ub = ub
         self._c = c

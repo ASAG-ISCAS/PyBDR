@@ -124,6 +124,9 @@ class Zonotope(Geometry.Base):
         elif isinstance(other, Geometry.Base):
             if other.type == Geometry.TYPE.ZONOTOPE:
                 return Zonotope(self.c + other.c, np.hstack([self.gen, other.gen]))
+            elif other.type == Geometry.TYPE.INTERVAL:
+                from .operation import cvt2
+                return cvt2(other, Geometry.TYPE.ZONOTOPE) + self
             else:
                 raise NotImplementedError
         else:
@@ -139,7 +142,11 @@ class Zonotope(Geometry.Base):
         if isinstance(other, (np.ndarray, Real)):
             return self + (-other)
         elif isinstance(other, Geometry.Base):
-            raise NotImplementedError
+            if other.type == Geometry.TYPE.INTERVAL:
+                from .operation import cvt2
+                return self + (-cvt2(other, Geometry.TYPE.ZONOTOPE))
+            else:
+                raise NotImplementedError
         else:
             raise NotImplementedError
 
@@ -153,7 +160,7 @@ class Zonotope(Geometry.Base):
         return self
 
     def __neg__(self):
-        raise NotImplementedError
+        return Zonotope(-self.c, -self.gen)
 
     def __matmul__(self, other):
         if isinstance(other, np.ndarray):
@@ -166,6 +173,18 @@ class Zonotope(Geometry.Base):
     def __rmatmul__(self, other):
         if isinstance(other, np.ndarray):
             return Zonotope(other @ self.c, other @ self.gen)
+        elif isinstance(other, Geometry.Base):
+            if other.type == Geometry.TYPE.INTERVAL:
+                assert len(other.shape) >= 2
+                c = other.c
+                rad = other.rad
+                sum_z_abs = abs(self.z).sum(axis=1)
+                if not (np.count_nonzero(c) > 0):
+                    return Zonotope(np.zeros_like(self.c), np.diag(rad @ sum_z_abs))
+                else:
+                    return Zonotope(c @ self.c, np.hstack([c @ self.gen, np.diag(rad @ sum_z_abs)]))
+            else:
+                raise NotImplementedError
         else:
             raise NotImplementedError
 

@@ -78,7 +78,6 @@ def _vertices2polytope_old(source: np.ndarray):
 
 
 def _vertices2polytope(source: np.ndarray):
-    print(source.shape)
     convex_hull = ConvexHull(source)
     eq = convex_hull.equations
     return Polytope(eq[:, :-1], -eq[:, -1])

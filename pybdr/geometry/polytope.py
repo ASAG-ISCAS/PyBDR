@@ -163,15 +163,18 @@ class Polytope(Geometry.Base):
 
     def polygon(self, dims):
         assert len(dims) == 2
-        ineq = (self._a, self._b)
-        e = np.zeros((2, self.shape))
-        print(self.shape)
-        e[[0, 1], dims] = 1
+        if self.shape == 2:
+            vs = self.vertices
+        else:
 
-        f = np.zeros(2)
-        proj = (e, f)
+            ineq = (self._a, self._b)
+            e = np.zeros((2, self.shape))
+            e[[0, 1], dims] = 1
 
-        vs = pypoman.projection.project_polytope(proj, ineq)
+            f = np.zeros(2)
+            proj = (e, f)
+
+            vs = pypoman.projection.project_polytope(proj, ineq)
         hull = ConvexHull(vs)
         vs = np.asarray(vs)[hull.vertices, :]
         return vs

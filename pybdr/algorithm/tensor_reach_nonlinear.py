@@ -5,7 +5,7 @@ import numpy as np
 from pybdr.dynamic_system import LinSys, NonLinSys
 
 
-class TensorReachNonLinear:
+class IntervalTensorReachNonLinear:
     @staticmethod
     def linearize():
         pass

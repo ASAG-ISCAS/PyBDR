@@ -95,6 +95,7 @@ def __2d_plot(
                 raise NotImplementedError
 
     ax.autoscale_view()
+    ax.axis("equal")
     ax.set_xlabel("x" + str(dims[0]))
     ax.set_ylabel("x" + str(dims[1]))
 
@@ -103,6 +104,8 @@ def __2d_plot(
 
     if ylim is not None:
         plt.ylim(ylim)
+
+    # plt.savefig("temp.jpg", dpi=300)
 
     plt.show()
 

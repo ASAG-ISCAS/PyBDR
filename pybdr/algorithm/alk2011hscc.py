@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 import numpy as np
 from scipy.linalg import expm
+from scipy.special import factorial
 
 from pybdr.dynamic_system import LinSys
 from pybdr.geometry import Geometry, Zonotope, Interval
@@ -39,6 +40,8 @@ class ALK2011HSCC:
         origin_contained = None
 
         def validation(self, dim: int):
+            i = np.arange(1, self.taylor_terms + 2)
+            self.factors = np.power(self.step, i) / factorial(i)
             # TODO
             return True
 
@@ -206,9 +209,9 @@ class ALK2011HSCC:
         opt.taylor_ea_t = expm(sys.xa * opt.step)
         r_hom_tp = opt.taylor_ea_t @ r + opt.taylor_r_trans
         r_hom = (
-            r.enclose(r_hom_tp)
-            + opt.taylor_f * cvt2(r, Geometry.TYPE.ZONOTOPE)
-            + opt.taylor_input_corr
+                r.enclose(r_hom_tp)
+                + opt.taylor_f * cvt2(r, Geometry.TYPE.ZONOTOPE)
+                + opt.taylor_input_corr
         )
         r_hom = r_hom.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
         r_hom_tp = r_hom_tp.reduce(Zonotope.REDUCE_METHOD, Zonotope.ORDER)
@@ -227,7 +230,7 @@ class ALK2011HSCC:
             next_ti, next_tp = cls.reach_one_step(sys, tp_set[-1], opt)
             opt.step_idx += 1
             ti_set.append(next_ti)
-            ti_time.append(time_pts[opt.step_idx - 1 : opt.step_idx + 1])
+            ti_time.append(time_pts[opt.step_idx - 1: opt.step_idx + 1])
             tp_set.append(next_tp)
             tp_time.append(time_pts[opt.step_idx])
 

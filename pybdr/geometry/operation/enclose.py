@@ -1,8 +1,9 @@
 from pybdr.geometry import *
 import numpy as np
+from .convert import cvt2
 
 
-def __zono_by_zono(lhs: Zonotope, rhs: Zonotope, target: Geometry.TYPE):
+def _zz2z(lhs: Zonotope, rhs: Zonotope):
     # get generator numbers
     lhs_num, rhs_num = lhs.gen_num + 1, rhs.gen_num + 1
     # if first zonotope has more or equal generators
@@ -19,9 +20,93 @@ def __zono_by_zono(lhs: Zonotope, rhs: Zonotope, target: Geometry.TYPE):
     return Zonotope(z[:, 0], z[:, 1:])
 
 
-def enclose(lhs: Geometry.Base, rhs: Geometry.Base, target: Geometry.TYPE = None):
-    target = lhs.type if target is None else target
-    if lhs.type == Geometry.TYPE.ZONOTOPE and rhs.type == Geometry.TYPE.ZONOTOPE:
-        return __zono_by_zono(lhs, rhs, target)
+def _ii2i(lhs: Interval, rhs: Interval):
+    inf = np.minimum(lhs.inf, rhs.inf)
+    sup = np.maximum(lhs.sup, rhs.sup)
+    return Interval(inf, sup)
+
+
+def enclose(lhs: Geometry.Base, rhs: Geometry.Base, target: Geometry.TYPE):
+    if lhs.type == Geometry.TYPE.INTERVAL and rhs.type == Geometry.TYPE.INTERVAL:
+        if target == Geometry.TYPE.INTERVAL:
+            return _ii2i(lhs, rhs)
+        elif target == Geometry.TYPE.POLYTOPE:
+            return cvt2(_ii2i(lhs, rhs), Geometry.TYPE.POLYTOPE)
+        elif target == Geometry.TYPE.ZONOTOPE:
+            return cvt2(_ii2i(lhs, rhs), Geometry.TYPE.ZONOTOPE)
+        else:
+            raise NotImplementedError
+    elif lhs.type == Geometry.TYPE.INTERVAL and rhs.type == Geometry.TYPE.POLYTOPE:
+        if target == Geometry.TYPE.INTERVAL:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.POLYTOPE:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.ZONOTOPE:
+            raise NotImplementedError
+        else:
+            raise NotImplementedError
+    elif lhs.type == Geometry.TYPE.INTERVAL and rhs.type == Geometry.TYPE.ZONOTOPE:
+        if target == Geometry.TYPE.INTERVAL:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.POLYTOPE:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.ZONOTOPE:
+            raise NotImplementedError
+        else:
+            raise NotImplementedError
+    elif lhs.type == Geometry.TYPE.POLYTOPE and rhs.type == Geometry.TYPE.INTERVAL:
+        if target == Geometry.TYPE.INTERVAL:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.POLYTOPE:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.ZONOTOPE:
+            raise NotImplementedError
+        else:
+            raise NotImplementedError
+    elif lhs.type == Geometry.TYPE.POLYTOPE and rhs.type == Geometry.TYPE.POLYTOPE:
+        if target == Geometry.TYPE.INTERVAL:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.POLYTOPE:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.ZONOTOPE:
+            raise NotImplementedError
+        else:
+            raise NotImplementedError
+    elif lhs.type == Geometry.TYPE.POLYTOPE and rhs.type == Geometry.TYPE.ZONOTOPE:
+        if target == Geometry.TYPE.INTERVAL:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.POLYTOPE:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.ZONOTOPE:
+            raise NotImplementedError
+        else:
+            raise NotImplementedError
+    elif lhs.type == Geometry.TYPE.ZONOTOPE and rhs.type == Geometry.TYPE.INTERVAL:
+        if target == Geometry.TYPE.INTERVAL:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.POLYTOPE:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.ZONOTOPE:
+            raise NotImplementedError
+        else:
+            raise NotImplementedError
+    elif lhs.type == Geometry.TYPE.ZONOTOPE and rhs.type == Geometry.TYPE.POLYTOPE:
+        if target == Geometry.TYPE.INTERVAL:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.POLYTOPE:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.ZONOTOPE:
+            raise NotImplementedError
+        else:
+            raise NotImplementedError
+    elif lhs.type == Geometry.TYPE.ZONOTOPE and rhs.type == Geometry.TYPE.ZONOTOPE:
+        if target == Geometry.TYPE.INTERVAL:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.POLYTOPE:
+            raise NotImplementedError
+        elif target == Geometry.TYPE.ZONOTOPE:
+            return _zz2z(lhs, rhs)
+        else:
+            raise NotImplementedError
     else:
         raise NotImplementedError
