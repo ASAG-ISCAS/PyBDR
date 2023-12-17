@@ -11,6 +11,10 @@ class NonLinSys:
     def dim(self):
         return self.model.dim
 
+    @property
+    def type(self):
+        return "nonlinear"
+
     def reverse(self):
         self.model.reverse()
 

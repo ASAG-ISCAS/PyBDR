@@ -1,3 +1,3 @@
 from .continuous_system import *
 
-__all__ = ["LinSys", "NonLinSys"]
+__all__ = ["LinSys", "NonLinSys", "LinearSystemSimple"]

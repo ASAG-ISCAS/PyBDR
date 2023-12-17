@@ -13,7 +13,7 @@ def __3d_plot(objs, dims: list, width: int, height: int):
 
 def __2d_add_pts(ax, dims, pts: np.ndarray, color):
     assert pts.ndim == 2
-    ax.scatter(pts[:, dims[0]], pts[:, dims[1]], c=color)
+    ax.scatter(pts[:, dims[0]], pts[:, dims[1]], s=1, c=color)
 
 
 def __2d_add_interval(ax, i: "Interval", dims, color, filled):
