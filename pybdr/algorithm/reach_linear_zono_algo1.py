@@ -7,6 +7,10 @@ from pybdr.geometry.operation import enclose
 from dataclasses import dataclass
 from scipy.special import factorial
 
+"""
+Reachable Sets of Linear Time-invariant Systems without inputs
+"""
+
 
 class ReachLinearZonoAlgo1:
     @dataclass
@@ -15,7 +19,6 @@ class ReachLinearZonoAlgo1:
         step: float = 0
         eta: int = 4  # number of taylor terms in approximating using taylor series
         x0: Zonotope = None
-        u: Zonotope = None
 
         def __init__(self):
             self._num_steps = 0

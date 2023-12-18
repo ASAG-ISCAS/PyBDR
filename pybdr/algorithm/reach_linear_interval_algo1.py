@@ -1,32 +1,26 @@
 from __future__ import annotations
-
 import numpy as np
 from pybdr.dynamic_system import LinearSystemSimple
-from pybdr.geometry import Interval, Geometry, Zonotope
-from pybdr.geometry.operation import enclose, cvt2
+from pybdr.geometry import Interval, Geometry
+from pybdr.geometry.operation import enclose
 from dataclasses import dataclass
 from scipy.special import factorial
 
-"""
-Reachable Sets of Linear Time-invariant Systems with inputs must contain origin
-"""
 
-
-class ReachLinearZonoAlgo2:
+class ReachLinearIntervalAlgo1:
     @dataclass
     class Settings:
         t_end: float = 0
         step: float = 0
-        eta: int = 4  # number of taylor terms in approximating using taylor series
-        x0: Zonotope = None
-        u: Zonotope = None
+        eta: int = 4
+        x0: Interval = None
 
         def __init__(self):
             self._num_steps = 0
 
         def validation(self):
             assert self.t_end >= self.step >= 0
-            assert self.eta >= 3
+            assert self.eta >= 3  # at least 3 considering accuracy
             self._num_steps = round(self.t_end / self.step)
             return True
 
@@ -63,16 +57,6 @@ class ReachLinearZonoAlgo2:
         return taylor_sums + er, er
 
     @classmethod
-    def compute_v(cls, a, eta, u, r, er):
-        # compute taylor sums
-        taylor_sums = 0
-        for i in range(0, eta + 1):
-            cof = np.linalg.matrix_power(a, i) * np.power(r, i + 1) / factorial(i + 1)
-            taylor_sums += cof @ u
-
-        return taylor_sums + er * r @ u
-
-    @classmethod
     def compute_f(cls, eta, a, er, r):
         # compute taylor sums
         taylor_sums = 0
@@ -86,39 +70,34 @@ class ReachLinearZonoAlgo2:
         return taylor_sums + er
 
     @classmethod
-    def compute_hr(cls, e_ar, x0, f):
-        return enclose(x0, e_ar @ x0, Geometry.TYPE.ZONOTOPE) + f @ x0
-
-    @classmethod
     def pre_compute(cls, lin_sys: LinearSystemSimple, opts: Settings):
         e_ar, er = cls.compute_e_ar(opts.eta, opts.step, lin_sys.xa)
         f = cls.compute_f(opts.eta, lin_sys.xa, er, opts.step)
-        v = cls.compute_v(lin_sys.xa, opts.eta, opts.u, opts.step, er)
-        pr = cvt2(v, Geometry.TYPE.INTERVAL)
-        hr = cls.compute_hr(e_ar, opts.x0, f)
-        r = hr + pr
-
-        return r, hr, pr, v, e_ar
+        return e_ar, f
 
     @classmethod
-    def reach_one_step(cls, e_ar, hr_cur, v_cur, pr_cur):
-        hr_next = e_ar @ hr_cur
-        v_next = e_ar @ v_cur
-        pr_next = pr_cur + cvt2(v_next, Geometry.TYPE.INTERVAL)
-        r_next = hr_next + pr_next
+    def compute_hr(cls, e_ar, x0, f):
+        return enclose(x0, e_ar @ x0, Geometry.TYPE.INTERVAL) + f @ x0
 
-        return r_next, hr_next, v_next, pr_next
+    @classmethod
+    def reach_one_step(cls, e_ear, hr_cur):
+        return e_ear @ hr_cur
 
     @classmethod
     def reach(cls, lin_sys: LinearSystemSimple, opts: Settings):
         assert opts.validation()
 
-        r0, hr_cur, pr_cur, v_cur, e_ar = cls.pre_compute(lin_sys, opts)
+        e_ar, f = cls.pre_compute(lin_sys, opts)
+        hr_cur = cls.compute_hr(e_ar, opts.x0, f)
 
-        ri = [opts.x0, r0]
+        # ri -> time interval reachable sets
+        # rp -> time point reachable sets
+        # ti -> time intervals
+        # tp -> time points
+        ri = [opts.x0, hr_cur]
 
         for k in range(opts.num_steps):
-            r_cur, hr_cur, v_cur, pr_cur = cls.reach_one_step(e_ar, hr_cur, v_cur, pr_cur)
-            ri.append(r_cur)
+            hr_cur = cls.reach_one_step(e_ar, hr_cur)
+            ri.append(hr_cur)
 
         return None, ri, None, None

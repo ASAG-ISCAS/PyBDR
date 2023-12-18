@@ -20,7 +20,6 @@ def test_reach_linear_zono_algo1_case_00():
     opts.step = 0.04
     opts.eta = 4
     opts.x0 = cvt2(Interval([0.9, 0.9], [1.1, 1.1]), Geometry.TYPE.ZONOTOPE)
-    # opts.u = cvt2(ub @ Interval(-0.1, 0.1), Geometry.TYPE.ZONOTOPE)
 
     _, ri, _, _ = ReachLinearZonoAlgo1.reach(lin_sys, opts)
 
@@ -37,8 +36,6 @@ def test_reach_linear_zono_algo1_case_01():
     opts.step = 0.04
     opts.eta = 4
     opts.x0 = cvt2(Interval(0.9 * np.ones(5), 1.1 * np.ones(5)), Geometry.TYPE.ZONOTOPE)
-    # u = Interval([0.9, -0.25, -0.1, 0.25, -0.75], [1.1, 0.25, 0.1, 0.75, -0.25])
-    # opts.u = cvt2(ub @ u, Geometry.TYPE.ZONOTOPE)
 
     _, ri, _, _ = ReachLinearZonoAlgo1.reach(lin_sys, opts)
 

@@ -7,6 +7,10 @@ from pybdr.geometry.operation import enclose, cvt2
 from dataclasses import dataclass
 from scipy.special import factorial
 
+"""
+Reachable Sets of Linear Time-invariant Systems with inputs not necessary contain origin
+"""
+
 
 class ReachLinearZonoAlgo3:
     @dataclass

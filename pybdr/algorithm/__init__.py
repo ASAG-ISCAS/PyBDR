@@ -13,6 +13,7 @@ from .tensor_reach_linear_algo3 import IntervalReachLinearAlgo3
 from .reach_linear_zono_algo1 import ReachLinearZonoAlgo1
 from .reach_linear_zono_algo2 import ReachLinearZonoAlgo2
 from .reach_linear_zono_algo3 import ReachLinearZonoAlgo3
+from .reach_linear_interval_algo1 import ReachLinearIntervalAlgo1
 
 __all__ = ["ASB2008CDC",
            "HSCC2005",
@@ -28,4 +29,5 @@ __all__ = ["ASB2008CDC",
            "IntervalReachLinearAlgo3",
            "ReachLinearZonoAlgo1",
            "ReachLinearZonoAlgo2",
-           "ReachLinearZonoAlgo3"]
+           "ReachLinearZonoAlgo3",
+           "ReachLinearIntervalAlgo1"]
