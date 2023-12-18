@@ -6,7 +6,7 @@ x(t)' = A*x(t) + B*u(t)
 
 
 class LinearSystemSimple:
-    def __init__(self, xa: np.ndarray, ub: np.ndarray):
+    def __init__(self, xa, ub):
         self._xa = np.atleast_2d(xa)
         self._ub = np.atleast_2d(ub)
         assert self._xa.shape[1] == self._ub.shape[0]

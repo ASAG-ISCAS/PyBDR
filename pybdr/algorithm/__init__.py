@@ -7,6 +7,12 @@ from .scs2022 import SCS2022
 from .tensor_reach_linear import IntervalTensorReachLinear
 from .tensor_reach_nonlinear import IntervalTensorReachNonLinear
 from .reach_linear_zono import ReachLinearZonotope
+from .tensor_reach_linear_algo1 import IntervalReachLinearAlgo1
+from .tensor_reach_linear_algo2 import IntervalReachLinearAlgo2
+from .tensor_reach_linear_algo3 import IntervalReachLinearAlgo3
+from .reach_linear_zono_algo1 import ReachLinearZonoAlgo1
+from .reach_linear_zono_algo2 import ReachLinearZonoAlgo2
+from .reach_linear_zono_algo3 import ReachLinearZonoAlgo3
 
 __all__ = ["ASB2008CDC",
            "HSCC2005",
@@ -16,4 +22,10 @@ __all__ = ["ASB2008CDC",
            "SCS2022",
            "IntervalTensorReachLinear",
            "IntervalTensorReachNonLinear",
-           "ReachLinearZonotope"]
+           "ReachLinearZonotope",
+           "IntervalReachLinearAlgo1",
+           "IntervalReachLinearAlgo2",
+           "IntervalReachLinearAlgo3",
+           "ReachLinearZonoAlgo1",
+           "ReachLinearZonoAlgo2",
+           "ReachLinearZonoAlgo3"]
