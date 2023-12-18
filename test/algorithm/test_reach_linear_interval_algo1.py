@@ -23,6 +23,9 @@ def test_reach_linear_interval_algo1_case_00():
 
 
 def test_reach_linear_interval_algo1_case_01():
+    """
+    this test demonstrates that using interval computing reachable sets is pretty rougher than zonotope
+    """
     xa = [[-1, -4], [4, -1]]
     ub = np.array([[1], [1]])
 

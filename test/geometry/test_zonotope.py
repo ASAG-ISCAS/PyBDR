@@ -134,6 +134,16 @@ def test_matmul_case_01():
     plot([b, c], [0, 2])
 
 
+def test_matmul_case_02():
+    a = Interval.rand(2, 2)
+    b = Interval.rand(2)
+    print(b)
+    c = cvt2(b, Geometry.TYPE.ZONOTOPE)
+    d = a @ c
+    e = a @ b
+    plot([b, d, e], [0, 1])
+
+
 def test_boundary_2d():
     z = Zonotope.rand(2, 100)
     zono_bounds = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
