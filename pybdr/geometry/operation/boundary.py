@@ -109,6 +109,11 @@ def _polytope2zonotope(src: Polytope, r: float):
     return [cvt2(box, Geometry.TYPE.ZONOTOPE) for box in boxes]
 
 
+def _zonotope2zonotope_new(src: Zonotope, r: float):
+    bound_boxes = _zonotope2interval(src, r)
+    return [cvt2(box, Geometry.TYPE.POLYTOPE) for box in bound_boxes]
+
+
 def _zonotope2zonotope(src: Zonotope, r: float):
     def __matrix_cross_product(x: np.ndarray):
         from itertools import combinations
@@ -204,6 +209,7 @@ def boundary(src: Geometry.Base, r: float, elem: Geometry.TYPE):
     elif src.type == Geometry.TYPE.ZONOTOPE and elem == Geometry.TYPE.POLYTOPE:
         return _zonotope2polytope(src, r)
     elif src.type == Geometry.TYPE.ZONOTOPE and elem == Geometry.TYPE.ZONOTOPE:
-        return _zonotope2zonotope(src, r)
+        # return _zonotope2zonotope(src, r)
+        return _zonotope2zonotope_new(src, r)
     else:
         raise NotImplementedError
