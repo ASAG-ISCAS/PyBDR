@@ -3,7 +3,7 @@ from itertools import chain
 import numpy as np
 
 from pybdr.geometry import Geometry, Interval, Polytope, Zonotope
-from pybdr.util.functional import CSPSolver, RealPaver
+from pybdr.util.functional import RealPaver
 
 from .convert import cvt2
 
@@ -183,7 +183,7 @@ def _zonotope2zonotope(src: Zonotope, r: float):
 
 
 def _zonotope2interval(src: Zonotope, r: float):
-    return _polytope2interval_realpaver(cvt2(src, Geometry.TYPE.POLYTOPE), r)
+    return _polytope2interval(cvt2(src, Geometry.TYPE.POLYTOPE), r)
 
 
 def _zonotope2polytope(src: Zonotope, r: float):
