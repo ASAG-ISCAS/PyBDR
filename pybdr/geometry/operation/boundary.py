@@ -111,7 +111,7 @@ def _polytope2zonotope(src: Polytope, r: float):
 
 def _zonotope2zonotope_new(src: Zonotope, r: float):
     bound_boxes = _zonotope2interval(src, r)
-    return [cvt2(box, Geometry.TYPE.POLYTOPE) for box in bound_boxes]
+    return [cvt2(box, Geometry.TYPE.ZONOTOPE) for box in bound_boxes]
 
 
 def _zonotope2zonotope(src: Zonotope, r: float):
