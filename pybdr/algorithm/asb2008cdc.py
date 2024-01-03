@@ -11,6 +11,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+
+np.seterr(divide='ignore', invalid='ignore')
 from scipy.special import factorial
 
 from pybdr.dynamic_system import LinSys, NonLinSys
@@ -169,7 +171,7 @@ class ASB2008CDC:
             temp_r_ti, temp_r_tp, abst_err, dims = cls.linear_reach(
                 sys, r0[i], err[i], opt
             )
-            # check if initial set has to be split
+            # check if the initial set has to be split
             if len(dims) <= 0:
                 r_ti.append(temp_r_ti)
                 r_tp.append(temp_r_tp)
@@ -190,7 +192,7 @@ class ASB2008CDC:
             next_ti, next_tp = cls.reach_one_step(sys, tp_set[-1], err[-1], opt)
             opt.step_idx += 1
             ti_set.append(next_ti)
-            ti_time.append(time_pts[opt.step_idx - 1 : opt.step_idx + 1])
+            ti_time.append(time_pts[opt.step_idx - 1: opt.step_idx + 1])
             tp_set.append(next_tp)
             tp_time.append(time_pts[opt.step_idx])
 
