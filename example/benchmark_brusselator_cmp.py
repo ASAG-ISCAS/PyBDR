@@ -28,7 +28,7 @@ if __name__ == '__main__':
     Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
     Zonotope.ORDER = 50
 
-    z = Interval.identity(2) * 0.1 + 0.2;
+    z = Interval.identity(2) * 0.1 + 0.2
 
     no_boundary_analysis = False
 
