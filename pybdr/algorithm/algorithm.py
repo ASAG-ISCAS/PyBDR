@@ -11,7 +11,7 @@ class Algorithm:
         t_end: float = 0
         steps_num: int = 10
         step: float = None
-        step_idx: int = 0  # index of current step
+        step_idx: int = 0  # index of a current step
         r0: [Geometry.Base] = []  # but for some algorithms, this maybe only one set
         u: Geometry.Base = None
 

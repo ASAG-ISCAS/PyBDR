@@ -11,8 +11,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+
+np.seterr(divide='ignore', invalid='ignore')
 from scipy.linalg import expm
 from scipy.special import factorial
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from functools import partial
 
 from pybdr.dynamic_system import LinSys
 from pybdr.geometry import Geometry, Zonotope, Interval
@@ -220,11 +224,11 @@ class ALK2011HSCC:
         return r_hom + rv, r_hom_tp + rv
 
     @classmethod
-    def reach(cls, sys: LinSys, opt: Options):
+    def reach(cls, sys: LinSys, opt: Options, x: Zonotope):
         assert opt.validation(sys.dim)
         # init containers for storing the results
         time_pts = np.linspace(opt.t_start, opt.t_end, opt.steps_num)
-        ti_set, ti_time, tp_set, tp_time = [], [], [opt.r0], [time_pts[0]]
+        ti_set, ti_time, tp_set, tp_time = [], [], [x], [time_pts[0]]
 
         while opt.step_idx < opt.steps_num - 1:
             next_ti, next_tp = cls.reach_one_step(sys, tp_set[-1], opt)
@@ -235,3 +239,6 @@ class ALK2011HSCC:
             tp_time.append(time_pts[opt.step_idx])
 
         return ti_set, tp_set, np.vstack(ti_time), np.array(tp_time)
+
+    # @classmethod
+    # def reach_parallel(cls):

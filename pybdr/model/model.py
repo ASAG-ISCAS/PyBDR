@@ -57,8 +57,8 @@ class Model:
 
     def __take_derivative(self, order: int, v: int):
         if (
-            order - 1 not in self.__inr_series
-            or v not in self.__inr_series[order - 1]["sym"]
+                order - 1 not in self.__inr_series
+                or v not in self.__inr_series[order - 1]["sym"]
         ):
             self.__take_derivative(order - 1, v)
         start, end = self.__inr_idx[v]

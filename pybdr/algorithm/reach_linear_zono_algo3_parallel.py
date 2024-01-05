@@ -3,31 +3,32 @@ from __future__ import annotations
 import numpy as np
 from pybdr.dynamic_system import LinearSystemSimple
 from pybdr.geometry import Interval, Geometry, Zonotope
-from pybdr.geometry.operation import enclose
+from pybdr.geometry.operation import enclose, cvt2
 from dataclasses import dataclass
 from scipy.special import factorial
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from functools import partial
 
 """
-Reachable Sets of Linear Time-invariant Systems without inputs
+Reachable Sets of Linear Time-invariant Systems with inputs not necessary contain origin
 """
 
 
-class ReachLinearZonoAlgo1Parallel:
+class ReachLinearZonoAlgo3Parallel:
     @dataclass
     class Settings:
         t_end: float = 0
         step: float = 0
         eta: int = 4  # number of taylor terms in approximating using taylor series
         x0: Zonotope = None
+        u: Zonotope = None
 
         def __init__(self):
             self._num_steps = 0
 
         def validation(self):
             assert self.t_end >= self.step >= 0
-            assert self.eta >= 3  # at least 3 considering accuracy
+            assert self.eta >= 3
             self._num_steps = round(self.t_end / self.step)
             return True
 
@@ -77,40 +78,88 @@ class ReachLinearZonoAlgo1Parallel:
         return taylor_sums + er
 
     @classmethod
-    def pre_compute(cls, lin_sys: LinearSystemSimple, opts: Settings):
+    def compute_v(cls, a, eta, u, r, er):
+        # compute taylor sums
+        taylor_sums = 0
+        for i in range(0, eta + 1):
+            cof = np.linalg.matrix_power(a, i) * np.power(r, i + 1) / factorial(i + 1)
+            taylor_sums += cof @ u
+
+        return taylor_sums + er * r @ u
+
+    @classmethod
+    def decompose_u(cls, u: Zonotope):
+        """
+        decompose u into u_const and u_set so that u_set contains origin
+        @param u:
+        @return:
+        """
+        return u.c, u - u.c
+
+    @classmethod
+    def compute_pr_const(cls, a_inv, e_ar, u_const):
+        return a_inv @ (e_ar - np.eye(*e_ar.shape)) @ u_const
+
+    @classmethod
+    def compute_pr(cls, prc, v):
+        return prc + cvt2(v - prc, Geometry.TYPE.INTERVAL)
+
+    @classmethod
+    def compute_r_const(cls, e_ar, prc, f, x0, a_inv, uc):
+        # term 00
+        term_00 = enclose(x0, e_ar @ x0 + prc, Geometry.TYPE.ZONOTOPE)
+        # term 01
+        term_01 = -1 * prc
+        # term 02
+        term_02 = f @ x0
+        # term 03
+        term_03 = a_inv @ f @ uc
+
+        return term_00 + term_01 + term_02 + term_03
+
+    @classmethod
+    def compute_r(cls, rc, pr, prc):
+        return rc + pr + prc
+
+    @classmethod
+    def pre_compute(cls, lin_sys: LinearSystemSimple, opts: Settings, x: Zonotope):
+        a_inv = np.linalg.pinv(lin_sys.xa)
         e_ar, er = cls.compute_e_ar(opts.eta, opts.step, lin_sys.xa)
         f = cls.compute_f(opts.eta, lin_sys.xa, er, opts.step)
-        return e_ar, f
+        uc, us = cls.decompose_u(opts.u)
+        prc = cls.compute_pr_const(a_inv, e_ar, uc)
+        rc = cls.compute_r_const(e_ar, prc, f, x, a_inv, uc)
+        v = cls.compute_v(lin_sys.xa, opts.eta, opts.u, opts.step, er)
+        pr = cls.compute_pr(prc, v)
+        r = cls.compute_r(rc, pr, prc)
+
+        return r, e_ar, rc, v, pr
 
     @classmethod
-    def compute_hr(cls, e_ar, x0, f):
-        return enclose(x0, e_ar @ x0, Geometry.TYPE.ZONOTOPE) + f @ x0
+    def reach_one_step(cls, e_ar, rc_cur, v_cur, pr_cur):
+        rc_next = e_ar @ rc_cur
+        v_next = e_ar @ v_cur
+        pr_next = pr_cur + cvt2(v_next, Geometry.TYPE.INTERVAL)
+        r_next = rc_next + pr_next
 
-    @classmethod
-    def reach_one_step(cls, e_ar, hr_cur):
-        return e_ar @ hr_cur
+        return r_next, rc_next, v_next, pr_next
 
     @classmethod
     def reach(cls, lin_sys: LinearSystemSimple, opts: Settings, x: Zonotope):
         assert opts.validation()
 
-        e_ar, f = cls.pre_compute(lin_sys, opts)
-        hr_cur = cls.compute_hr(e_ar, x, f)
+        r0, e_ar, rc_cur, v_cur, pr_cur = cls.pre_compute(lin_sys, opts, x)
 
-        # ri -> time interval reachable sets
-        # rp -> time point reachable sets
-        # ti -> time intervals
-        # tp -> time points
-        ri = [x, hr_cur]
+        ri = [x, r0]
 
         for k in range(opts.num_steps):
-            hr_cur = cls.reach_one_step(e_ar, hr_cur)
-            ri.append(hr_cur)
+            r_cur, rc_cur, v_cur, pr_cur = cls.reach_one_step(e_ar, rc_cur, v_cur, pr_cur)
+            ri.append(r_cur)
 
         return None, ri, None, None
 
     @classmethod
-    def reach_parallel(cls, lin_sys, opts: Settings, xs: [Zonotope]):
+    def reach_parallel(cls, lin_sys: LinearSystemSimple, opts: Settings, xs: [Zonotope]):
 
         with ProcessPoolExecutor() as executor:
             partial_reach = partial(cls.reach, lin_sys, opts)

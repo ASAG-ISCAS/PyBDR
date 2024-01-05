@@ -5,7 +5,7 @@ import sympy
 from pybdr.algorithm import ASB2008CDC
 from pybdr.dynamic_system import NonLinSys
 from pybdr.geometry import Zonotope, Interval, Geometry
-from pybdr.geometry.operation import boundary
+from pybdr.geometry.operation import boundary, cvt2
 from pybdr.model import *
 from pybdr.util.visualization import plot, plot_cmp
 
@@ -40,6 +40,37 @@ def test_2d_vector_field():
     plt.show()
 
 
+def test_brusselatro_asb2008cdc_parallel():
+    # init dynamic system
+    system = NonLinSys(Model(brusselator, [2, 1]))
+
+    # settings for the computation
+    options = ASB2008CDC.Options()
+    options.t_end = 5.4
+    options.step = 0.02
+    options.tensor_order = 2
+    options.taylor_terms = 4
+
+    options.u = Zonotope([0], np.diag([0]))
+    options.u_trans = options.u.c
+
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+    Zonotope.ORDER = 50
+
+    z = Interval([0.1, 0.1], [0.3, 0.3])
+
+    z_bounds = boundary(z, 0.1, Geometry.TYPE.ZONOTOPE)
+
+    print(len(z_bounds))
+
+    ti_whole, tp_whole, _, _ = ASB2008CDC.reach(system, options, cvt2(z, Geometry.TYPE.ZONOTOPE))
+
+    # _, tp_bound, _, _ = ASB2008CDC.reach_parallel(system, options, z_bounds)
+
+    plot([ti_whole], [0, 1])
+
+
 def test_brusselator_large_time_horizon_cmp():
     # init dynamic system
     system = NonLinSys(Model(brusselator, [2, 1]))
@@ -72,7 +103,7 @@ def test_brusselator_large_time_horizon_cmp():
     else:
         # reachable sets computation with boundary analysis
         options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
-        ti_bound, tp_bound, _, _ = ASB2008CDC.reach(system, options)
+        ti_bound, tp_bound, _, _ = ASB2008CDC.reach(options, system)
 
     # visualize the results
     if no_boundary_analysis:

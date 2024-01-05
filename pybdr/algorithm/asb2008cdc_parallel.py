@@ -1,28 +1,23 @@
-"""
-REF:
-
-Althoff, M., Stursberg, O., & Buss, M. (2008, December). Reachability analysis of
-nonlinear systems with uncertain parameters using conservative linearization. In 2008
-47th IEEE Conference on Decision and Control (pp. 4042-4048). IEEE.
-"""
-
 from __future__ import annotations
-
 from dataclasses import dataclass
-
 import numpy as np
 
 np.seterr(divide='ignore', invalid='ignore')
+
 from scipy.special import factorial
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from pybdr.dynamic_system import LinSys, NonLinSys
 from pybdr.geometry import Geometry, Zonotope, Interval
 from pybdr.geometry.operation import cvt2
+from typing import Callable
+from pybdr.model import Model
+from functools import partial
 from .algorithm import Algorithm
 from .alk2011hscc import ALK2011HSCC
 
 
-class ASB2008CDC:
+class ASB2008CDCParallel:
     @dataclass
     class Options(Algorithm.Options):
         taylor_terms: int = 4  # for linearization
@@ -49,8 +44,9 @@ class ASB2008CDC:
             return True
 
     @staticmethod
-    def linearize(sys: NonLinSys, r: Geometry.Base, opt: Options):
+    def linearize(dyn: Callable, dims, r: Geometry.Base, opt: Options):
         opt.lin_err_u = opt.u_trans if opt.u_trans is not None else opt.u.c
+        sys = Model(dyn, dims)
         f0 = sys.evaluate((r.c, opt.lin_err_u), "numpy", 0, 0)
         opt.lin_err_x = r.c + f0 * 0.5 * opt.step
         opt.lin_err_f0 = sys.evaluate((opt.lin_err_x, opt.lin_err_u), "numpy", 0, 0)
@@ -70,7 +66,8 @@ class ASB2008CDC:
         return lin_sys, lin_opt
 
     @staticmethod
-    def abstract_err(sys: NonLinSys, r: Geometry.Base, opt: Options):
+    def abstract_err(dyn, dims, r: Geometry.Base, opt: Options):
+        sys = Model(dyn, dims)
         ihx = cvt2(r, Geometry.TYPE.INTERVAL)
         total_int_x = ihx + opt.lin_err_x
 
@@ -119,8 +116,8 @@ class ASB2008CDC:
             raise Exception("unsupported tensor order")
 
     @classmethod
-    def linear_reach(cls, sys: NonLinSys, r, err, opt: Options):
-        lin_sys, lin_opt = cls.linearize(sys, r, opt)
+    def linear_reach(cls, dyn: Callable, dims, r, err, opt: Options):
+        lin_sys, lin_opt = cls.linearize(dyn, dims, r, opt)
         r_delta = r - opt.lin_err_x
         r_ti, r_tp = ALK2011HSCC.reach_one_step(lin_sys, r_delta, lin_opt)
 
@@ -132,7 +129,7 @@ class ASB2008CDC:
             v_err = Zonotope(0 * applied_err, np.diag(applied_err))
             r_all_err = ALK2011HSCC.error_solution(v_err, lin_opt)
             r_max = r_ti + r_all_err
-            true_err, v_err_dyn = cls.abstract_err(sys, r_max, opt)
+            true_err, v_err_dyn = cls.abstract_err(dyn, dims, r_max, opt)
 
             # compare linearization error with the maximum allowed error
             temp = true_err / applied_err
@@ -165,9 +162,9 @@ class ASB2008CDC:
         return r_ti, r_tp, abstract_err, dim_for_split
 
     @classmethod
-    def reach_one_step(cls, sys: NonLinSys, x, err, opt: Options):
+    def reach_one_step(cls, dyn: Callable, dims, x, err, opt: Options):
 
-        r_ti, r_tp, abst_err, dims = cls.linear_reach(sys, x, err, opt)
+        r_ti, r_tp, abst_err, dims = cls.linear_reach(dyn, dims, x, err, opt)
         # check if the initial set has to be split
         if len(dims) <= 0:
             return r_ti, r_tp
@@ -175,20 +172,37 @@ class ASB2008CDC:
             raise NotImplementedError  # TODO
 
     @classmethod
-    def reach(cls, sys: NonLinSys, opt: Options, x: Zonotope):
-        assert opt.validation(sys.dim)
-        # init containers for storing the results
-        time_pts = np.linspace(opt.t_start, opt.t_end, opt.steps_num)
-        ti_set, ti_time, tp_set, tp_time = [], [], [x], [time_pts[0]]
-        err = [np.zeros(x.shape)]
-        # err = [[np.zeros(r.shape) for r in opt.r0]]
+    def reach(cls, dyn: Callable, dims, opts: Options, x: Zonotope):
+        m = Model(dyn, dims)
+        assert opts.validation(m.dim)
 
-        while opt.step_idx < opt.steps_num - 1:
-            next_ti, next_tp = cls.reach_one_step(sys, tp_set[-1], err[-1], opt)
-            opt.step_idx += 1
+        ti_set, tp_set = [], [x]
+
+        next_tp = x
+
+        for step in range(opts.steps_num):
+            next_ti, next_tp = cls.reach_one_step(dyn, dims, next_tp, np.zeros(x.shape), opts)
             ti_set.append(next_ti)
-            ti_time.append(time_pts[opt.step_idx - 1: opt.step_idx + 1])
             tp_set.append(next_tp)
-            tp_time.append(time_pts[opt.step_idx])
 
-        return ti_set, tp_set, np.vstack(ti_time), np.array(tp_time)
+        return ti_set, tp_set
+
+    @classmethod
+    def reach_parallel(cls, dyn: Callable, dims, opts: Options, xs: [Zonotope]):
+        # init containers for storing the results
+        ri = []
+
+        partial_reach = partial(cls.reach, dyn, dims, opts)
+
+        with ProcessPoolExecutor() as executor:
+            futures = [executor.submit(partial_reach, x) for x in xs]
+
+            for future in as_completed(futures):
+                try:
+                    ri.append(future.result())
+                except Exception as e:
+                    raise e
+
+            ri = [list(group) for group in zip(*ri)]
+
+            return ri
