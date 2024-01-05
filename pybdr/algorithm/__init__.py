@@ -14,6 +14,7 @@ from .reach_linear_zono_algo1 import ReachLinearZonoAlgo1
 from .reach_linear_zono_algo2 import ReachLinearZonoAlgo2
 from .reach_linear_zono_algo3 import ReachLinearZonoAlgo3
 from .reach_linear_interval_algo1 import ReachLinearIntervalAlgo1
+from .reach_linear_zono_algo1_parallel import ReachLinearZonoAlgo1Parallel
 
 __all__ = ["ASB2008CDC",
            "HSCC2005",
@@ -30,4 +31,5 @@ __all__ = ["ASB2008CDC",
            "ReachLinearZonoAlgo1",
            "ReachLinearZonoAlgo2",
            "ReachLinearZonoAlgo3",
-           "ReachLinearIntervalAlgo1"]
+           "ReachLinearIntervalAlgo1",
+           "ReachLinearZonoAlgo1Parallel"]

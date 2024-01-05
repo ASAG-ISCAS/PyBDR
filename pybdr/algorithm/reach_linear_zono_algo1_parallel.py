@@ -6,13 +6,15 @@ from pybdr.geometry import Interval, Geometry, Zonotope
 from pybdr.geometry.operation import enclose
 from dataclasses import dataclass
 from scipy.special import factorial
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from functools import partial
 
 """
 Reachable Sets of Linear Time-invariant Systems without inputs
 """
 
 
-class ReachLinearZonoAlgo1:
+class ReachLinearZonoAlgo1Parallel:
     @dataclass
     class Settings:
         t_end: float = 0
@@ -89,7 +91,7 @@ class ReachLinearZonoAlgo1:
         return e_ar @ hr_cur
 
     @classmethod
-    def reach(cls, lin_sys: LinearSystemSimple, opts: Settings, x0: Zonotope):
+    def _reach(cls, lin_sys: LinearSystemSimple, opts: Settings, x0: Zonotope):
         assert opts.validation()
 
         e_ar, f = cls.pre_compute(lin_sys, opts)
@@ -106,3 +108,16 @@ class ReachLinearZonoAlgo1:
             ri.append(hr_cur)
 
         return None, ri, None, None
+
+    @classmethod
+    def reach(cls, lin_sys, opts: Settings, xs: [Zonotope]):
+        with ProcessPoolExecutor() as executor:
+            partial_reach = partial(cls._reach, lin_sys, opts)
+
+            futures = [executor.submit(partial_reach, x) for x in xs]
+
+            for future in as_completed(futures):
+                try:
+                    return future.result()
+                except Exception as exc:
+                    raise exc
