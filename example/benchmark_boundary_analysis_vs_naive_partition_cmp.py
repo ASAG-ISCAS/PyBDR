@@ -1,19 +1,26 @@
 import numpy as np
 from pybdr.geometry import Interval, Zonotope, Geometry
 from pybdr.geometry.operation import cvt2, partition, boundary
-from pybdr.algorithm import ASB2008CDC
+from pybdr.algorithm import ASB2008CDCParallel
 from pybdr.dynamic_system import NonLinSys
 from pybdr.model import *
 from pybdr.util.visualization import plot, plot_cmp
 from pybdr.util.functional import performance_counter, performance_counter_start
 
 if __name__ == '__main__':
+    # tuples_list = [(1, 'a', 'x', 'u'), (2, 'b', 'y', 'v'), (3, 'c', 'z', 'w')]
+    #
+    # lists_list = [list(t) for t in zip(*tuples_list)]
+    #
+    # print(lists_list)
+    #
+    # exit(False)
     time_start = performance_counter_start()
     # init dynamic system
-    system = NonLinSys(Model(lotka_volterra_2d, [2, 1]))
+    # system = NonLinSys(Model(lotka_volterra_2d, [2, 1]))
 
     # settings for the computation
-    options = ASB2008CDC.Options()
+    options = ASB2008CDCParallel.Options()
     options.t_end = 2.2
     options.step = 0.005
     options.tensor_order = 3
@@ -26,29 +33,37 @@ if __name__ == '__main__':
     Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
     Zonotope.ORDER = 50
 
-    z = Interval.identity(2) * 0.5 + 3
+    init_set = Interval.identity(2) * 0.5 + 3
 
-    options.r0 = [cvt2(z, Geometry.TYPE.ZONOTOPE)]
-    _, tp_whole, _, _ = ASB2008CDC.reach(system, options)
+    _, tp_whole = ASB2008CDCParallel.reach(lotka_volterra_2d, [2, 1], options,
+                                           cvt2(init_set, Geometry.TYPE.ZONOTOPE))
 
+    # NAIVE PARTITION
     # --------------------------------------------------------
     # options.r0 = partition(z, 1, Geometry.TYPE.ZONOTOPE)
+    # xs = partition(init_set, 1, Geometry.TYPE.ZONOTOPE)
     # 4
-    # ASB2008CDC cost: 43.344963666000005s
+    # ASB2008CDCParallel.reach_parallel cost: 20.126129667s
     # --------------------------------------------------------
-    # options.r0 = partition(z, 0.5, Geometry.TYPE.ZONOTOPE)
+    # xs = partition(init_set, 0.5, Geometry.TYPE.ZONOTOPE)
     # 9
-    # ASB2008CDC cost: 3868912500001s
+    # ASB2008CDCParallel.reach_parallel cost: 23.938516459000002s
     # --------------------------------------------------------
-    options.r0 = partition(z, 0.2, Geometry.TYPE.ZONOTOPE)
+    xs = partition(init_set, 0.2, Geometry.TYPE.ZONOTOPE)
     # 36
-    # ASB2008CDC cost: 317.59988937500003s
+    # ASB2008CDCParallel.reach_parallel cost: 65.447113125s
     # --------------------------------------------------------
-    # options.r0 = partition(z, 0.1, Geometry.TYPE.ZONOTOPE)
 
-    print(len(options.r0))
+    #  BOUNDAYR ANALYSIS
+    # --------------------------------------------------------
+    xs = boundary(init_set, 1, Geometry.TYPE.ZONOTOPE)
+    # 8
+    # ASB2008CDCParallel.reach_parallel cost: 22.185758250000003s
 
-    _, tp_part_00, _, _ = ASB2008CDC.reach(system, options)
-    performance_counter(time_start, "ASB2008CDC")
+    print(len(xs))
+
+    _, tp_part_00 = ASB2008CDCParallel.reach_parallel(lotka_volterra_2d, [2, 1], options, xs)
+
+    performance_counter(time_start, "ASB2008CDCParallel.reach_parallel")
 
     plot_cmp([tp_whole, tp_part_00], [0, 1], cs=["#FF5722", "#303F9F"])

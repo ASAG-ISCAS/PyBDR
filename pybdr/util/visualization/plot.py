@@ -139,11 +139,13 @@ def __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled):
     for i in range(len(collections)):
         this_color = plt.cm.turbo(i / len(collections)) if cs is None else cs[i]
 
-        geos = (
-            [collections[i]]
-            if not isinstance(collections[i], list)
-            else list(itertools.chain.from_iterable(collections[i]))
-        )
+        if isinstance(collections[i][0], list):
+            geos = list(itertools.chain.from_iterable(collections[i]))
+        else:
+            geos = collections[i]
+
+        # geos = [collections[i]] if not isinstance(collections[i], list) else list(
+        #     itertools.chain.from_iterable(collections[i]))
 
         for geo in geos:
             if isinstance(geo, np.ndarray):

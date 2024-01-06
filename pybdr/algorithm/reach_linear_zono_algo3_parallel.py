@@ -161,6 +161,9 @@ class ReachLinearZonoAlgo3Parallel:
     @classmethod
     def reach_parallel(cls, lin_sys: LinearSystemSimple, opts: Settings, xs: [Zonotope]):
 
+        def ll_decompose(ll):
+            return [list(group) for group in zip(*ll)]
+
         with ProcessPoolExecutor() as executor:
             partial_reach = partial(cls.reach, lin_sys, opts)
 
@@ -174,6 +177,6 @@ class ReachLinearZonoAlgo3Parallel:
                 except Exception as exc:
                     raise exc
 
-            ri = [list(group) for group in zip(*ri)]
+            ri = ll_decompose(ri)
 
-            return ri
+            return ri[0], ll_decompose(ri[1]), ri[2], ri[3]

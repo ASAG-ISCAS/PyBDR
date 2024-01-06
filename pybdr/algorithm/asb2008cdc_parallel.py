@@ -189,6 +189,10 @@ class ASB2008CDCParallel:
 
     @classmethod
     def reach_parallel(cls, dyn: Callable, dims, opts: Options, xs: [Zonotope]):
+
+        def ll_decompose(ll):
+            return [list(group) for group in zip(*ll)]
+
         # init containers for storing the results
         ri = []
 
@@ -203,6 +207,6 @@ class ASB2008CDCParallel:
                 except Exception as e:
                     raise e
 
-            ri = [list(group) for group in zip(*ri)]
+            ri = ll_decompose(ri)
 
-            return ri
+            return ll_decompose(ri[0]), ll_decompose(ri[1])

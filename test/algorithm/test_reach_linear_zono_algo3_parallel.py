@@ -16,12 +16,12 @@ def test_reach_linear_zono_algo3_case_00():
     lin_sys = LinearSystemSimple(xa, ub)
     opts = ReachLinearZonoAlgo3Parallel.Settings()
     opts.t_end = 5
-    opts.step = 0.04
+    opts.step = 0.01
     opts.eta = 4
     # opts.x0 = cvt2(Interval([0.9, 0.9], [1.1, 1.1]), Geometry.TYPE.ZONOTOPE)
     x0 = Interval([0.9, 0.9], [1.1, 1.1])
     opts.u = cvt2(ub @ Interval(0.1, 0.3), Geometry.TYPE.ZONOTOPE)  # u must contain origin
-    x0_bounds = boundary(x0, 0.0001, Geometry.TYPE.ZONOTOPE)
+    x0_bounds = boundary(x0, 0.1, Geometry.TYPE.ZONOTOPE)
 
     print(len(x0_bounds))
 
@@ -29,7 +29,9 @@ def test_reach_linear_zono_algo3_case_00():
 
     performance_counter(time_tag, "reach_linear_zono_algo3_parallel")
 
-    # plot(ri, [0, 1])
+    print(len(ri))
+
+    plot(ri, [0, 1])
 
 
 def test_reach_linear_zono_algo3_case_01():
@@ -48,6 +50,8 @@ def test_reach_linear_zono_algo3_case_01():
     opts.u = cvt2(ub @ u, Geometry.TYPE.ZONOTOPE)  # this case is special because u does not contain origin
 
     x0_bounds = boundary(x0, 0.1, Geometry.TYPE.ZONOTOPE)
+
+    performance_counter(time_tag, "boundary")
 
     print(len(x0_bounds))
 
