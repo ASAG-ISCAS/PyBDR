@@ -6,8 +6,7 @@ import numpy as np
 import math
 
 # import model_description as md
-import pybdr.model.neural_ode.neural_ode_model1 as md
-
+import pybdr.model.neural_ode.spiral1 as md
 
 def sigmoid(x):
     return 1 / (1 + exp(-x))
@@ -20,7 +19,7 @@ def purelin(x):
 def neuralODE(x, u):
     weight, bias, func_list = md.get_param()
 
-    layer_num = np.shape(bias)[0]
+    layer_num = len(bias)
     dim = np.shape(weight[0])[1]
 
     x = Matrix(x)

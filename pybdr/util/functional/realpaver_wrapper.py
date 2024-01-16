@@ -125,22 +125,22 @@ class RealPaver:
         elif this_sys == "macos":
             bin_name += "mac"
         elif this_sys == "windows":
-            bin_name += "windows"
+            bin_name += "windows.exe"
         else:
             raise Exception("invalid system for realpaver!!!")
         return Path(this_path, "bin", bin_name)
 
     def _solve(self):
         assert self.__input is not None
-
-        with tempfile.NamedTemporaryFile("wt") as file:
+        import os
+        filename = os.path.dirname(__file__) + "\\bin\\tmp.txt"
+        with open(filename, 'w') as file:
             file.write(self.__input)
-            file.flush()
 
-            bin_path = self._get_bin_path()
-            cmd = [bin_path, file.name]
-            proc = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            return proc.stdout
+        bin_path = self._get_bin_path()
+        cmd = [bin_path, filename]
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+        return proc.stdout
 
     def _parse_single_box(self, s: str):
         matched = re.search(_box_name_pat, s)
