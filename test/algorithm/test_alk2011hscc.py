@@ -1,7 +1,7 @@
 import numpy as np
 
 from pybdr.geometry import Zonotope, Geometry, Interval
-from pybdr.dynamic_system import LinearSystemSimple
+from pybdr.dynamic_system import LinSys
 from pybdr.algorithm import ALK2011HSCC
 from pybdr.geometry.operation import cvt2, boundary
 from pybdr.util.visualization import plot, plot_cmp
@@ -11,7 +11,7 @@ def test_case_0():
     a = np.array([[-0.7, -2], [2, -0.7]])
     b = np.identity(2)
 
-    lin_dyn = LinearSystemSimple(a, b)
+    lin_dyn = LinSys(a, b)
 
     # settings for the computation
     options = ALK2011HSCC.Options()

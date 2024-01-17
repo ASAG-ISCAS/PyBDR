@@ -1,5 +1,4 @@
-from .linear_system import LinSys
 from .nonlinear_system import NonLinSys
-from .linear_system_simple import LinearSystemSimple
+from .linear_system import LinSys
 
-__all__ = ["LinSys", "NonLinSys", "LinearSystemSimple"]
+__all__ = ["LinSys", "NonLinSys", "LinSys"]

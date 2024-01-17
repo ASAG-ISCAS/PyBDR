@@ -18,7 +18,7 @@ from scipy.special import factorial
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from functools import partial
 
-from pybdr.dynamic_system import LinearSystemSimple
+from pybdr.dynamic_system import LinSys
 from pybdr.geometry import Geometry, Zonotope, Interval
 from pybdr.geometry.operation import cvt2
 from .algorithm import Algorithm
@@ -51,7 +51,7 @@ class ALK2011HSCC:
             return True
 
     @staticmethod
-    def exponential(sys: LinearSystemSimple, opt: Options):
+    def exponential(sys: LinSys, opt: Options):
         xa_abs = abs(sys.xa)
         xa_power = [sys.xa]
         xa_power_abs = [xa_abs]
@@ -69,7 +69,7 @@ class ALK2011HSCC:
         opt.taylor_err = e
 
     @classmethod
-    def compute_time_interval_err(cls, sys: LinearSystemSimple, opt: Options):
+    def compute_time_interval_err(cls, sys: LinSys, opt: Options):
         # initialize asum
         asum_pos = np.zeros((sys.dim, sys.dim), dtype=float)
         asum_neg = np.zeros((sys.dim, sys.dim), dtype=float)
@@ -95,7 +95,7 @@ class ALK2011HSCC:
         opt.taylor_f = asum + opt.taylor_err
 
     @classmethod
-    def input_time_interval_err(cls, sys: LinearSystemSimple, opt: Options):
+    def input_time_interval_err(cls, sys: LinSys, opt: Options):
         # initialize asum
         asum_pos = np.zeros((sys.dim, sys.dim), dtype=float)
         asum_neg = np.zeros((sys.dim, sys.dim), dtype=float)
@@ -124,7 +124,7 @@ class ALK2011HSCC:
         opt.taylor_input_f = asum + e_input
 
     @classmethod
-    def input_solution(cls, sys: LinearSystemSimple, opt: Options):
+    def input_solution(cls, sys: LinSys, opt: Options):
         v = opt.u if sys.ub is None else sys.ub @ opt.u
         # compute vTrans
         opt.is_rv = True
@@ -182,7 +182,7 @@ class ALK2011HSCC:
         return a_sum + f
 
     @classmethod
-    def delta_reach(cls, sys: LinearSystemSimple, r: Geometry.Base, opt: Options):
+    def delta_reach(cls, sys: LinSys, r: Geometry.Base, opt: Options):
         rhom_tp_delta = (opt.taylor_ea_t - np.eye(sys.dim)) @ r + opt.taylor_r_trans
 
         if r.type == Geometry.TYPE.ZONOTOPE:
@@ -198,7 +198,7 @@ class ALK2011HSCC:
         return rhom + rv
 
     @classmethod
-    def reach_one_step(cls, sys: LinearSystemSimple, r: Zonotope, opt: Options):
+    def reach_one_step(cls, sys: LinSys, r: Zonotope, opt: Options):
         cls.exponential(sys, opt)
         cls.compute_time_interval_err(sys, opt)
         cls.input_solution(sys, opt)
@@ -216,7 +216,7 @@ class ALK2011HSCC:
         return r_hom + rv, r_hom_tp + rv
 
     @classmethod
-    def reach(cls, sys: LinearSystemSimple, opt: Options, x: Zonotope):
+    def reach(cls, sys: LinSys, opt: Options, x: Zonotope):
         assert opt.validation(sys.dim)
         ri_set, rp_set = [x], []
 
@@ -230,7 +230,7 @@ class ALK2011HSCC:
         return ri_set, rp_set
 
     @classmethod
-    def reach_parallel(cls, sys: LinearSystemSimple, opts: Options, xs: [Zonotope]):
+    def reach_parallel(cls, sys: LinSys, opts: Options, xs: [Zonotope]):
         def ll_decompose(ll):
             return [list(group) for group in zip(*ll)]
 

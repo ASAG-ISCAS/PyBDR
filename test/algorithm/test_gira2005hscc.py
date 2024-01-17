@@ -1,7 +1,7 @@
 import numpy as np
 from pybdr.geometry import Zonotope, Geometry, Interval
 from pybdr.geometry.operation import cvt2, boundary
-from pybdr.dynamic_system import LinearSystemSimple
+from pybdr.dynamic_system import LinSys
 from pybdr.algorithm import GIRA2005HSCC
 from pybdr.util.visualization import plot, plot_cmp
 from pybdr.util.functional import performance_counter, performance_counter_start
@@ -13,7 +13,7 @@ def test_reach_linear_zono_algo3_case_00():
     xa = [[-1, -4], [4, -1]]
     ub = np.array([[1], [1]])
 
-    lin_sys = LinearSystemSimple(xa, ub)
+    lin_sys = LinSys(xa, ub)
     opts = GIRA2005HSCC.Options()
     opts.t_end = 5
     opts.step = 0.01
@@ -40,7 +40,7 @@ def test_reach_linear_zono_algo3_case_01():
     xa = np.array([[-1, -4, 0, 0, 0], [4, - 1, 0, 0, 0], [0, 0, -3, 1, 0], [0, 0, -1, -3, 0], [0, 0, 0, 0, -2]])
     ub = np.eye(5)
 
-    lin_sys = LinearSystemSimple(xa, ub)
+    lin_sys = LinSys(xa, ub)
     opts = GIRA2005HSCC.Options()
     opts.t_end = 5
     opts.step = 0.04
@@ -71,7 +71,7 @@ def test_reach_linear_zono_algo3_case_02():
     xa = np.array([[-1, -4, 0, 0, 0], [4, - 1, 0, 0, 0], [0, 0, -3, 1, 0], [0, 0, -1, -3, 0], [0, 0, 0, 0, -2]])
     ub = np.eye(5)
 
-    lin_sys = LinearSystemSimple(xa, ub)
+    lin_sys = LinSys(xa, ub)
     opts = GIRA2005HSCC.Options()
     opts.t_end = 5
     opts.step = 0.01
@@ -105,7 +105,7 @@ def test_reach_linear_zono_algo3_parallel_case_03():
     xa = [[-1, -4], [4, -1]]
     ub = np.array([[1], [1]])
 
-    lin_sys = LinearSystemSimple(xa, ub)
+    lin_sys = LinSys(xa, ub)
     opts = GIRA2005HSCC.Options()
     opts.t_end = 5
     opts.step = 0.1
@@ -150,7 +150,7 @@ def test_reach_linear_zono_algo3_parallel_case_04():
     xa = np.array([[-1, -4, 0, 0, 0], [4, -1, 0, 0, 0], [0, 0, -3, 1, 0], [0, 0, -1, -3, 0], [0, 0, 0, 0, -2]])
     ub = np.eye(5)
 
-    lin_sys = LinearSystemSimple(xa, ub)
+    lin_sys = LinSys(xa, ub)
     opts = GIRA2005HSCC.Options()
     opts.t_end = 5
     opts.step = 0.01
@@ -176,7 +176,7 @@ def test_reach_linear_zono_algo3_parallel_case_04():
     xa = [[-1, 0], [-1, 1]]
     ub = np.array([[1], [1]])
 
-    lin_sys = LinearSystemSimple(xa, ub)
+    lin_sys = LinSys(xa, ub)
     opts = GIRA2005HSCC.Options()
     opts.t_end = 4
     opts.step = 0.01

@@ -1,5 +1,5 @@
 from pybdr.util.functional import Simulator
-from pybdr.dynamic_system import LinearSystemSimple, NonLinSys
+from pybdr.dynamic_system import LinSys, NonLinSys
 from pybdr.model import *
 from pybdr.util.visualization import plot
 import numpy as np
@@ -18,7 +18,7 @@ def test_case_00():
     init_x = [1, 1]
     init_u = [0]
 
-    lin_sys = LinearSystemSimple(xa, ub)
+    lin_sys = LinSys(xa, ub)
     trajs = Simulator.simulate(lin_sys, t_end, step, init_x, init_u)
 
     plot(trajs, [0, 1])
@@ -37,7 +37,7 @@ def test_case_01():
     init_x = [1, 1]
     init_u = np.random.rand(100, 1) * 0.1
 
-    lin_sys = LinearSystemSimple(xa, ub)
+    lin_sys = LinSys(xa, ub)
     trajs = Simulator.simulate(lin_sys, t_end, step, init_x, init_u)
 
     plot(trajs, [0, 1])
@@ -56,7 +56,7 @@ def test_case_02():
     init_x = np.random.rand(100, 2) * 0.2 + 1
     init_u = [0]
 
-    lin_sys = LinearSystemSimple(xa, ub)
+    lin_sys = LinSys(xa, ub)
     trajs = Simulator.simulate(lin_sys, t_end, step, init_x, init_u)
 
     plot(trajs, [0, 1])
@@ -75,7 +75,7 @@ def test_case_03():
     init_x = np.random.rand(100, 2) * 0.2 + 1
     init_u = np.random.rand(100, 1) * 0.1
 
-    lin_sys = LinearSystemSimple(xa, ub)
+    lin_sys = LinSys(xa, ub)
     trajs = Simulator.simulate(lin_sys, t_end, step, init_x, init_u)
 
     plot(trajs, [0, 1])
@@ -94,7 +94,7 @@ def test_case_04():
     init_x = np.ones((1, 5))
     init_u = [1, 0, 0, 0.5, -0.5]
 
-    lin_sys = LinearSystemSimple(xa, ub)
+    lin_sys = LinSys(xa, ub)
     trajs = Simulator.simulate(lin_sys, t_end, step, init_x, init_u)
 
     plot(trajs, [1, 2])
@@ -114,7 +114,7 @@ def test_case_05():
     init_x = np.random.rand(100, 5) * 0.2 + 1
     init_u = np.random.rand(100, 5) * 0.1 + [1, 0, 0, 0.5, -0.5]
 
-    lin_sys = LinearSystemSimple(xa, ub)
+    lin_sys = LinSys(xa, ub)
     trajs = Simulator.simulate(lin_sys, t_end, step, init_x, init_u)
 
     plot(trajs, [1, 2])

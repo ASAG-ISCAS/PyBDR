@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
-from pybdr.dynamic_system import LinearSystemSimple
+from pybdr.dynamic_system import LinSys
 from pybdr.geometry import Interval, Geometry, Zonotope
 from pybdr.geometry.operation import enclose, cvt2
 from dataclasses import dataclass
@@ -123,7 +123,7 @@ class GIRA2005HSCC:
         return rc + pr + prc
 
     @classmethod
-    def pre_compute(cls, lin_sys: LinearSystemSimple, opts: Options, x: Zonotope):
+    def pre_compute(cls, lin_sys: LinSys, opts: Options, x: Zonotope):
         a_inv = np.linalg.pinv(lin_sys.xa)
         e_ar, er = cls.compute_e_ar(opts.eta, opts.step, lin_sys.xa)
         f = cls.compute_f(opts.eta, lin_sys.xa, er, opts.step)
@@ -146,7 +146,7 @@ class GIRA2005HSCC:
         return r_next, rc_next, v_next, pr_next
 
     @classmethod
-    def reach(cls, lin_sys: LinearSystemSimple, opts: Options, x: Zonotope):
+    def reach(cls, lin_sys: LinSys, opts: Options, x: Zonotope):
         assert opts.validation()
 
         r0, e_ar, rc_cur, v_cur, pr_cur = cls.pre_compute(lin_sys, opts, x)
@@ -160,7 +160,7 @@ class GIRA2005HSCC:
         return None, ri, None, None
 
     @classmethod
-    def reach_parallel(cls, lin_sys: LinearSystemSimple, opts: Options, xs: [Zonotope]):
+    def reach_parallel(cls, lin_sys: LinSys, opts: Options, xs: [Zonotope]):
 
         def ll_decompose(ll):
             return [list(group) for group in zip(*ll)]
