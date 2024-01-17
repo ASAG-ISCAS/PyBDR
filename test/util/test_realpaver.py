@@ -77,7 +77,6 @@ def test_03():
     plot([*boxes, p], [0, 1])
 
 
-# %%
 if __name__ == "__main__":
     import sys
 
@@ -105,12 +104,3 @@ if __name__ == "__main__":
     # print(ind)
     # b[ind] = 10
     # print(b)
-
-# # %%
-# if __name__ == "__main__":
-#     import sys
-
-#     sys.path.append(("../../"))
-#     import numpy as np
-
-# %%

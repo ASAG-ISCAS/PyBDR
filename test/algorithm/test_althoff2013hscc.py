@@ -1,25 +1,24 @@
 import numpy as np
-from pybdr.algorithm import ALTHOFF2013HSCC
+from pybdr.algorithm import ALTH2013HSCC
 from pybdr.dynamic_system import NonLinSys
-from pybdr.geometry import Geometry, Zonotope
+from pybdr.geometry import Geometry, Zonotope, Interval
 from pybdr.geometry.operation import cvt2, boundary
 from pybdr.model import *
 from pybdr.util.visualization import plot, plot_cmp
+from pybdr.util.functional import performance_counter_start, performance_counter
 
 
 def test_case_0():
-    # init dynamic system
-    system = NonLinSys(Model(vanderpol, [2, 1]))
-
     # settings for the computation
-    options = ALTHOFF2013HSCC.Options()
+    options = ALTH2013HSCC.Options()
     options.t_end = 6.74
     options.step = 0.005
     options.taylor_terms = 4
     options.tensor_order = 3
-    options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
+    # options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
     options.u = Zonotope.zero(1, 1)
     options.u_trans = np.zeros(1)
+    x0 = Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))
 
     # settings for using Zonotope
     Zonotope.ORDER = 50
@@ -27,20 +26,42 @@ def test_case_0():
     Zonotope.ERROR_ORDER = 20
 
     # reachable sets
-    ti, tp, _, _ = ALTHOFF2013HSCC.reach(system, options)
+    ri, rp = ALTH2013HSCC.reach(vanderpol, [2, 1], options, x0)
 
     # visualize the results
-    plot(tp, [0, 1])
+    plot(rp, [0, 1])
+
+
+def test_case_1():
+    # settings for the computation
+    options = ALTH2013HSCC.Options()
+    options.t_end = 6.74
+    options.step = 0.005
+    options.taylor_terms = 4
+    options.tensor_order = 3
+    options.u = Zonotope.zero(1, 1)
+    options.u_trans = np.zeros(1)
+
+    x0 = Interval([1.23, 2.34], [1.57, 2.46])
+    xs = boundary(x0, 1, Geometry.TYPE.ZONOTOPE)
+
+    # settings for using Zonotope
+    Zonotope.ORDER = 50
+    Zonotope.INTERMEDIATE_ORDER = 50
+    Zonotope.ERROR_ORDER = 20
+
+    # reachable sets
+    ri, rp = ALTH2013HSCC.reach_parallel(vanderpol, [2, 1], options, xs)
+
+    # visualize the results
+    plot(rp, [0, 1])
 
 
 def test_pi_controller_with_disturbance_cmp():
-    # init dynamic system
-    system = NonLinSys(Model(pi_controller_with_disturbance, [2, 1]))
-
     # settings for the computation
-    options = ALTHOFF2013HSCC.Options()
-    options.t_end = 2
-    options.step = 0.005
+    options = ALTH2013HSCC.Options()
+    options.t_end = 4
+    options.step = 0.01
     options.tensor_order = 3
     options.taylor_terms = 4
 
@@ -51,36 +72,24 @@ def test_pi_controller_with_disturbance_cmp():
     Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
     Zonotope.ORDER = 50
 
-    z = Zonotope([1, 0], np.diag([0.1, 0.1]))
+    z = Interval([0.9, -0.1], [1.1, 0.1])
+    x0 = cvt2(z, Geometry.TYPE.ZONOTOPE)
+    xs = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
 
-    # reachable sets computation without boundary analysis
-    options.r0 = [z]
-    ti_whole, tp_whole, _, _ = ALTHOFF2013HSCC.reach(system, options)
-
-    with_bound = False
-
-    tp_bound = []
-    if with_bound:
-        # reachable sets computation with boundary analysis
-        options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
-        ti_bound, tp_bound, _, _ = ALTHOFF2013HSCC.reach(system, options)
+    ri_without_bound, rp_without_bound = ALTH2013HSCC.reach(pi_controller_with_disturbance, [2, 1], options, x0)
+    ri_with_bound, rp_with_bound = ALTH2013HSCC.reach_parallel(pi_controller_with_disturbance, [2, 1], options, xs)
 
     # visualize the results
-    plot_cmp([tp_whole, tp_bound], [0, 1], cs=["#FF5722", "#303F9F"])
+    plot_cmp([ri_without_bound, ri_with_bound], [0, 1], cs=["#FF5722", "#303F9F"], filled=True)
 
 
-def test_vanderpol_bound_reach():
-    # init dynamic system
-    system = NonLinSys(Model(vanderpol, [2, 1]))
-
+def test_vanderpol_cmp():
     # settings for the computation
-    options = ALTHOFF2013HSCC.Options()
+    options = ALTH2013HSCC.Options()
     options.t_end = 6.74
     options.step = 0.005
     options.taylor_terms = 4
-    options.tensor_order = 2
-    z = Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))
-    options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+    options.tensor_order = 3
     options.u = Zonotope.zero(1, 1)
     options.u_trans = np.zeros(1)
 
@@ -89,83 +98,48 @@ def test_vanderpol_bound_reach():
     Zonotope.INTERMEDIATE_ORDER = 50
     Zonotope.ERROR_ORDER = 20
 
-    # reachable sets
-    ti, tp, _, _ = ALTHOFF2013HSCC.reach(system, options)
+    z = Interval([1.23, 2.34], [1.57, 2.46])
+
+    x0 = cvt2(z, Geometry.TYPE.ZONOTOPE)
+    xs = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+
+    ri_without_bound, rp_without_bound = ALTH2013HSCC.reach(vanderpol, [2, 1], options, x0)
+    ri_with_bound, rp_with_bound = ALTH2013HSCC.reach_parallel(vanderpol, [2, 1], options, xs)
 
     # visualize the results
-    plot(tp, [0, 1])
-
-
-def test_van_der_pol_using_zonotope():
-    # init dynamic system
-    system = NonLinSys(Model(vanderpol, [2, 1]))
-
-    # settings for the computation
-    options = ALTHOFF2013HSCC.Options()
-    options.t_end = 6.74
-    options.step = 0.005
-    options.taylor_terms = 4
-    options.tensor_order = 3
-    options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
-    options.u = Zonotope.zero(1, 1)
-    options.u_trans = np.zeros(1)
-
-    # settings for using Zonotope
-    Zonotope.ORDER = 50
-    Zonotope.INTERMEDIATE_ORDER = 50
-    Zonotope.ERROR_ORDER = 20
-
-    # reachable sets
-    ti, tp, _, _ = ALTHOFF2013HSCC.reach(system, options)
-
-    # visualize the results
-    plot(tp, [0, 1])
-
-
-def test_van_der_pol_using_polyzonotope():
-    # init dynamic system
-    system = NonLinSys(Model(vanderpol, [2, 1]))
-
-    # settings for the computation
-    options = ALTHOFF2013HSCC.Options()
-    options.t_end = 6.74
-    options.step = 0.005
-    options.taylor_terms = 4
-    options.tensor_order = 3
-    options.r0 = [Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))]
-    options.u = Zonotope.zero(1, 1)
-    options.u_trans = np.zeros(1)
-
-    # reachable sets
-    ti, tp, _, _ = ALTHOFF2013HSCC.reach(system, options)
-
-    # visualize the results
-    plot(tp, [0, 1])
+    plot_cmp([ri_without_bound, ri_with_bound], [0, 1], cs=["#FF5722", "#303F9F"], filled=True)
 
 
 def test_tank6eq():
-    # init dynamic system
-    system = NonLinSys(Model(tank6eq, [6, 1]))
-
-    # settings for the computations
-    options = ALTHOFF2013HSCC.Options()
+    # settings for the computation
+    options = ALTH2013HSCC.Options()
     options.t_end = 400
     options.step = 4
-    options.tensor_order = 3
     options.taylor_terms = 4
-    options.r0 = [Zonotope([2, 4, 4, 2, 10, 4], np.eye(6) * 0.2)]
-    options.u = Zonotope([0], [[0.005]])
+    options.tensor_order = 3
     options.u = Zonotope.zero(1, 1)
     options.u_trans = np.zeros(1)
 
-    # settings for using geometry
-    Zonotope.REDUCE_METHOD = Zonotope.METHOD.REDUCE.GIRARD
+    # settings for using Zonotope
     Zonotope.ORDER = 50
     Zonotope.INTERMEDIATE_ORDER = 50
     Zonotope.ERROR_ORDER = 20
 
-    ti, tp, _, _ = ALTHOFF2013HSCC.reach(system, options)
+    c = np.array([2, 4, 4, 2, 10, 4])
+    z = Interval(c - 0.2, c + 0.2)
 
-    plot(tp, [0, 1])
-    plot(tp, [2, 3])
-    plot(tp, [4, 5])
+    x0 = cvt2(z, Geometry.TYPE.ZONOTOPE)
+    xs = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+
+    time_tag = performance_counter_start()
+
+    ri_without_bound, rp_without_bound = ALTH2013HSCC.reach(tank6eq, [6, 1], options, x0)
+    time_tag = performance_counter(time_tag, 'reach')
+
+    ri_with_bound, rp_with_bound = ALTH2013HSCC.reach_parallel(tank6eq, [6, 1], options, xs)
+    time_tag = performance_counter(time_tag, 'reach_parallel')
+
+    # visualize the results
+    plot_cmp([ri_without_bound, ri_with_bound], [0, 1], cs=["#FF5722", "#303F9F"], filled=True)
+    plot_cmp([ri_without_bound, ri_with_bound], [2, 3], cs=["#FF5722", "#303F9F"], filled=True)
+    plot_cmp([ri_without_bound, ri_with_bound], [4, 5], cs=["#FF5722", "#303F9F"], filled=True)

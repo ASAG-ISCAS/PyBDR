@@ -10,12 +10,19 @@ from __future__ import annotations
 from dataclasses import dataclass
 import cvxpy as cp
 import numpy as np
-from scipy.linalg import block_diag
-from pybdr.dynamic_system import NonLinSys
+from typing import Callable
+from functools import partial
 from pybdr.geometry import Geometry, Polytope, Zonotope
 from pybdr.geometry.operation import cvt2, boundary
+from pybdr.model import Model
 from .algorithm import Algorithm
 from .asb2008cdc import ASB2008CDC
+
+np.seterr(divide="ignore", invalid="ignore")
+
+
+def _rev_dyn(dyn, x, u):
+    return -1 * dyn(x, u)
 
 
 class XSE2016CAV:
@@ -32,12 +39,15 @@ class XSE2016CAV:
             return True
 
     @classmethod
-    def boundary_back(cls, sys: NonLinSys, u, epsilon, opt: ASB2008CDC.Options):
+    def boundary_back(cls, dyn: Callable, dims, u, epsilon, opt: ASB2008CDC.Options):
+
+        rev_dyn = partial(_rev_dyn, dyn)
+
+        m = Model(rev_dyn, dims)
+        m.reverse()
         bounds = boundary(u, epsilon, Geometry.TYPE.ZONOTOPE)
-        r0 = [cvt2(bd, Geometry.TYPE.ZONOTOPE) for bd in bounds]
-        opt.r0 = r0
-        _, tps, _, _ = ASB2008CDC.reach(sys, opt)
-        return [cvt2(zono, Geometry.TYPE.INTERVAL) for zono in tps[-1]]
+        _, rp = ASB2008CDC.reach_parallel(m.f, dims, opt, bounds)
+        return [cvt2(zono, Geometry.TYPE.INTERVAL) for zono in rp[-1]]
 
     @classmethod
     def polytope(cls, omega):
@@ -51,8 +61,8 @@ class XSE2016CAV:
         num_box = len(omega)
         bj = []
         for i in range(num_box):
-            x = cp.Variable(o.dim + 1)
-            c = np.zeros(o.dim + 1)
+            x = cp.Variable(o.shape + 1)
+            c = np.zeros(o.shape + 1)
             c[-1] = 1
 
             constraints = []
@@ -79,8 +89,8 @@ class XSE2016CAV:
 
     @classmethod
     def get_d(cls, o: Polytope):  # polytope before contraction
-        x = cp.Variable(o.dim + 1)
-        c = np.zeros(o.dim + 1)
+        x = cp.Variable(o.shape + 1)
+        c = np.zeros(o.shape + 1)
         c[-1] = 1
 
         constraints = []
@@ -96,11 +106,10 @@ class XSE2016CAV:
         return x.value[-1]  # which is d
 
     @classmethod
-    def verification(cls, o, u_back, sys, bu, epsilon, opt: ASB2008CDC.Options):
+    def verification(cls, dyn, dims, o, u_back, bu, epsilon, opt: ASB2008CDC.Options):
         r0 = Zonotope(u_back.c, np.eye(u_back.c.shape[0]) * 0.1)
-        opt.r0 = [r0]
-        _, tps, _, _ = ASB2008CDC.reach(sys, opt)
-        sx = tps[-1][-1]
+        _, rp = ASB2008CDC.reach(dyn, dims, opt, r0)
+        sx = rp[-1]
         is_inside = sx in o
         d = cls.get_d(o)
         if abs(bu / d) > epsilon or not is_inside:
@@ -108,19 +117,18 @@ class XSE2016CAV:
         return True
 
     @classmethod
-    def one_step_backward(cls, u, sys, opt: Options, opt_back: ASB2008CDC.Options):
-        sys.reverse()  # reverse the system for backward computation
-        omega = cls.boundary_back(sys, u, opt.epsilon_m, opt_back)
-        o = cls.polytope(omega)
-        u_back, bu = cls.contraction(omega, o, opt)
+    def one_step_backward(cls, dyn: Callable, dims, u, opt: Options, opt_back: ASB2008CDC.Options):
 
-        sys.reverse()  # reverse the system for forward computation
-        if not cls.verification(o, u_back, sys, bu, opt.epsilon, opt_back):
+        omega = cls.boundary_back(dyn, dims, u, opt.epsilon_m, opt_back)
+        o = cls.polytope(omega)
+        u_back, bu = cls.contraction(omega, o)
+        if not cls.verification(dyn, dims, o, u_back, bu, opt.epsilon, opt_back):
             return None, False
         return u_back, True
 
     @classmethod
-    def reach(cls, sys: NonLinSys, opt: Options, opt_back: ASB2008CDC.Options):
+    def reach(cls, dyn: Callable, dims, opt: Options, opt_back: ASB2008CDC.Options):
+        sys = Model(dyn, dims)
         assert opt.validation(sys.dim)
         assert opt_back.validation(sys.dim)
         tp_set, tp_time = [], []
@@ -131,7 +139,7 @@ class XSE2016CAV:
 
         # loop over all backward steps
         while opt.step_idx >= 0:
-            u, is_valid = cls.one_step_backward(u, sys, opt, opt_back)
+            u, is_valid = cls.one_step_backward(dyn, dims, u, opt, opt_back)
             opt.step_idx -= 1
             if is_valid:
                 tp_set.append(u)

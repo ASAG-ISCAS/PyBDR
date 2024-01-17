@@ -19,3 +19,7 @@ def test_power_2d_01():
     diff = b - c
     print(abs(diff).sum())
     assert np.allclose(b, c, rtol=1.e-10, atol=1.e-10)
+
+
+if __name__ == '__main__':
+    pass

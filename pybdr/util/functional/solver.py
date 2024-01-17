@@ -3,7 +3,7 @@ import cvxpy as cp
 
 def lp(c, ieqa=None, ieqb=None, eqa=None, eqb=None, lb=None, ub=None, threads_num=8):
     """
-    linear programming solve the problem as
+    linear programming solves the problem as
     min c@x
     s.t. ieqa@x<=ieqb
          eqa@x==eqb

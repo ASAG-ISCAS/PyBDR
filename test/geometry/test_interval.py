@@ -440,3 +440,7 @@ def test_contains():
     print(b.contains([0, 3]))
     print(b.contains(np.array([0, 0])))
     print(b.contains(np.array([0, 3])))
+
+
+if __name__ == '__main__':
+    pass

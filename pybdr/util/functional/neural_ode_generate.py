@@ -3,10 +3,10 @@ import sys
 
 sys.path.append("./../../")
 import numpy as np
-import math
 
 # import model_description as md
-import pybdr.model.neural_ode.spiral1 as md
+import pybdr.model.neural_ode_spiral1 as md
+
 
 def sigmoid(x):
     return 1 / (1 + exp(-x))

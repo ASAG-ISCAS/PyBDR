@@ -224,3 +224,7 @@ def test_proj():
     p = cvt2(z, Geometry.TYPE.POLYTOPE)
     plot([p, z], [0, 1])
     plot([p, z00, z01, z02], [0, 1])
+
+
+if __name__ == '__main__':
+    pass

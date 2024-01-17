@@ -63,3 +63,7 @@ def test_zonotope2zonotope():
     z = Zonotope.rand(2, 5)
     bound_boxes = boundary(z, 0.01, Geometry.TYPE.ZONOTOPE)
     plot([z, *bound_boxes], [0, 1])
+
+
+if __name__ == '__main__':
+    pass

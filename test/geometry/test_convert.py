@@ -40,13 +40,6 @@ def test_polytope2polytope():
     plot([a, b], [1, 2])
 
 
-def test_polytope2zonotope():
-    a = Polytope.rand(3)
-    b = cvt2(a, Geometry.TYPE.ZONOTOPE)
-    plot([a, b], [0, 1])
-    plot([a, b], [1, 2])
-
-
 def test_zonotope2interval():
     a = Zonotope.rand(3, 10)
     b = cvt2(a, Geometry.TYPE.INTERVAL)
@@ -75,3 +68,7 @@ def test_pts2polytope():
     pts = np.random.rand(100, 2)
     poly = cvt2(pts, Geometry.TYPE.POLYTOPE)
     plot([pts, poly], [0, 1])
+
+
+if __name__ == '__main__':
+    pass

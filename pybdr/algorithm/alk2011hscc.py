@@ -18,7 +18,7 @@ from scipy.special import factorial
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from functools import partial
 
-from pybdr.dynamic_system import LinSys
+from pybdr.dynamic_system import LinearSystemSimple
 from pybdr.geometry import Geometry, Zonotope, Interval
 from pybdr.geometry.operation import cvt2
 from .algorithm import Algorithm
@@ -44,13 +44,14 @@ class ALK2011HSCC:
         origin_contained = None
 
         def validation(self, dim: int):
+            self._validate_time_related()
             i = np.arange(1, self.taylor_terms + 2)
             self.factors = np.power(self.step, i) / factorial(i)
             # TODO
             return True
 
     @staticmethod
-    def exponential(sys: LinSys, opt: Options):
+    def exponential(sys: LinearSystemSimple, opt: Options):
         xa_abs = abs(sys.xa)
         xa_power = [sys.xa]
         xa_power_abs = [xa_abs]
@@ -68,7 +69,7 @@ class ALK2011HSCC:
         opt.taylor_err = e
 
     @classmethod
-    def compute_time_interval_err(cls, sys: LinSys, opt: Options):
+    def compute_time_interval_err(cls, sys: LinearSystemSimple, opt: Options):
         # initialize asum
         asum_pos = np.zeros((sys.dim, sys.dim), dtype=float)
         asum_neg = np.zeros((sys.dim, sys.dim), dtype=float)
@@ -85,7 +86,7 @@ class ALK2011HSCC:
             neg_ind = opt.taylor_powers[i] < 0
             apos[pos_ind] = opt.taylor_powers[i][pos_ind]
             aneg[neg_ind] = opt.taylor_powers[i][neg_ind]
-            # compute powers; factor is always negative
+            # compute powers; a factor is always negative
             asum_pos += factor * aneg
             asum_neg += factor * apos
         # instantiate interval matrix
@@ -94,7 +95,7 @@ class ALK2011HSCC:
         opt.taylor_f = asum + opt.taylor_err
 
     @classmethod
-    def input_time_interval_err(cls, sys: LinSys, opt: Options):
+    def input_time_interval_err(cls, sys: LinearSystemSimple, opt: Options):
         # initialize asum
         asum_pos = np.zeros((sys.dim, sys.dim), dtype=float)
         asum_neg = np.zeros((sys.dim, sys.dim), dtype=float)
@@ -111,7 +112,7 @@ class ALK2011HSCC:
             neg_ind = opt.taylor_powers[i - 1] < 0
             apos[pos_ind] = opt.taylor_powers[i - 1][pos_ind]
             aneg[neg_ind] = opt.taylor_powers[i - 1][neg_ind]
-            # compute powers; factor is always negative
+            # compute powers; a factor is always negative
             asum_pos += factor * aneg
             asum_neg += factor * apos
         # instantiate interval matrix
@@ -123,7 +124,7 @@ class ALK2011HSCC:
         opt.taylor_input_f = asum + e_input
 
     @classmethod
-    def input_solution(cls, sys: LinSys, opt: Options):
+    def input_solution(cls, sys: LinearSystemSimple, opt: Options):
         v = opt.u if sys.ub is None else sys.ub @ opt.u
         # compute vTrans
         opt.is_rv = True
@@ -150,11 +151,12 @@ class ALK2011HSCC:
             for i in range(opt.taylor_terms):
                 # compute sum
                 a_sum += opt.taylor_powers[i] * opt.factors[i + 1]
+            input_solv = Zonotope.zero(sys.dim)
 
         # compute solution due to constant input
         ea_int = a_sum + opt.taylor_err * opt.step
         input_solv_trans = ea_int * cvt2(v_trans, Geometry.TYPE.ZONOTOPE)
-        # compute additional uncertainty if origin is not contained in input set
+        # compute additional uncertainty if origin is not contained in the input set
         if opt.origin_contained:
             raise NotImplementedError  # TODO
         else:
@@ -164,16 +166,8 @@ class ALK2011HSCC:
 
         # write to object structure
         opt.taylor_v = v
-        if opt.is_rv and input_solv.z.sum().astype(bool):  # need refine ???
-            opt.taylor_rv = input_solv
-        else:
-            opt.taylor_rv = Zonotope.zero(sys.dim)
-
-        if input_solv_trans.z.sum().astype(bool):
-            opt.taylor_r_trans = input_solv_trans
-        else:
-            opt.taylor_rv = Zonotope.zero(sys.dim)
-
+        opt.taylor_rv = input_solv
+        opt.taylor_r_trans = input_solv_trans
         opt.taylor_input_corr = input_corr
         opt.taylor_ea_int = ea_int
 
@@ -188,14 +182,12 @@ class ALK2011HSCC:
         return a_sum + f
 
     @classmethod
-    def delta_reach(cls, sys: LinSys, r: Geometry.Base, opt: Options):
+    def delta_reach(cls, sys: LinearSystemSimple, r: Geometry.Base, opt: Options):
         rhom_tp_delta = (opt.taylor_ea_t - np.eye(sys.dim)) @ r + opt.taylor_r_trans
 
         if r.type == Geometry.TYPE.ZONOTOPE:
             o = Zonotope.zero(sys.dim, 0)
             rhom = o.enclose(rhom_tp_delta) + opt.taylor_f * r + opt.taylor_input_corr
-        elif r.type == Geometry.TYPE.POLY_ZONOTOPE:
-            raise NotImplementedError
         else:
             raise NotImplementedError
         # reduce zonotope
@@ -206,7 +198,7 @@ class ALK2011HSCC:
         return rhom + rv
 
     @classmethod
-    def reach_one_step(cls, sys: LinSys, r: Zonotope, opt: Options):
+    def reach_one_step(cls, sys: LinearSystemSimple, r: Zonotope, opt: Options):
         cls.exponential(sys, opt)
         cls.compute_time_interval_err(sys, opt)
         cls.input_solution(sys, opt)
@@ -224,21 +216,53 @@ class ALK2011HSCC:
         return r_hom + rv, r_hom_tp + rv
 
     @classmethod
-    def reach(cls, sys: LinSys, opt: Options, x: Zonotope):
+    def reach(cls, sys: LinearSystemSimple, opt: Options, x: Zonotope):
         assert opt.validation(sys.dim)
-        # init containers for storing the results
-        time_pts = np.linspace(opt.t_start, opt.t_end, opt.steps_num)
-        ti_set, ti_time, tp_set, tp_time = [], [], [x], [time_pts[0]]
+        ri_set, rp_set = [x], []
 
-        while opt.step_idx < opt.steps_num - 1:
-            next_ti, next_tp = cls.reach_one_step(sys, tp_set[-1], opt)
-            opt.step_idx += 1
-            ti_set.append(next_ti)
-            ti_time.append(time_pts[opt.step_idx - 1: opt.step_idx + 1])
-            tp_set.append(next_tp)
-            tp_time.append(time_pts[opt.step_idx])
+        next_rp = x
 
-        return ti_set, tp_set, np.vstack(ti_time), np.array(tp_time)
+        for i in range(opt.steps_num):
+            next_ri, next_rp = cls.reach_one_step(sys, next_rp, opt)
+            ri_set.append(next_ri)
+            rp_set.append(next_rp)
+
+        return ri_set, rp_set
+
+    @classmethod
+    def reach_parallel(cls, sys: LinearSystemSimple, opts: Options, xs: [Zonotope]):
+        def ll_decompose(ll):
+            return [list(group) for group in zip(*ll)]
+
+        with ProcessPoolExecutor() as executor:
+            partial_reach = partial(cls.reach, sys, opts)
+
+            futures = [executor.submit(partial_reach, x) for x in xs]
+
+            rc = []
+
+            for future in as_completed(futures):
+                try:
+                    rc.append(future.result())
+                except Exception as exc:
+                    raise exc
+
+            rc = ll_decompose(rc)
+
+            return ll_decompose(rc[0]), ll_decompose(rc[1])
 
     # @classmethod
-    # def reach_parallel(cls):
+    # def reach(cls, sys: LinearSystemSimple, opt: Options, x: Zonotope):
+    #     assert opt.validation(sys.dim)
+    #
+    #     ti_set, tp_set = [], [x]
+    #
+    #     next_tp = x
+    #
+    #     while opt.step_idx < opt.steps_num - 1:
+    #         next_ti, next_tp = cls.reach_one_step(sys, next_tp, opt)
+    #         opt.step_idx += 1
+    #         ti_set.append(next_ti)
+    #         tp_set.append(next_tp)
+    #
+    #     return ti_set, tp_set

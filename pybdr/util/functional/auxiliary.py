@@ -7,7 +7,7 @@ import time
 
 def is_empty(arr: (np.ndarray, coo_matrix)) -> bool:
     """
-    check if given array is empty or not, same as MATLAB isempty function
+    check if a given array is empty or not, same as MATLAB isempty function
     :param arr: given array
     :return: returns True if X is an empty array and 0 otherwise.
     An empty array has no elements, that is prod(size(X))==0.
@@ -17,7 +17,7 @@ def is_empty(arr: (np.ndarray, coo_matrix)) -> bool:
 
 def cross_ndim(m: np.ndarray) -> np.ndarray:
     """
-    compute n-dimensional cross product
+    compute n-dimensional cross-product
     :param m: matrix storing column vectors
     :return: orthogonal vector
     """

@@ -100,3 +100,7 @@ def test_proj():
     vs = poly.vertices
     proj_poly = poly.proj([0, 1])
     plot([proj_poly, poly, vs], [0, 1])
+
+
+if __name__ == '__main__':
+    pass

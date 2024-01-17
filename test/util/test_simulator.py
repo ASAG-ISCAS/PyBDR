@@ -149,3 +149,7 @@ def test_case_07():
     trajs = Simulator.simulate(nonlin_sys, t_end, step, init_x, init_u)
 
     plot(trajs, [0, 1])
+
+
+if __name__ == '__main__':
+    pass

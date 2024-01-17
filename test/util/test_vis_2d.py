@@ -17,6 +17,15 @@ def test_plot_zonotope():
     print(a)
 
 
+def test_plot_degenerate_zonotope():
+    a = Interval([1, 2, 3], [2, 2, 3])
+    b = cvt2(a, Geometry.TYPE.ZONOTOPE)
+
+    print(b.vertices)
+
+    plot([a, b], [0, 1])
+
+
 def test_plot_polytope():
     from pybdr.geometry.operation import cvt2
 
@@ -44,3 +53,7 @@ def test_plot_polytope_level():
     poly_10 = Polytope(a, b2)
 
     plot([poly_00, poly_01, poly_10], [0, 1])
+
+
+if __name__ == '__main__':
+    pass

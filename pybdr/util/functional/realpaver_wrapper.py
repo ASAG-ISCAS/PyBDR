@@ -12,7 +12,7 @@ import tempfile
 import numpy as np
 
 from pybdr.geometry import Interval
-from pybdr.util.functional.auxiliary import get_system
+from pybdr.util.functional.auxiliary import get_system, time_stamp
 
 _constraint_pat = r"([a-zA-Z\d_]+)\s+in\s+(\[|\])(.*),(.*)(\]|\[)"
 _box_name_pat = r"(INNER|OUTER|INITIAL)\sBOX(\s\d+)*"
@@ -133,13 +133,16 @@ class RealPaver:
     def _solve(self):
         assert self.__input is not None
         import os
-        filename = os.path.dirname(__file__) + "\\bin\\tmp.txt"
+
+        filename = os.path.join(os.path.dirname(__file__), "bin", time_stamp() + "tmp.txt")
+
         with open(filename, 'w') as file:
             file.write(self.__input)
 
         bin_path = self._get_bin_path()
         cmd = [bin_path, filename]
         proc = subprocess.run(cmd, capture_output=True, text=True)
+        os.remove(filename)
         return proc.stdout
 
     def _parse_single_box(self, s: str):

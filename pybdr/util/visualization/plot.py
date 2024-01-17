@@ -23,7 +23,7 @@ def __2d_add_interval(ax, i: "Interval", dims, color, filled):
             closed=True,
             alpha=1,
             fill=filled,
-            linewidth=1,
+            linewidth=5,
             edgecolor=color,
             facecolor=color,
         )
@@ -95,7 +95,7 @@ def __2d_plot(
                 raise NotImplementedError
 
     ax.autoscale_view()
-    # ax.axis("equal")
+    ax.axis("equal")
     ax.set_xlabel("x" + str(dims[0]))
     ax.set_ylabel("x" + str(dims[1]))
 

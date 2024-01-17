@@ -1,13 +1,13 @@
+from __future__ import annotations
+
 import numpy as np
 
-from pybdr.algorithm import XSE2016CAV, ASB2008CDC
-from pybdr.dynamic_system import NonLinSys
-from pybdr.geometry import Interval, Zonotope
-from pybdr.model import *
+from pybdr.geometry import Zonotope, Interval
+from pybdr.algorithm import ASB2008CDC, XSE2016CAV
+from pybdr.model import synchronous_machine
 from pybdr.util.visualization import plot
 
-
-def test_case_00():
+if __name__ == "__main__":
     # settings for the under approximation computation
     options = XSE2016CAV.Options()
     options.t_end = 2
