@@ -108,7 +108,7 @@ these sample files, users can gain an understanding of how to modify the dynamic
 reachability analysis. This feature helps users experiment with their analysis by using different settings to assess
 their effects on the overall computation of the reachable sets.-->
 
-For example, consider following dynamic system:
+For example, consider the following dynamic system:
 
 $$
 \begin{align*}
@@ -163,12 +163,12 @@ For large initial sets,
 
 |                                                         System                                                          |                                                                  Code                                                                   |   Reachable Sets (Orange-NBA,Blue-BA)   |
 |:-----------------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------:|
-|        [synchronous machine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/synchronous_machine.py)        | [benchmark_synchronous_machine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_synchronous_machine_cmp.py) |   ![](doc/imgs/sync_machine_cmp.png)    |
-| [Lotka Volterra model of 2 variables](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/lotka_volterra_2d.py) |   [benchmark_lotka_volterra_2d_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_lotka_volterra_2d_cmp.py)   | ![](doc/imgs/lotka_volterra_2d_cmp.png) |
-|                 [Jet engine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/jet_engine.py)                 |          [benchmark_jet_engine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_jet_engine_cmp.py)          |    ![](doc/imgs/jet_engine_cmp.png)     |
+|        [synchronous machine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/synchronous_machine.py)        | [benchmark_synchronous_machine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_synchronous_machine_cmp.py) |   ![](doc/imgs/sync_machine_cmp.png)    |
+| [Lotka Volterra model of 2 variables](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/lotka_volterra_2d.py) |   [benchmark_lotka_volterra_2d_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_lotka_volterra_2d_cmp.py)   | ![](doc/imgs/lotka_volterra_2d_cmp.png) |
+|                 [Jet engine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/jet_engine.py)                 |          [benchmark_jet_engine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_jet_engine_cmp.py)          |    ![](doc/imgs/jet_engine_cmp.png)     |
 
 For large time horizons, i.e. consider
-the system [Brusselator](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/brusselator.py)
+the system [Brusselator](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/brusselator.py)
 > For more details about the following example, please refer to
 > our [code](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_brusselator_cmp.py).
 
@@ -181,7 +181,8 @@ the system [Brusselator](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/m
 
 ## Computing Reachable Sets based on Boundary Analysis for Neural ODE
 
-For example, consider a neural ODE with following parameters and $\textit{sigmoid}$ activation function, also evaluated
+For example, consider a neural ODE with the following parameters and $\textit{sigmoid}$ activation function, also
+evaluated
 in <a href="https://link.springer.com/content/pdf/10.1007/978-3-031-15839-1_15.pdf"><strong>'Manzanas Lopez, D., Musau,
 P., Hamilton, N. P., & Johnson, T. T. Reachability analysis of a general class of neural ordinary differential
 equations. In Formal Modeling and Analysis of Timed Systems: 20th International Conference, FORMATS 2022, Warsaw,
