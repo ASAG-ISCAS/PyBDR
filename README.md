@@ -41,20 +41,20 @@ The set-boundary based method can be used to perform reachability analysis for s
 3. neural ordinary differential equations
 
 # Installation
-
-The installation process is unnecessary as the source code needs to be copied into the appropriate directory, similar to
+The installation process is deemed unnecessary as it only involves copying the source code to the proper directory, much like how a third-party library in MATLAB functions. We highly recommend developers to utilize Pycharm as the integrated development environment (IDE) for their development and testing needs. Pycharm offers a range of advanced features that greatly aid in testing, debugging, and code analysis.
+<!--The installation process is unnecessary as the source code needs to be copied into the appropriate directory, similar to
 how a third-party library in MATLAB works. We strongly recommend developers to utilize `Pycharm` as the IDE for
 development and testing purposes. By using `Pycharm`, developers can benefit from various advanced features that
-facilitate testing, debugging, and code analysis.
+facilitate testing, debugging, and code analysis.-->
 
 ## Virtual Environment
 
-The installation process is unnecessary as the source code needs to be copied into the appropriate directory, similar to
+<!--The installation process is unnecessary as the source code needs to be copied into the appropriate directory, similar to
 how a third-party library in MATLAB works. We strongly recommend developers to utilize `Pycharm` as the IDE for
 development and testing purposes. By using `Pycharm`, developers can benefit from various advanced features that
 facilitate testing, debugging, and code analysis.
 
-### Virtual Environment
+### Virtual Environment-->
 
 To ensure a smoother installation and running of third-party libraries, we advise users to
 use [miniconda](https://docs.conda.io/en/latest/miniconda.html) and create a virtual environment. The steps for this
@@ -101,10 +101,12 @@ at [this link](https://docs.mosek.com/10.0/licensing/index.html).
 
 ## Computing Reachable Sets based on Boundary Analysis for Nonlinear Systems
 
-The tool comes with sample files that demonstrate how it should be utilized to compute reachable sets. By referring to
+The tool provides sample files which serve as demonstrations of the proper utilization for computing reachable sets. These sample files serve as a reference point for users to grasp the process of modifying the dynamics and parameters necessary for reachability analysis. This feature aids users in experimenting with their analyses, allowing them to assess the impact of different settings on the overall computation of the reachable sets
+
+<!--The tool comes with sample files that demonstrate how it should be utilized to compute reachable sets. By referring to
 these sample files, users can gain an understanding of how to modify the dynamics and parameters required for
 reachability analysis. This feature helps users experiment with their analysis by using different settings to assess
-their effects on the overall computation of the reachable sets.
+their effects on the overall computation of the reachable sets.-->
 
 For example, consider the following dynamic system:
 
@@ -285,7 +287,13 @@ time instance cases.
 
 ### The computation is slow
 
-Two modes of computation are supported by the tool for reachable sets. One mode is to compute the reachable set of
+Two modes of computation are supported by the tool for reachable sets. One mode is to compute the reachable set of evolved states using the entire initial set in a set propagation manner, while the other mode is to compute the reachable set of evolved states based on the boundary of the initial state set.
+
+The computation may be slow for several reasons such as large computational time intervals, small steps, high Taylor expansion orders, or a large number of state variables.
+
+To accelerate the computations, experiments can be performed with a smaller computational time horizon, a smaller order of expansion (such as 2), and a larger time step. Then gradually increase the computational time horizon and order of expansion based on the results of this setting to achieve the desired set of reachable states at an acceptable time consumption.
+
+<!--Two modes of computation are supported by the tool for reachable sets. One mode is to compute the reachable set of
 evolved states using the entire initial set in a set propagation manner, while the other mode is to compute the
 reachable set of evolved states based on the boundary of the initial state set.
 
@@ -296,14 +304,14 @@ To accelerate the computations, experiments can be performed with a smaller comp
 order
 of expansion (such as 2), and a larger time step. Then gradually increase the computational time horizon and order of
 expansion based on the results of this setting to achieve the desired set of reachable states at an acceptable time
-consumption.
+consumption.-->
 
 ### Controlling the wrapping effect
 
 To enhance the precision of the reachable set computation, one can split the boundaries of initial sets or increase the
 order of the Taylor expansion while reducing the step size.
 
-> Please feel free to contact [dingjianqiang0x@gmail.com](mailto:dingjianqiang0x@gmail.com) if you find any
+> Feel free to contact [dingjianqiang0x@gmail.com](mailto:dingjianqiang0x@gmail.com) if you find any
 > issues or bugs in this code, or you struggle to run it in any way.
 
 ## License
@@ -313,5 +321,7 @@ details.
 
 ## Acknowledgement
 
-When creating this tool, reference was made to models utilized in other reachable set calculation tools such as Flow*,
-CORA, and others.
+When developing this tool, we drew upon models used in other tools for calculating reachable sets, including Flow*, CORA, and various others.
+
+<!--When creating this tool, reference was made to models utilized in other reachable set calculation tools such as Flow*,
+CORA, and others.-->
