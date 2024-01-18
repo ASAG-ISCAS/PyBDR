@@ -126,34 +126,33 @@ from pybdr.geometry.operation import boundary, cvt2
 from pybdr.model import *
 from pybdr.util.visualization import plot
 
-if __name__ == '__main__':
-    # settings for the computation
-    options = ASB2008CDC.Options()
-    options.t_end = 6.74
-    options.step = 0.005
-    options.tensor_order = 3
-    options.taylor_terms = 4
-    options.u = Zonotope.zero(1, 1)
-    options.u_trans = np.zeros(1)
+# settings for the computation
+options = ASB2008CDC.Options()
+options.t_end = 6.74
+options.step = 0.005
+options.tensor_order = 3
+options.taylor_terms = 4
+options.u = Zonotope.zero(1, 1)
+options.u_trans = np.zeros(1)
 
-    # settings for the using geometry
-    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
-    Zonotope.ORDER = 50
+# settings for the using geometry
+Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+Zonotope.ORDER = 50
 
-    z = Interval([1.23, 2.34], [1.57, 2.46])
-    x0 = cvt2(z, Geometry.TYPE.ZONOTOPE)
-    xs = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+z = Interval([1.23, 2.34], [1.57, 2.46])
+x0 = cvt2(z, Geometry.TYPE.ZONOTOPE)
+xs = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
 
-    this_time = performance_counter_start()
-    ri_without_bound, rp_without_bound = ASB2008CDC.reach(vanderpol, [2, 1], options, x0)
-    this_time = performance_counter(this_time, 'reach_without_bound')
+this_time = performance_counter_start()
+ri_without_bound, rp_without_bound = ASB2008CDC.reach(vanderpol, [2, 1], options, x0)
+this_time = performance_counter(this_time, 'reach_without_bound')
 
-    ri_with_bound, rp_with_bound = ASB2008CDC.reach_parallel(vanderpol, [2, 1], options, xs)
-    this_time = performance_counter(this_time, 'reach_with_bound')
+ri_with_bound, rp_with_bound = ASB2008CDC.reach_parallel(vanderpol, [2, 1], options, xs)
+this_time = performance_counter(this_time, 'reach_with_bound')
 
-    # visualize the results
-    plot(ri_without_bound, [0, 1])
-    plot(ri_with_bound, [0, 1])
+# visualize the results
+plot(ri_without_bound, [0, 1])
+plot(ri_with_bound, [0, 1])
 ```
 
 |     With Boundary Analysis (BA)     |       No Boundary Analysis (NBA)       |
@@ -243,36 +242,35 @@ from pybdr.util.visualization import plot, plot_cmp
 from pybdr.geometry.operation import boundary, cvt2
 from pybdr.util.functional import performance_counter_start, performance_counter
 
-if __name__ == '__main__':
-    # settings for the computation
-    options = ASB2008CDC.Options()
-    options.t_end = 1
-    options.step = 0.01
-    options.tensor_order = 2
-    options.taylor_terms = 2
+# settings for the computation
+options = ASB2008CDC.Options()
+options.t_end = 1
+options.step = 0.01
+options.tensor_order = 2
+options.taylor_terms = 2
 
-    options.u = Zonotope([0], np.diag([0]))
-    options.u_trans = options.u.c
+options.u = Zonotope([0], np.diag([0]))
+options.u_trans = options.u.c
 
-    # settings for the using geometry
-    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
-    Zonotope.ORDER = 50
+# settings for the using geometry
+Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+Zonotope.ORDER = 50
 
-    z = Interval([0, -0.5], [1, 0.5])
-    x0 = cvt2(z, Geometry.TYPE.ZONOTOPE)
-    xs = boundary(z, 2, Geometry.TYPE.ZONOTOPE)
+z = Interval([0, -0.5], [1, 0.5])
+x0 = cvt2(z, Geometry.TYPE.ZONOTOPE)
+xs = boundary(z, 2, Geometry.TYPE.ZONOTOPE)
 
-    print(len(xs))
+print(len(xs))
 
-    this_time = performance_counter_start()
-    ri_without_bound, rp_without_bound = ASB2008CDC.reach(neural_ode_spiral1, [2, 1], options, x0)
-    this_time = performance_counter(this_time, "reach_without_bound")
+this_time = performance_counter_start()
+ri_without_bound, rp_without_bound = ASB2008CDC.reach(neural_ode_spiral1, [2, 1], options, x0)
+this_time = performance_counter(this_time, "reach_without_bound")
 
-    ri_with_bound, rp_with_bound = ASB2008CDC.reach_parallel(neural_ode_spiral1, [2, 1], options, xs)
-    this_time = performance_counter(this_time, "reach_with_bound")
+ri_with_bound, rp_with_bound = ASB2008CDC.reach_parallel(neural_ode_spiral1, [2, 1], options, xs)
+this_time = performance_counter(this_time, "reach_with_bound")
 
-    # visualize the results
-    plot_cmp([ri_without_bound, ri_with_bound], [0, 1], cs=["#FF5722", "#303F9F"])
+# visualize the results
+plot_cmp([ri_without_bound, ri_with_bound], [0, 1], cs=["#FF5722", "#303F9F"])
 ```
 
 In the following table, we show the reachable computed with boundary analysis and without boundary analysis on different
