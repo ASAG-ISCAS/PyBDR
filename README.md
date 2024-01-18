@@ -117,45 +117,41 @@ $$
 
 ```python
 import numpy as np
-
-from pybdr.algorithm import ASB2008CDC
-from pybdr.dynamic_system import NonLinSys
+from pybdr.algorithm import ASB2008CDC, ASB2008CDC
+from pybdr.util.functional import performance_counter, performance_counter_start
 from pybdr.geometry import Zonotope, Interval, Geometry
-from pybdr.geometry.operation import boundary
+from pybdr.geometry.operation import boundary, cvt2
 from pybdr.model import *
 from pybdr.util.visualization import plot
 
-# init dynamic system
-system = NonLinSys(Model(vanderpol, [2, 1]))
+if __name__ == '__main__':
+    # settings for the computation
+    options = ASB2008CDC.Options()
+    options.t_end = 6.74
+    options.step = 0.005
+    options.tensor_order = 3
+    options.taylor_terms = 4
+    options.u = Zonotope.zero(1, 1)
+    options.u_trans = np.zeros(1)
 
-# settings for the computation
-options = ASB2008CDC.Options()
-options.t_end = 6.74
-options.step = 0.005
-options.tensor_order = 3
-options.taylor_terms = 4
-options.u = Zonotope.zero(1, 1)
-options.u_trans = np.zeros(1)
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+    Zonotope.ORDER = 50
 
-z = Zonotope([1.4, 2.4], np.diag([0.17, 0.06]))
+    z = Interval([1.23, 2.34], [1.57, 2.46])
+    x0 = cvt2(z, Geometry.TYPE.ZONOTOPE)
+    xs = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
 
-# -----------------------------------------------------
-# computing reachable sets with boundary analysis
-options.r0 = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
-# -----------------------------------------------------
-# computing reachable sets without boundary analysis
-# options.r0 = [z]
-# -----------------------------------------------------
+    this_time = performance_counter_start()
+    ri_without_bound, rp_without_bound = ASB2008CDC.reach(vanderpol, [2, 1], options, x0)
+    this_time = performance_counter(this_time, 'reach_without_bound')
 
-# settings for the using geometry
-Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
-Zonotope.ORDER = 50
+    ri_with_bound, rp_with_bound = ASB2008CDC.reach_parallel(vanderpol, [2, 1], options, xs)
+    this_time = performance_counter(this_time, 'reach_with_bound')
 
-# reachable sets computation
-ti, tp, _, _ = ASB2008CDC.reach(system, options)
-
-# visualize the results
-plot(tp, [0, 1])
+    # visualize the results
+    plot(ri_without_bound, [0, 1])
+    plot(ri_with_bound, [0, 1])
 ```
 
 |     With Boundary Analysis (BA)     |       No Boundary Analysis (NBA)       |
@@ -164,16 +160,16 @@ plot(tp, [0, 1])
 
 For large initial sets,
 
-|                                                         System                                                          |                                                                 Code                                                                 |   Reachable Sets (Orange-NBA,Blue-BA)   |
-|:-----------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------:|
-|        [synchronous machine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/synchronous_machine.py)        | [benchmark_synchronous_machine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_synchronous_machine_cmp.py) |   ![](doc/imgs/sync_machine_cmp.png)    |
-| [Lotka Volterra model of 2 variables](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/lotka_volterra_2d.py) |   [benchmark_lotka_volterra_2d_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_lotka_volterra_2d_cmp.py)   | ![](doc/imgs/lotka_volterra_2d_cmp.png) |
-|                 [Jet engine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/jet_engine.py)                 |          [benchmark_jet_engine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_jet_engine_cmp.py)          |    ![](doc/imgs/jet_engine_cmp.png)     |
+|                                                         System                                                          |                                                                  Code                                                                   |   Reachable Sets (Orange-NBA,Blue-BA)   |
+|:-----------------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------:|
+|        [synchronous machine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/synchronous_machine.py)        | [benchmark_synchronous_machine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_synchronous_machine_cmp.py) |   ![](doc/imgs/sync_machine_cmp.png)    |
+| [Lotka Volterra model of 2 variables](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/lotka_volterra_2d.py) |   [benchmark_lotka_volterra_2d_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_lotka_volterra_2d_cmp.py)   | ![](doc/imgs/lotka_volterra_2d_cmp.png) |
+|                 [Jet engine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/jet_engine.py)                 |          [benchmark_jet_engine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_jet_engine_cmp.py)          |    ![](doc/imgs/jet_engine_cmp.png)     |
 
 For large time horizons, i.e. consider
 the system [Brusselator](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pyrat/model/brusselator.py)
 > For more details about the following example, please refer to
-> our [code](https://github.com/ASAG-ISCAS/PyBDR/blob/master/example/benchmark_brusselator_cmp.py).
+> our [code](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_brusselator_cmp.py).
 
 | Time instance | With Boundary Analysis                |        Without Boundary Analysi        |
 |:-------------:|---------------------------------------|:--------------------------------------:|
@@ -238,47 +234,43 @@ $$
 ```python
 import numpy as np
 
-np.seterr(divide='ignore', invalid='ignore')
-import sys
-
-# sys.path.append("./../../") uncomment this line if you need to add path manually
 from pybdr.algorithm import ASB2008CDC
-from pybdr.dynamic_system import NonLinSys
 from pybdr.geometry import Zonotope, Interval, Geometry
 from pybdr.model import *
-from pybdr.util.visualization import plot
-from pybdr.util.functional.neural_ode_generate import neuralODE
-from pybdr.geometry.operation import boundary
+from pybdr.util.visualization import plot, plot_cmp
+from pybdr.geometry.operation import boundary, cvt2
+from pybdr.util.functional import performance_counter_start, performance_counter
 
-# init neural ODE
-system = NonLinSys(Model(neuralODE, [2, 1]))
+if __name__ == '__main__':
+    # settings for the computation
+    options = ASB2008CDC.Options()
+    options.t_end = 1
+    options.step = 0.01
+    options.tensor_order = 2
+    options.taylor_terms = 2
 
-# settings for the computation
-options = ASB2008CDC.Options()
-options.t_end = 1.5
-options.step = 0.01
-options.tensor_order = 2
-options.taylor_terms = 2
-Z = Zonotope([0.5, 0], np.diag([1, 0.5]))
+    options.u = Zonotope([0], np.diag([0]))
+    options.u_trans = options.u.c
 
-# Reachable sets computed with boundary analysis
-# options.r0 = boundary(Z,1,Geometry.TYPE.ZONOTOPE)
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+    Zonotope.ORDER = 50
 
-# Reachable sets computed without boundary analysis
-options.r0 = [Z]
+    z = Interval([0, -0.5], [1, 0.5])
+    x0 = cvt2(z, Geometry.TYPE.ZONOTOPE)
+    xs = boundary(z, 2, Geometry.TYPE.ZONOTOPE)
 
-options.u = Zonotope.zero(1, 1)
-options.u_trans = np.zeros(1)
+    print(len(xs))
 
-# settings for the using geometry
-Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
-Zonotope.ORDER = 50
+    this_time = performance_counter_start()
+    ri_without_bound, rp_without_bound = ASB2008CDC.reach(neural_ode_spiral1, [2, 1], options, x0)
+    this_time = performance_counter(this_time, "reach_without_bound")
 
-# reachable sets computation
-ti, tp, _, _ = ASB2008CDC.reach(system, options)
+    ri_with_bound, rp_with_bound = ASB2008CDC.reach_parallel(neural_ode_spiral1, [2, 1], options, xs)
+    this_time = performance_counter(this_time, "reach_with_bound")
 
-# visualize the results
-plot(tp, [0, 1])
+    # visualize the results
+    plot_cmp([ri_without_bound, ri_with_bound], [0, 1], cs=["#FF5722", "#303F9F"])
 ```
 
 In the following table, we show the reachable computed with boundary analysis and without boundary analysis on different

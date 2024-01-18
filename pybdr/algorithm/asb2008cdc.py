@@ -53,7 +53,7 @@ class ASB2008CDC:
         a = sys.evaluate((opt.lin_err_x, opt.lin_err_u), "numpy", 1, 0)
         b = sys.evaluate((opt.lin_err_x, opt.lin_err_u), "numpy", 1, 1)
         assert not (np.any(np.isnan(a))) or np.any(np.isnan(b))
-        lin_sys = LinSys(xa=a)
+        lin_sys = LinSys(xa=a, ub=None)
         lin_opt = ALK2011HSCC.Options()
         lin_opt.step = opt.step
         lin_opt.taylor_terms = opt.taylor_terms

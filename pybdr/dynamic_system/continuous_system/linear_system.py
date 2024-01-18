@@ -6,10 +6,13 @@ x(t)' = A*x(t) + B*u(t)
 
 
 class LinSys:
-    def __init__(self, xa, ub):
+    def __init__(self, xa, ub=None):
         self._xa = np.atleast_2d(xa)
-        self._ub = np.atleast_2d(ub)
-        assert self._xa.shape[1] == self._ub.shape[0]
+        if ub is not None:
+            self._ub = np.atleast_2d(ub)
+            assert self._xa.shape[1] == self._ub.shape[0]
+        else:
+            self._ub = None
 
     @property
     def dim(self):
@@ -17,7 +20,7 @@ class LinSys:
 
     @property
     def type(self):
-        return 'linear_simple'
+        return 'linear'
 
     @property
     def xa(self):
