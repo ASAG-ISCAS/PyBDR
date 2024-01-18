@@ -308,15 +308,8 @@ consumption.-->
 
 ### Controlling the wrapping effect
 
-In order to improve the precision of computing the reachable sets, one can achieve this by further subdividing the boundaries of the initial sets or increasing the order of the Taylor expansion, both in conjunction with reducing the step size.
-
-### RuntimeWarning: divide by zero encountered in true_divide
-
-This warning message may be displayed on platforms utilizing the Windows operating system. Nevertheless, it will not affect the functionality of the tool and can be resolved by declaring it.
-
-```python
-numpy.seterr(divide='ignore', invalid='ignore')
-```
+To enhance the precision of the reachable set computation, one can split the boundaries of initial sets or increase the
+order of the Taylor expansion while reducing the step size.
 
 > Feel free to contact [dingjianqiang0x@gmail.com](mailto:dingjianqiang0x@gmail.com) if you find any
 > issues or bugs in this code, or you struggle to run it in any way.
