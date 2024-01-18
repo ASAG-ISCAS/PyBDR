@@ -303,16 +303,7 @@ consumption.
 To enhance the precision of the reachable set computation, one can split the boundaries of initial sets or increase the
 order of the Taylor expansion while reducing the step size.
 
-### RuntimeWarning: divide by zero encountered in true_divide
-
-This warning may appear on platforms using the Windows operating system. However, it won't impact the operation of the
-tool and can be eliminated by declaring it.
-
-```python
-numpy.seterr(divide='ignore', invalid='ignore')
-```
-
-> Feel free to contact [dingjianqiang0x@gmail.com](mailto:dingjianqiang0x@gmail.com) if you find any
+> Please feel free to contact [dingjianqiang0x@gmail.com](mailto:dingjianqiang0x@gmail.com) if you find any
 > issues or bugs in this code, or you struggle to run it in any way.
 
 ## License
