@@ -77,11 +77,14 @@ class Model:
             self.__take_derivative(order, v)
 
         def _eval_numpy():
-            if mod not in self.__inr_series[order]:
+            if mod not in self.__inr_series[order] or v not in self.__inr_series[order][mod]:
+                self.__inr_series[order][mod] = {}
                 d = self.__series(order, "sym", v)
                 d = d if order == 0 else d.squeeze(axis=-1)
                 d = ImmutableDenseNDimArray(d)
-                self.__inr_series[order][mod] = {v: lambdify(self.__inr_x, d, "numpy")}
+                if v not in self.__inr_series[order][mod]:
+                    self.__inr_series[order][mod][v] = lambdify(self.__inr_x, d, "numpy")
+                # self.__inr_series[order][mod] = {v: lambdify(self.__inr_x, d, "numpy")}
             r = np.asarray(self.__series(order, mod, v)(*np.concatenate(xs, axis=-1)))
             return r.squeeze(axis=-1) if order == 0 else r
 

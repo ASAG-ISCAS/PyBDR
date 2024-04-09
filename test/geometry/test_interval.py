@@ -65,6 +65,12 @@ def test_addition_00():
     print(c)
 
 
+def test_addition_01():
+    a = Interval.rand(2, 3, 4)
+    b = a + 1
+    print(b)
+
+
 def test_addition_case_01():
     from pybdr.geometry import Zonotope
     a = Interval.rand(2)
