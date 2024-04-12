@@ -86,7 +86,7 @@ def sym_derivative_case00_NUM_test():
 
     np_derivative_11 = m.evaluate((x_np, u_np), 'numpy', 1, 1)  # Run 1
 
-    time_cur = performance_counter(time_cur, 'derivative 10 Run 1')
+    time_cur = performance_counter(time_cur, 'derivative 11 Run 1')
 
     np_derivative_11 = m.evaluate((x_np, u_np), 'numpy', 1, 1)
     np_derivative_11 = m.evaluate((x_np, u_np), 'numpy', 1, 1)
@@ -106,7 +106,7 @@ def sym_derivative_case00_NUM_test():
 
     np_derivative_30 = m.evaluate((x_np, u_np), 'numpy', 3, 0)  # Run 1
 
-    time_cur = performance_counter(time_cur, 'derivative 10 Run 1')
+    time_cur = performance_counter(time_cur, 'derivative 30 Run 1')
 
     # 10 runs
     np_derivative_30 = m.evaluate((x_np, u_np), 'numpy', 3, 0)
@@ -127,7 +127,7 @@ def sym_derivative_case00_NUM_test():
 
     np_derivative_31 = m.evaluate((x_np, u_np), 'numpy', 3, 1)  # Run 1
 
-    time_cur = performance_counter(time_cur, 'derivative 10 Run 1')
+    time_cur = performance_counter(time_cur, 'derivative 31 Run 1')
 
     # 10 runs
     np_derivative_31 = m.evaluate((x_np, u_np), 'numpy', 3, 1)
@@ -226,7 +226,7 @@ def sym_derivative_case00_INT_test():
 
     int_derivative_11 = m.evaluate((x_int, u_int), 'interval', 1, 1)  # Run 1
 
-    time_cur = performance_counter(time_cur, 'derivative 10 Run 1')
+    time_cur = performance_counter(time_cur, 'derivative 11 Run 1')
 
     int_derivative_11 = m.evaluate((x_int, u_int), 'interval', 1, 1)
     int_derivative_11 = m.evaluate((x_int, u_int), 'interval', 1, 1)
@@ -246,7 +246,7 @@ def sym_derivative_case00_INT_test():
 
     int_derivative_30 = m.evaluate((x_int, u_int), 'interval', 3, 0)  # Run 1
 
-    time_cur = performance_counter(time_cur, 'derivative 10 Run 1')
+    time_cur = performance_counter(time_cur, 'derivative 30 Run 1')
 
     # 10 runs
     int_derivative_30 = m.evaluate((x_int, u_int), 'interval', 3, 0)
@@ -267,7 +267,7 @@ def sym_derivative_case00_INT_test():
 
     int_derivative_31 = m.evaluate((x_int, u_int), 'interval', 3, 1)  # Run 1
 
-    time_cur = performance_counter(time_cur, 'derivative 10 Run 1')
+    time_cur = performance_counter(time_cur, 'derivative 31 Run 1')
 
     # 10 runs
     int_derivative_31 = m.evaluate((x_int, u_int), 'interval', 3, 1)
