@@ -124,7 +124,7 @@ def absolute_eval():
 
     res = abs(I)
 
-    performance_counter(time_cur, 'power ' + str(runs) + ' Runs AVG.', runs)
+    performance_counter(time_cur, 'absolute ' + str(runs) + ' Runs AVG.', runs)
 
     return {'I_inf': I.inf, 'I_sup': I.sup, 'res_inf': res.inf, 'res_sup': res.sup}
 
