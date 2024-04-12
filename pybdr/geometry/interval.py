@@ -481,108 +481,38 @@ class Interval(Geometry.Base):
         return 1 / (1 + Interval.exp(-x))
 
     # =============================================== periodic functions
+
     @staticmethod
     def sin(x: Interval):
-        ind0 = (x.sup - x.inf) >= 2 * np.pi  # xsup -xinf >= 2*pi
-        yinf, ysup = np.mod(x.inf, np.pi * 2), np.mod(x.sup, np.pi * 2)
-
-        ind1 = yinf < np.pi * 0.5  # yinf in R1
-        ind2 = ysup < np.pi * 0.5  # ysup in R1
-        ind3 = np.logical_not(ind1) & (yinf < np.pi * 1.5)  # yinf in R2
-        ind4 = np.logical_not(ind2) & (ysup < np.pi * 1.5)  # ysup in R2
-        ind5 = yinf >= np.pi * 1.5  # yinf in R3
-        ind6 = ysup >= np.pi * 1.5  # ysup in R3
-        ind7 = yinf > ysup  # yinf > ysup
-        ind8 = np.logical_not(ind7)  # yinf <=ysup
-
-        inf, sup = x.inf, x.sup
-
-        ind = (ind1 & ind2 & ind8) | (ind5 & ind2) | (ind5 & ind6 & ind8)
-        inf[ind] = np.sin(yinf[ind])
-        sup[ind] = np.sin(ysup[ind])
-
-        ind = (ind1 & ind4) | (ind5 & ind4)
-        inf[ind] = np.minimum(np.sin(yinf[ind]), np.sin(ysup[ind]))
-        sup[ind] = 1
-
-        ind = (ind3 & ind2) | (ind3 & ind6)
-        inf[ind] = -1
-        sup[ind] = np.maximum(np.sin(yinf[ind]), np.sin(ysup[ind]))
-
-        ind = ind3 & ind4 & ind8
-        inf[ind] = np.sin(ysup[ind])
-        sup[ind] = np.sin(yinf[ind])
-
-        ind = (
-                ind0
-                | (ind1 & ind2 & ind7)
-                | (ind1 & ind6)
-                | (ind3 & ind4 & ind7)
-                | (ind5 & ind6 & ind7)
-        )
-        inf[ind] = -1
-        sup[ind] = 1
-
-        return Interval(inf, sup)
+        return Interval.cos(x - np.pi * 0.5)
 
     @staticmethod
     def cos(x: Interval):
-        ind0 = (x.sup - x.inf) >= 2 * np.pi  # xsup -xinf >= 2*pi
-        yinf, ysup = np.mod(x.inf, np.pi * 2), np.mod(x.sup, np.pi * 2)
 
-        ind1 = yinf < np.pi  # yinf in R1
-        ind2 = ysup < np.pi  # ysup in R1
-        ind3 = np.logical_not(ind1)  # yinf in R2
-        ind4 = np.logical_not(ind2)  # ysup in R2
-        ind5 = yinf > ysup  # yinf > ysup
-        ind6 = np.logical_not(ind5)  # yinf <= ysup
+        def aux_max_cos(I: Interval):
+            k = np.ceil(I.inf / (2 * np.pi))
 
-        inf, sup = x.inf, x.sup
+            a = I.inf - 2 * np.pi * k
+            b = I.sup - 2 * np.pi * k
 
-        ind = ind3 & ind4 & ind6
-        inf[ind] = np.cos(yinf[ind])
-        sup[ind] = np.cos(ysup[ind])
+            m = np.maximum(np.cos(a), np.cos(b))
+            return np.maximum(np.sign(b), m)
 
-        ind = ind3 & ind2
-        inf[ind] = np.minimum(np.cos(yinf[ind]), np.cos(ysup[ind]))
-        sup[ind] = 1
-
-        ind = ind1 & ind4
-        inf[ind] = -1
-        sup[ind] = np.maximum(np.cos(yinf[ind]), np.cos(ysup[ind]))
-
-        ind = ind1 & ind2 & ind6
-        inf[ind] = np.cos(ysup[ind])
-        sup[ind] = np.cos(yinf[ind])
-
-        ind = ind0 | (ind1 & ind2 & ind5) | (ind3 & ind4 & ind5)
-        inf[ind] = -1
-        sup[ind] = 1
-
+        inf = -aux_max_cos(x - np.pi)
+        sup = aux_max_cos(x)
         return Interval(inf, sup)
 
     @staticmethod
     def tan(x: Interval):
-        ind0 = (x.sup - x.inf) >= np.pi  # xsup -xinf >= pi
-        zinf, zsup = np.mod(x.inf, np.pi), np.mod(x.sup, np.pi)
+        inf = np.full_like(x.inf, -np.inf)
+        sup = np.full_like(x.sup, np.inf)
 
-        ind1 = zinf < np.pi * 0.5  # zinf in R1
-        ind2 = zsup < np.pi * 0.5  # zsup in R1
-        ind3 = np.logical_not(ind1)  # zinf in R2
-        ind4 = np.logical_not(ind2)  # zsup in R2
-        ind5 = zinf > zsup  # zinf > zsup
-        ind6 = np.logical_not(ind5)  # zinf <= zsup
+        tan_inf = np.tan(x.inf)
+        tan_sup = np.tan(x.sup)
 
-        inf, sup = x.inf, x.sup
-
-        # different from ref ??? TODO need check
-        ind = (ind1 & ind2 & ind6) | (ind3 & ind4 & ind6) | ind3 & (ind6 | ind2)
-        inf[ind] = np.tan(zinf[ind])
-        sup[ind] = np.tan(zsup[ind])
-
-        ind = ind0 | (ind1 & ind2 & ind5) | (ind3 & ind4 & ind5) | (ind1 & ind4)
-        inf[ind] = -np.inf
-        sup[ind] = np.inf
+        ind = ((x.sup - x.inf) < np.pi) & (tan_inf <= tan_sup)
+        inf[ind] = tan_inf[ind]
+        sup[ind] = tan_sup[ind]
 
         return Interval(inf, sup)
 
