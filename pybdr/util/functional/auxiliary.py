@@ -106,9 +106,10 @@ def performance_counter_start():
     return time.perf_counter_ns()
 
 
-def performance_counter(start: time.perf_counter_ns(), event: str):
+def performance_counter(start: time.perf_counter_ns(), event: str, runs: int = 1):
+    assert runs >= 1
     end = time.perf_counter_ns()
-    print(event + " cost: {}s".format((end - start) * 1e-9))
+    print(event + " cost: {}s".format(((end - start) / runs) * 1e-9))
     return end
 
 

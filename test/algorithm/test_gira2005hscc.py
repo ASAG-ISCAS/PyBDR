@@ -31,7 +31,7 @@ def test_reach_linear_zono_algo3_case_00():
 
     print(len(ri))
 
-    # plot(ri, [0, 1])
+    plot(ri, [0, 1])
 
 
 def test_reach_linear_zono_algo3_case_01():
@@ -146,6 +146,30 @@ def test_reach_linear_zono_algo3_parallel_case_03():
     plot_cmp([ri_whole, ri], [0, 1], cs=["#FF5722", "#303F9F"])
 
 
+def test_reach_linear_zono_algo3_bound_demo():
+    xa = [[-1, -4], [4, -1]]
+    ub = np.array([[1], [1]])
+
+    lin_sys = LinSys(xa, ub)
+    opts = GIRA2005HSCC.Options()
+    opts.t_end = 0.1
+    opts.step = 0.1
+    opts.eta = 4
+
+    x0 = Interval(580 * np.ones(2), 620 * np.ones(2))
+    opts.u = cvt2(ub @ Interval(0.1, 0.3), Geometry.TYPE.ZONOTOPE)  # u must contain origin
+    x0_bounds = boundary(x0, 40, Geometry.TYPE.ZONOTOPE)
+
+    print(len(x0_bounds))
+
+    _, ri_whole, _, _ = GIRA2005HSCC.reach(lin_sys, opts, cvt2(x0, Geometry.TYPE.ZONOTOPE))
+
+    _, ri, _, _ = GIRA2005HSCC.reach_parallel(lin_sys, opts, x0_bounds)
+
+    plot(ri_whole, [0, 1])
+    plot(ri, [0, 1])
+
+
 def test_reach_linear_zono_algo3_parallel_case_04():
     xa = np.array([[-1, -4, 0, 0, 0], [4, -1, 0, 0, 0], [0, 0, -3, 1, 0], [0, 0, -1, -3, 0], [0, 0, 0, 0, -2]])
     ub = np.eye(5)
@@ -170,7 +194,7 @@ def test_reach_linear_zono_algo3_parallel_case_04():
     # plot_cmp([])
 
 
-def test_reach_linear_zono_algo3_parallel_case_04():
+def test_reach_linear_zono_algo3_parallel_case_05():
     time_tag = performance_counter_start()
 
     xa = [[-1, 0], [-1, 1]]

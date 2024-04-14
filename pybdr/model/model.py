@@ -77,28 +77,38 @@ class Model:
             self.__take_derivative(order, v)
 
         def _eval_numpy():
-            if mod not in self.__inr_series[order]:
+            if mod not in self.__inr_series[order] or v not in self.__inr_series[order][mod]:
+                if mod not in self.__inr_series:
+                    self.__inr_series[order][mod] = {}
                 d = self.__series(order, "sym", v)
                 d = d if order == 0 else d.squeeze(axis=-1)
                 d = ImmutableDenseNDimArray(d)
-                self.__inr_series[order][mod] = {v: lambdify(self.__inr_x, d, "numpy")}
+                if v not in self.__inr_series[order][mod]:
+                    self.__inr_series[order][mod][v] = lambdify(self.__inr_x, d, "numpy")
+                # self.__inr_series[order][mod] = {v: lambdify(self.__inr_x, d, "numpy")}
             r = np.asarray(self.__series(order, mod, v)(*np.concatenate(xs, axis=-1)))
             return r.squeeze(axis=-1) if order == 0 else r
 
         def _eval_interval():
             from pybdr.geometry import Interval
 
-            if mod not in self.__inr_series[order]:
+            if mod not in self.__inr_series[order] or v not in self.__inr_series[order][mod]:
+                if mod not in self.__inr_series:
+                    self.__inr_series[order][mod] = {}
                 d = self.__series(order, "sym", v)
                 ff = np.frompyfunc(lambda x: x.is_number, 1, 1)
                 xx = ff(d).astype(dtype=bool)
                 mask = xx == 0
                 if len(d[mask]) <= 0:
-                    self.__inr_series[order][mod] = {v: [None, mask]}
+                    if v not in self.__inr_series[order][mod]:
+                        self.__inr_series[order][mod][v] = [None, mask]
+                    # self.__inr_series[order][mod] = {v: [None, mask]}
                 else:
                     sym_d = ImmutableDenseNDimArray(d[mask])
                     vf = lambdify(self.__inr_x, sym_d, Interval.functional())
-                    self.__inr_series[order][mod] = {v: [vf, mask]}
+                    if v not in self.__inr_series[order][mod]:
+                        self.__inr_series[order][mod][v] = [vf, mask]
+                    # self.__inr_series[order][mod] = {v: [vf, mask]}
 
             vm = self.__series(order, mod, v)
             d = self.__series(order, "sym", v)
@@ -123,7 +133,7 @@ class Model:
             inv_mask = np.logical_not(vm[1])
             lb[inv_mask] = d[inv_mask].astype(dtype=float)
             ub[inv_mask] = d[inv_mask].astype(dtype=float)
-            # finally return the result as interval tensor
+            # finally, return the result as interval tensor
             return Interval(lb.squeeze(-1), ub.squeeze(-1))
 
         if mod == "numpy":
