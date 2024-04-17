@@ -15,6 +15,7 @@ from .rossler_attractor import rossler_attractor
 from .pi_controller_with_disturbance import pi_controller_with_disturbance
 from .jet_engine import jet_engine
 from .brusselator import brusselator
+from .quadrocopterControlledEq import quadrocopterControlledEq
 from .neural_ode_spiral1 import neural_ode_spiral1
 from .neural_ode_spiral2 import neural_ode_spiral2
 
@@ -36,6 +37,7 @@ __all__ = [
     'pi_controller_with_disturbance',
     'jet_engine',
     'brusselator',
+    'quadrocopterControlledEq',
     'neural_ode_spiral1',
     'neural_ode_spiral2',
 ]

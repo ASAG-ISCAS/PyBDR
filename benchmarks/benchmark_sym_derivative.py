@@ -1,16 +1,20 @@
 import numpy as np
 from pybdr.geometry import Interval
-from pybdr.model import tank6eq, Model
+from pybdr.model import tank6eq, ltv, Model, quadrocopterControlledEq
 from pybdr.util.functional import performance_counter, performance_counter_start
 
 
 def sym_derivative_case00_NUM_test():
-    sys_test = tank6eq
-    dimes = [6, 1]
+    # sys_test = tank6eq
+    # dimes = [6, 1]
+    # sys_test = ltv
+    # dimes = [3, 4]
+    sys_test = quadrocopterControlledEq
+    dimes = [12, 3]
 
     m = Model(sys_test, dimes)
 
-    x_np, u_np = np.random.rand(6), np.random.rand(1)
+    x_np, u_np = np.random.rand(12), np.random.rand(3)
 
     print()
     print('NUM Derivative >>>>>>>>>>>>>>>>>>>>>>>>>>>')
