@@ -17,6 +17,7 @@ from .jet_engine import jet_engine
 from .brusselator import brusselator
 from .neural_ode_spiral1 import neural_ode_spiral1
 from .neural_ode_spiral2 import neural_ode_spiral2
+from .bicycle import bicycle
 
 __all__ = [
     "Model",
@@ -38,4 +39,5 @@ __all__ = [
     'brusselator',
     'neural_ode_spiral1',
     'neural_ode_spiral2',
+    'bicycle',
 ]

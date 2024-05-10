@@ -482,24 +482,106 @@ class Interval(Geometry.Base):
 
     # =============================================== periodic functions
 
+    # @staticmethod
+    # def sin(x: Interval):
+    #     print(x)
+    #     print(x - np.pi * 0.5)
+    #     return Interval.cos(x - np.pi * 0.5)
+
     @staticmethod
     def sin(x: Interval):
-        return Interval.cos(x - np.pi * 0.5)
+        ind0 = (x.sup - x.inf) >= 2 * np.pi  # xsup -xinf >= 2*pi
+        yinf, ysup = np.mod(x.inf, np.pi * 2), np.mod(x.sup, np.pi * 2)
+
+        ind1 = yinf < np.pi * 0.5  # yinf in R1
+        ind2 = ysup < np.pi * 0.5  # ysup in R1
+        ind3 = np.logical_not(ind1) & (yinf < np.pi * 1.5)  # yinf in R2
+        ind4 = np.logical_not(ind2) & (ysup < np.pi * 1.5)  # ysup in R2
+        ind5 = yinf >= np.pi * 1.5  # yinf in R3
+        ind6 = ysup >= np.pi * 1.5  # ysup in R3
+        ind7 = yinf > ysup  # yinf > ysup
+        ind8 = np.logical_not(ind7)  # yinf <=ysup
+
+        inf, sup = x.inf, x.sup
+
+        ind = (ind1 & ind2 & ind8) | (ind5 & ind2) | (ind5 & ind6 & ind8)
+        inf[ind] = np.sin(yinf[ind])
+        sup[ind] = np.sin(ysup[ind])
+
+        ind = (ind1 & ind4) | (ind5 & ind4)
+        inf[ind] = np.minimum(np.sin(yinf[ind]), np.sin(ysup[ind]))
+        sup[ind] = 1
+
+        ind = (ind3 & ind2) | (ind3 & ind6)
+        inf[ind] = -1
+        sup[ind] = np.maximum(np.sin(yinf[ind]), np.sin(ysup[ind]))
+
+        ind = ind3 & ind4 & ind8
+        inf[ind] = np.sin(ysup[ind])
+        sup[ind] = np.sin(yinf[ind])
+
+        ind = (
+                ind0
+                | (ind1 & ind2 & ind7)
+                | (ind1 & ind6)
+                | (ind3 & ind4 & ind7)
+                | (ind5 & ind6 & ind7)
+        )
+        inf[ind] = -1
+        sup[ind] = 1
+
+        return Interval(inf, sup)
+
+    # @staticmethod
+    # def cos(x: Interval):
+    #
+    #     def aux_max_cos(I: Interval):
+    #         k = np.ceil(I.inf / (2 * np.pi))
+    #
+    #         a = I.inf - 2 * np.pi * k
+    #         b = I.sup - 2 * np.pi * k
+    #
+    #         m = np.maximum(np.cos(a), np.cos(b))
+    #         return np.maximum(np.sign(b), m)
+    #
+    #     inf = -aux_max_cos(x - np.pi)
+    #     sup = aux_max_cos(x)
+    #     return Interval(inf, sup)
 
     @staticmethod
     def cos(x: Interval):
+        ind0 = (x.sup - x.inf) >= 2 * np.pi  # xsup -xinf >= 2*pi
+        yinf, ysup = np.mod(x.inf, np.pi * 2), np.mod(x.sup, np.pi * 2)
 
-        def aux_max_cos(I: Interval):
-            k = np.ceil(I.inf / (2 * np.pi))
+        ind1 = yinf < np.pi  # yinf in R1
+        ind2 = ysup < np.pi  # ysup in R1
+        ind3 = np.logical_not(ind1)  # yinf in R2
+        ind4 = np.logical_not(ind2)  # ysup in R2
+        ind5 = yinf > ysup  # yinf > ysup
+        ind6 = np.logical_not(ind5)  # yinf <= ysup
 
-            a = I.inf - 2 * np.pi * k
-            b = I.sup - 2 * np.pi * k
+        inf, sup = x.inf, x.sup
 
-            m = np.maximum(np.cos(a), np.cos(b))
-            return np.maximum(np.sign(b), m)
+        ind = ind3 & ind4 & ind6
+        inf[ind] = np.cos(yinf[ind])
+        sup[ind] = np.cos(ysup[ind])
 
-        inf = -aux_max_cos(x - np.pi)
-        sup = aux_max_cos(x)
+        ind = ind3 & ind2
+        inf[ind] = np.minimum(np.cos(yinf[ind]), np.cos(ysup[ind]))
+        sup[ind] = 1
+
+        ind = ind1 & ind4
+        inf[ind] = -1
+        sup[ind] = np.maximum(np.cos(yinf[ind]), np.cos(ysup[ind]))
+
+        ind = ind1 & ind2 & ind6
+        inf[ind] = np.cos(ysup[ind])
+        sup[ind] = np.cos(yinf[ind])
+
+        ind = ind0 | (ind1 & ind2 & ind5) | (ind3 & ind4 & ind5)
+        inf[ind] = -1
+        sup[ind] = 1
+
         return Interval(inf, sup)
 
     @staticmethod
