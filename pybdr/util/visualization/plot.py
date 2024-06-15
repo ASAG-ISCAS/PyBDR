@@ -129,7 +129,7 @@ def plot(
         raise Exception("unsupported visualization mode")
 
 
-def __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled):
+def __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled, show, save_file_name):
     assert len(dims) == 2
     if cs is not None:
         assert len(collections) == len(cs)
@@ -172,8 +172,10 @@ def __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled):
 
     if ylim is not None:
         plt.ylim(ylim)
-
-    plt.show()
+    if show:
+        plt.show()
+    if save_file_name is not None:
+        plt.savefig(save_file_name, format="png")
 
 
 def __3d_plot_cmp(collections, dims, width, height, cs):
@@ -191,9 +193,11 @@ def plot_cmp(
         ylim=None,
         cs=None,
         filled=False,
+        show=False,
+        save_file_name=None
 ):
     if mod == "2d":
-        return __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled)
+        return __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled, show, save_file_name)
     elif mod == "3d":
         return __3d_plot_cmp(collections, dims, width, height, cs)
     else:
