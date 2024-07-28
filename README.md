@@ -97,7 +97,7 @@ For the reason we may use Mosek as a solver for optimisation, we highly recommen
 an official personal licence, the steps for which can be found
 at [this link](https://docs.mosek.com/10.0/licensing/index.html).
 
-# How to use
+# How to use [![Open All Collab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1H2PWSAgAzesNnbEFXo6Ii1HGEip9WHOY?usp=sharing)
 
 ## Computing Reachable Sets based on Boundary Analysis for Nonlinear Systems
 
