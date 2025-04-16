@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
 
-np.seterr(divide='ignore', invalid='ignore')
+np.seterr(divide="ignore", invalid="ignore")
 
 from scipy.special import factorial
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -59,9 +59,10 @@ class ASB2008CDC:
         lin_opt.taylor_terms = opt.taylor_terms
         lin_opt.factors = opt.factors
         lin_opt.u = b @ (opt.u + opt.u_trans - opt.lin_err_u)
+        u_center = lin_opt.u.c
         lin_opt.u -= lin_opt.u.c
         lin_opt.u_trans = Zonotope(
-            opt.lin_err_f0 + lin_opt.u.c, np.zeros((opt.lin_err_f0.shape[0], 1))
+            opt.lin_err_f0 + u_center, np.zeros((opt.lin_err_f0.shape[0], 1))
         )
         return lin_sys, lin_opt
 
@@ -183,7 +184,9 @@ class ASB2008CDC:
         next_rp = x
 
         for step in range(opts.steps_num):
-            next_ri, next_rp = cls.reach_one_step(dyn, dims, next_rp, np.zeros(x.shape), opts)
+            next_ri, next_rp = cls.reach_one_step(
+                dyn, dims, next_rp, np.zeros(x.shape), opts
+            )
             ri_set.append(next_ri)
             rp_set.append(next_rp)
 
@@ -191,7 +194,6 @@ class ASB2008CDC:
 
     @classmethod
     def reach_parallel(cls, dyn: Callable, dims, opts: Options, xs: [Zonotope]):
-
         def ll_decompose(ll):
             return [list(group) for group in zip(*ll)]
 

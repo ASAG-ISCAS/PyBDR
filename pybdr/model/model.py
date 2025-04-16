@@ -57,8 +57,8 @@ class Model:
 
     def __take_derivative(self, order: int, v: int):
         if (
-                order - 1 not in self.__inr_series
-                or v not in self.__inr_series[order - 1]["sym"]
+            order - 1 not in self.__inr_series
+            or v not in self.__inr_series[order - 1]["sym"]
         ):
             self.__take_derivative(order - 1, v)
         start, end = self.__inr_idx[v]
@@ -77,14 +77,19 @@ class Model:
             self.__take_derivative(order, v)
 
         def _eval_numpy():
-            if mod not in self.__inr_series[order] or v not in self.__inr_series[order][mod]:
+            if (
+                mod not in self.__inr_series[order]
+                or v not in self.__inr_series[order][mod]
+            ):
                 if mod not in self.__inr_series:
                     self.__inr_series[order][mod] = {}
                 d = self.__series(order, "sym", v)
                 d = d if order == 0 else d.squeeze(axis=-1)
                 d = ImmutableDenseNDimArray(d)
                 if v not in self.__inr_series[order][mod]:
-                    self.__inr_series[order][mod][v] = lambdify(self.__inr_x, d, "numpy")
+                    self.__inr_series[order][mod][v] = lambdify(
+                        self.__inr_x, d, "numpy"
+                    )
                 # self.__inr_series[order][mod] = {v: lambdify(self.__inr_x, d, "numpy")}
             r = np.asarray(self.__series(order, mod, v)(*np.concatenate(xs, axis=-1)))
             return r.squeeze(axis=-1) if order == 0 else r
@@ -92,7 +97,10 @@ class Model:
         def _eval_interval():
             from pybdr.geometry import Interval
 
-            if mod not in self.__inr_series[order] or v not in self.__inr_series[order][mod]:
+            if (
+                mod not in self.__inr_series[order]
+                or v not in self.__inr_series[order][mod]
+            ):
                 if mod not in self.__inr_series:
                     self.__inr_series[order][mod] = {}
                 d = self.__series(order, "sym", v)
