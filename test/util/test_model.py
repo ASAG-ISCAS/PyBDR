@@ -1,8 +1,7 @@
-import inspect
-
 import numpy as np
-from pybdr.model import Model
 from sympy import *
+
+from pybdr.model import Model
 
 
 def test_case_00():
@@ -50,3 +49,48 @@ def test_case_00():
     print(temp1.shape)
     print(temp2.shape)
     print(temp3.shape)
+
+
+def test_case_01():
+    import numpy as np
+
+    from pybdr.geometry import Interval
+    from pybdr.model import Model, tank6eq
+    from pybdr.util.functional import performance_counter, performance_counter_start
+
+    m = Model(tank6eq, [6, 1])
+
+    time_start = performance_counter_start()
+    x, u = np.random.random(6), np.random.rand(1)
+
+    np_derivative_0 = m.evaluate((x, u), "numpy", 3, 0)
+    np_derivative_1 = m.evaluate((x, u), "numpy", 3, 1)
+    np_derivative_2 = m.evaluate((x, u), "numpy", 0, 0)
+
+    x, u = Interval.rand(6), Interval.rand(1)
+    int_derivative_0 = m.evaluate((x, u), "interval", 3, 0)
+    int_derivative_1 = m.evaluate((x, u), "interval", 2, 0)
+    int_derivative_2 = m.evaluate((x, u), "interval", 2, 0)
+    int_derivative_3 = m.evaluate((x, u), "interval", 0, 1)
+
+    performance_counter(time_start, "sym_derivative")
+
+
+def test_case_02():
+    from pybdr.geometry import Interval
+    from pybdr.model import Model, tank6eq
+
+    m = Model(tank6eq, [6, 1])
+    x, u = Interval.rand(6), Interval.rand(1)
+    Jx = m.evaluate((x, u), "interval", 1, 0)
+    pts_iv = np.random.rand(100, 6, 1)
+
+    quad_iv = pts_iv.transpose(0, 2, 1) @ Jx[None, ...] @ pts_iv
+    quad_iv = Interval.squeeze(quad_iv)
+    print(quad_iv.shape)
+
+
+if __name__ == "__main__":
+    # test_case_00()
+    # test_case_01()
+    test_case_02()

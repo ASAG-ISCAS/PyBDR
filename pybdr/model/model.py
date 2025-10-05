@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Callable
 
 import numpy as np
-from sympy import symbols, Matrix, lambdify, derive_by_array, ImmutableDenseNDimArray
+from sympy import ImmutableDenseNDimArray, Matrix, derive_by_array, lambdify, symbols
 
 
 @dataclass
@@ -26,9 +26,7 @@ class Model:
         assert len(self.var_dims) == vars_num
         self.__inr_dim = sum(self.var_dims)
         assert type(self.__inr_dim) == int  # ensure input dimensions are integers
-        self.__inr_vars = symbols(
-            [vars[i] + ":" + str(self.var_dims[i]) for i in range(vars_num)]
-        )
+        self.__inr_vars = symbols([vars[i] + ":" + str(self.var_dims[i]) for i in range(vars_num)])
         self.__inr_x = symbols("inr_x:" + str(self.__inr_dim))
         self.__inr_f = self.f(*self.__inr_vars)
         self.__inr_f = -1 * self.__inr_f if self.__reversed else self.__inr_f
@@ -45,9 +43,7 @@ class Model:
                 )
             )
             self.__inr_f = self.__inr_f.subs(d)
-        self.__inr_series[0] = {
-            "sym": {v: np.asarray(self.__inr_f) for v in range(vars_num)}
-        }
+        self.__inr_series[0] = {"sym": {v: np.asarray(self.__inr_f) for v in range(vars_num)}}
 
     def __post_init__(self):
         self.__validation()
@@ -56,10 +52,7 @@ class Model:
         return self.__inr_series[order][mod][v]
 
     def __take_derivative(self, order: int, v: int):
-        if (
-            order - 1 not in self.__inr_series
-            or v not in self.__inr_series[order - 1]["sym"]
-        ):
+        if order - 1 not in self.__inr_series or v not in self.__inr_series[order - 1]["sym"]:
             self.__take_derivative(order - 1, v)
         start, end = self.__inr_idx[v]
         x = self.__inr_x[start:end]
@@ -77,19 +70,14 @@ class Model:
             self.__take_derivative(order, v)
 
         def _eval_numpy():
-            if (
-                mod not in self.__inr_series[order]
-                or v not in self.__inr_series[order][mod]
-            ):
+            if mod not in self.__inr_series[order] or v not in self.__inr_series[order][mod]:
                 if mod not in self.__inr_series:
                     self.__inr_series[order][mod] = {}
                 d = self.__series(order, "sym", v)
                 d = d if order == 0 else d.squeeze(axis=-1)
                 d = ImmutableDenseNDimArray(d)
                 if v not in self.__inr_series[order][mod]:
-                    self.__inr_series[order][mod][v] = lambdify(
-                        self.__inr_x, d, "numpy"
-                    )
+                    self.__inr_series[order][mod][v] = lambdify(self.__inr_x, d, "numpy")
                 # self.__inr_series[order][mod] = {v: lambdify(self.__inr_x, d, "numpy")}
             r = np.asarray(self.__series(order, mod, v)(*np.concatenate(xs, axis=-1)))
             return r.squeeze(axis=-1) if order == 0 else r
@@ -97,10 +85,7 @@ class Model:
         def _eval_interval():
             from pybdr.geometry import Interval
 
-            if (
-                mod not in self.__inr_series[order]
-                or v not in self.__inr_series[order][mod]
-            ):
+            if mod not in self.__inr_series[order] or v not in self.__inr_series[order][mod]:
                 if mod not in self.__inr_series:
                     self.__inr_series[order][mod] = {}
                 d = self.__series(order, "sym", v)
@@ -113,7 +98,9 @@ class Model:
                     # self.__inr_series[order][mod] = {v: [None, mask]}
                 else:
                     sym_d = ImmutableDenseNDimArray(d[mask])
-                    vf = lambdify(self.__inr_x, sym_d, Interval.functional())
+                    # Convert ImmutableDenseNDimArray to list for lambdify
+                    sym_d_list = list(sym_d) if hasattr(sym_d, "__iter__") else [sym_d]
+                    vf = lambdify(self.__inr_x, sym_d_list, Interval.functional())
                     if v not in self.__inr_series[order][mod]:
                         self.__inr_series[order][mod][v] = [vf, mask]
                     # self.__inr_series[order][mod] = {v: [vf, mask]}
@@ -124,15 +111,7 @@ class Model:
             ub = np.zeros_like(d, dtype=float)
             # calculate interval expressions
             if vm[0] is not None:
-                vx = np.asarray(
-                    vm[0](
-                        *[
-                            xs[i][j]
-                            for i in range(len(self.var_dims))
-                            for j in range(self.var_dims[i])
-                        ]
-                    )
-                )
+                vx = np.asarray(vm[0](*[xs[i][j] for i in range(len(self.var_dims)) for j in range(self.var_dims[i])]))
                 inff = np.frompyfunc(lambda x: x.inf, 1, 1)
                 supf = np.frompyfunc(lambda x: x.sup, 1, 1)
                 lb[vm[1]] = inff(vx)

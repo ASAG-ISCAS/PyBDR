@@ -448,5 +448,20 @@ def test_contains():
     print(b.contains(np.array([0, 3])))
 
 
+def test_Batch_MDC():
+    """
+    Test the batch Mahalanobis distance computation
+    """
+    pts = Interval.rand(100, 3, 1)  # points with uncertainty
+    mean = np.random.rand(3, 1)  # mean of each point
+    cov = np.random.rand(100, 3, 3)  # covariance of each point
+    diff = pts - mean[None, :, :]
+
+    mdc = diff.transpose(0, 2, 1) @ np.linalg.inv(cov) @ diff
+    # mdc is of shape (100, 1, 1)
+    mdc = Interval.squeeze(mdc)  # reshape to (100,)
+    print(mdc.shape)
+
+
 if __name__ == "__main__":
-    pass
+    test_Batch_MDC()
