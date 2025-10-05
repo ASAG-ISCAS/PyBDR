@@ -1,0 +1,19 @@
+# Include documentation and license files
+include README.md
+include LICENSE.md
+include INSTALL.md
+include environment.yml
+
+# Include documentation images
+recursive-include doc *.png *.jpg *.jpeg *.gif *.svg
+
+# Exclude unwanted files
+exclude .gitignore
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * *.so
+recursive-exclude * *.dylib
+
+# Exclude test and benchmark files from distribution
+recursive-exclude test *
+recursive-exclude benchmarks *

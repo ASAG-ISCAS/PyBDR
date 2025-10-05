@@ -1,6 +1,4 @@
-import numpy as np
-
-from pybdr.geometry import Interval, Polytope, Zonotope, Geometry
+from pybdr.geometry import Geometry, Interval, Polytope, Zonotope
 from pybdr.geometry.operation import boundary
 from pybdr.util.visualization import plot
 
@@ -65,5 +63,5 @@ def test_zonotope2zonotope():
     plot([z, *bound_boxes], [0, 1])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
