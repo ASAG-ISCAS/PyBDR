@@ -1,0 +1,95 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pybdr"
+version = "1.0.4"
+description = "Set-boundary based Reachability Analysis Toolbox in Python"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE.md"}
+authors = [
+    {name = "ASAG-ISCAS"}
+]
+keywords = ["reachability analysis", "formal verification", "nonlinear systems", "boundary analysis", "set-based methods"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "numpy>=1.20.0",
+    "scipy>=1.7.0",
+    "pypoman>=0.5.4",
+    "cvxpy>=1.1.0",
+    "matplotlib>=3.3.0",
+    "codac>=2.0.0.dev20",  # Allows pre-release versions
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=2.12",
+    "black>=21.0",
+    "flake8>=3.9",
+    "mypy>=0.910",
+]
+test = [
+    "pytest>=6.0",
+    "pytest-cov>=2.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/ASAG-ISCAS/PyBDR"
+Documentation = "https://asag-iscas.github.io/docs.pybdr/"
+Repository = "https://github.com/ASAG-ISCAS/PyBDR"
+Issues = "https://github.com/ASAG-ISCAS/PyBDR/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pybdr*"]
+exclude = ["test*", "benchmarks*", "doc*"]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=pybdr --cov-report=html --cov-report=term"
+
+[tool.black]
+line-length = 120
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true

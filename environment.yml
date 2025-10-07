@@ -1,0 +1,16 @@
+name: pybdr
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.8
+  - numpy>=1.20.0
+  - scipy>=1.7.0
+  - matplotlib>=3.3.0
+  - sympy>=1.8.0
+  - cddlib  # Required for pypoman (provides pycddlib backend)
+  - pip
+  - pip:
+    - pypoman>=0.5.4
+    - cvxpy>=1.1.0
+    - codac>=2.0.0.dev20  # Allows pre-release versions of codac v2

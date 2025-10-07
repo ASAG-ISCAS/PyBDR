@@ -69,7 +69,9 @@ def _polytope2interval(src: Polytope, r: float):
         return arr
 
     mat_a = refine_const(src.a, 1e-14)
-    vec_b = refine_const(src.b, 1e-14)  # 1e-14 may vary for different problem, need to refine # TODO
+    vec_b = refine_const(
+        src.b, 1e-14
+    )  # 1e-14 may vary for different problem, need to refine # TODO
 
     #  get the domain of the variables
     bound_vs = src.vertices
@@ -85,7 +87,7 @@ def _polytope2interval(src: Polytope, r: float):
         this_const = ""
         for idx_var in range(num_var):
             this_const += (
-                    "{:.20e}".format(mat_a[idx_const, idx_var]) + "*x" + str(idx_var) + "+"
+                "{:.20e}".format(mat_a[idx_const, idx_var]) + "*x" + str(idx_var) + "+"
             )
         this_const = this_const[:-1] + "<=" + "{:.20e}".format(vec_b[idx_const])
         realpaver.add_constraint(this_const)

@@ -2,7 +2,6 @@
 Set-boundary based Reachability Analysis Toolbox in Python
 </p>
 
-
 <p align="center">
     <br />
         <a href="https://asag-iscas.github.io/docs.pybdr/"><strong>Online Documents »</strong></a>
@@ -41,24 +40,50 @@ The set-boundary based method can be used to perform reachability analysis for s
 3. neural ordinary differential equations
 
 # Installation
-The installation process is deemed unnecessary as it only involves copying the source code to the proper directory, much like how a third-party library in MATLAB functions. We highly recommend developers to utilize Pycharm as the integrated development environment (IDE) for their development and testing needs. Pycharm offers a range of advanced features that greatly aid in testing, debugging, and code analysis.
-<!--The installation process is unnecessary as the source code needs to be copied into the appropriate directory, similar to
-how a third-party library in MATLAB works. We strongly recommend developers to utilize `Pycharm` as the IDE for
-development and testing purposes. By using `Pycharm`, developers can benefit from various advanced features that
-facilitate testing, debugging, and code analysis.-->
 
-## Virtual Environment
+PyBDR is now available as an installable Python package. We **strongly recommend using Conda** for installation, as it automatically handles all system dependencies.
 
-<!--The installation process is unnecessary as the source code needs to be copied into the appropriate directory, similar to
-how a third-party library in MATLAB works. We strongly recommend developers to utilize `Pycharm` as the IDE for
-development and testing purposes. By using `Pycharm`, developers can benefit from various advanced features that
-facilitate testing, debugging, and code analysis.
+## Quick Start
 
-### Virtual Environment-->
+```bash
+# Create conda environment (i.e. pybdr here) with all dependencies
+conda env create -f environment.yml --name pybdr
 
-To ensure a smoother installation and running of third-party libraries, we advise users to
-use [miniconda](https://docs.conda.io/en/latest/miniconda.html) and create a virtual environment. The steps for this
-process are as follows:
+# Activate the environment
+conda activate pybdr
+
+# Install PyBDR
+pip install -e .
+```
+
+That's it! The `environment.yml` file automatically installs the required `cddlib` C library and all Python dependencies.
+
+## Alternative: Install in Existing Conda Environment
+
+If you already have a conda environment:
+
+```bash
+# Activate your environment
+conda activate your_env_name
+
+# Install cddlib system dependency
+conda install -c conda-forge cddlib
+
+# Install PyBDR
+pip install -e .
+```
+
+## Detailed Instructions
+
+For detailed installation instructions and troubleshooting, please see **[INSTALL.md](INSTALL.md)**.
+
+## Why Conda?
+
+PyBDR depends on `pypoman`, which requires the `cddlib` C library. Conda makes this dependency installation seamless. While pip-only installation is possible, it requires manual installation of system libraries and is not recommended.
+
+## Development Environment
+
+We recommend using PyCharm or VS Code as the IDE for development. To ensure a smoother installation and running of third-party libraries, we advise users to use [miniconda](https://docs.conda.io/en/latest/miniconda.html) and create a virtual environment. The steps for this process are as follows:
 
 First, open the user's current working directory, and use the command
 
@@ -156,28 +181,29 @@ plot(ri_with_bound, [0, 1])
 ```
 
 |     With Boundary Analysis (BA)     |       No Boundary Analysis (NBA)       |
-|:-----------------------------------:|:--------------------------------------:|
+| :---------------------------------: | :------------------------------------: |
 | ![](./doc/imgs/vanderpol_bound.png) | ![](./doc/imgs/vanderpol_no_bound.png) |
 
 For large initial sets,
 
 |                                                         System                                                          |                                                                  Code                                                                   |   Reachable Sets (Orange-NBA,Blue-BA)   |
-|:-----------------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------:|
+| :---------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------: |
 |        [synchronous machine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/synchronous_machine.py)        | [benchmark_synchronous_machine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_synchronous_machine_cmp.py) |   ![](doc/imgs/sync_machine_cmp.png)    |
 | [Lotka Volterra model of 2 variables](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/lotka_volterra_2d.py) |   [benchmark_lotka_volterra_2d_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_lotka_volterra_2d_cmp.py)   | ![](doc/imgs/lotka_volterra_2d_cmp.png) |
 |                 [Jet engine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/jet_engine.py)                 |          [benchmark_jet_engine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_jet_engine_cmp.py)          |    ![](doc/imgs/jet_engine_cmp.png)     |
 
 For large time horizons, i.e. consider
 the system [Brusselator](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/brusselator.py)
+
 > For more details about the following example, please refer to
 > our [code](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_brusselator_cmp.py).
 
 | Time instance | With Boundary Analysis                |        Without Boundary Analysi        |
-|:-------------:|---------------------------------------|:--------------------------------------:|
+| :-----------: | ------------------------------------- | :------------------------------------: |
 |     t=5.4     | ![](doc/imgs/brusselator_ba_t5.4.png) | ![](doc/imgs/brusselator_nba_t5.4.png) |
 |     t=5.7     | ![](doc/imgs/brusselator_ba_t5.7.png) | ![](doc/imgs/brusselator_nba_t5.7.png) |
 |     t=6.0     | ![](doc/imgs/brusselator_ba_t6.png)   |  ![](doc/imgs/brusselator_nba_t6.png)  |
-|     t=6.1     | ![](doc/imgs/brusselator_ba_t6.1.png) |      __Set Explosion Occurred!__       |
+|     t=6.1     | ![](doc/imgs/brusselator_ba_t6.1.png) |      **Set Explosion Occurred!**       |
 
 ## Computing Reachable Sets based on Boundary Analysis for Neural ODE
 
@@ -202,7 +228,7 @@ w_1 = \left[
 -0.15318371 \quad & -0.275755 \\
 0.24873598 \quad & 0.21018365
 \end{align*}
-\right]        
+\right]
 $$
 
 $$
@@ -278,10 +304,10 @@ In the following table, we show the reachable computed with boundary analysis an
 time instance cases.
 
 | Time Instance |    With Boundary Analysis     |  Without Boundary Analysis   |
-|:-------------:|:-----------------------------:|:----------------------------:|
+| :-----------: | :---------------------------: | :--------------------------: |
 |     t=0.5     | ![](doc/imgs/Neural_BA05.png) | ![](doc/imgs/Neural_E05.png) |
 |     t=1.0     | ![](doc/imgs/Neural_BA1.png)  | ![](doc/imgs/Neural_E1.png)  |
-|     t=1.5     | ![](doc/imgs/Neural_BA15.png) |  __Set Explosion Occured!__  |
+|     t=1.5     | ![](doc/imgs/Neural_BA15.png) |  **Set Explosion Occured!**  |
 
 ## Frequently Asked Questions and Troubleshooting
 
@@ -319,9 +345,22 @@ order of the Taylor expansion while reducing the step size.
 This project is licensed under the GNU GPLv3 License - see the [LICENSE](LICENSE.md) file for
 details.
 
+## Citing PyBDR
+
+```
+@inproceedings{ding2024pybdr,
+  title={PyBDR: Set-Boundary Based Reachability Analysis Toolkit in Python},
+  author={Ding, Jianqiang and Wu, Taoran and Liang, Zhen and Xue, Bai},
+  booktitle={International Symposium on Formal Methods},
+  pages={140--157},
+  year={2024},
+  organization={Springer}
+}
+```
+
 ## Acknowledgement
 
-When developing this tool, we drew upon models used in other tools for calculating reachable sets, including Flow*, CORA, and various others.
+When developing this tool, we drew upon models used in other tools for calculating reachable sets, including Flow\*, CORA, and various others.
 
 <!--When creating this tool, reference was made to models utilized in other reachable set calculation tools such as Flow*,
 CORA, and others.-->

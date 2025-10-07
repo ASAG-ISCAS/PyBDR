@@ -3,6 +3,7 @@ from .solver import *
 from .kd_tree import *
 from .realpaver_wrapper import RealPaver
 from .simulator import Simulator
+from .codac_wrapper import extract_boundary
 
 __all__ = [
     "is_empty",

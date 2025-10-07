@@ -1,7 +1,7 @@
 import numpy as np
 
 import pybdr
-from pybdr.geometry import Interval, Geometry
+from pybdr.geometry import Geometry, Interval
 from pybdr.util.visualization import plot
 
 np.set_printoptions(precision=5, suppress=True)
@@ -73,6 +73,7 @@ def test_addition_01():
 
 def test_addition_case_01():
     from pybdr.geometry import Zonotope
+
     a = Interval.rand(2)
     b = Zonotope.rand(2, 3)
     c = a + b
@@ -143,6 +144,7 @@ def test_matrix_multiplication_case_2():
     # Z.generators
     # I = interval([0 1; 1 0], [1 2; 2 1]);
     from pybdr.geometry import Zonotope
+
     a = Interval([[0, 1], [1, 0]], [[1, 2], [2, 1]])
     b = Zonotope([1, 0], [[1, 0], [0, 1]])
     c = a @ b
@@ -327,7 +329,6 @@ def test_partition():
     from pybdr.util.visualization import plot
 
     plot([a], [0, 1])
-    from pybdr.geometry import Geometry
     from pybdr.geometry.operation import partition
 
     parts = partition(a, 0.1, Geometry.TYPE.INTERVAL)
@@ -349,9 +350,8 @@ def test_boundary():
 
 def test_temp():
     from pybdr.geometry import Interval
-    from pybdr.util.visualization import plot
-    from pybdr.geometry import Geometry
     from pybdr.geometry.operation import partition
+    from pybdr.util.visualization import plot
 
     a = Interval([-1, -2], [3, 5])
     parts = partition(a, 0.1, Geometry.TYPE.INTERVAL)
@@ -448,5 +448,20 @@ def test_contains():
     print(b.contains(np.array([0, 3])))
 
 
-if __name__ == '__main__':
-    pass
+def test_Batch_MDC():
+    """
+    Test the batch Mahalanobis distance computation
+    """
+    pts = Interval.rand(100, 3, 1)  # points with uncertainty
+    mean = np.random.rand(3, 1)  # mean of each point
+    cov = np.random.rand(100, 3, 3)  # covariance of each point
+    diff = pts - mean[None, :, :]
+
+    mdc = diff.transpose(0, 2, 1) @ np.linalg.inv(cov) @ diff
+    # mdc is of shape (100, 1, 1)
+    mdc = Interval.squeeze(mdc)  # reshape to (100,)
+    print(mdc.shape)
+
+
+if __name__ == "__main__":
+    test_Batch_MDC()
