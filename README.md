@@ -46,8 +46,8 @@ PyBDR is now available as an installable Python package. We **strongly recommend
 ## Quick Start
 
 ```bash
-# Create conda environment with all dependencies
-conda env create -f environment.yml
+# Create conda environment (i.e. pybdr here) with all dependencies
+conda env create -f environment.yml --name pybdr
 
 # Activate the environment
 conda activate pybdr
@@ -344,6 +344,19 @@ order of the Taylor expansion while reducing the step size.
 
 This project is licensed under the GNU GPLv3 License - see the [LICENSE](LICENSE.md) file for
 details.
+
+## Citing PyBDR
+
+```
+@inproceedings{ding2024pybdr,
+  title={PyBDR: Set-Boundary Based Reachability Analysis Toolkit in Python},
+  author={Ding, Jianqiang and Wu, Taoran and Liang, Zhen and Xue, Bai},
+  booktitle={International Symposium on Formal Methods},
+  pages={140--157},
+  year={2024},
+  organization={Springer}
+}
+```
 
 ## Acknowledgement
 
