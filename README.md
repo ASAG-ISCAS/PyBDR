@@ -29,7 +29,7 @@ The set-boundary–based method can be used to perform reachability analysis for
 
 # Installation
 
-PyBDR is now available as an installable Python package. We **strongly recommend using Conda** for installation, as it automatically handles all system dependencies.
+PyBDR is now available as an installable Python package. We **strongly recommend using Conda** for installation, as it automatically manages all required system dependencies.
 
 ## Quick Start
 
@@ -71,7 +71,7 @@ PyBDR depends on `pypoman`, which requires the `cddlib` C library. Conda makes t
 
 ## Development Environment
 
-We recommend using PyCharm or VS Code as the IDE for development. To ensure a smoother installation and running of third-party libraries, we advise users to use [miniconda](https://docs.conda.io/en/latest/miniconda.html) and create a virtual environment. The steps for this process are as follows:
+We recommend using PyCharm or VS Code as the IDE for development. To ensure a smooth installation and execution of third-party libraries, we advise users to use [miniconda](https://docs.conda.io/en/latest/miniconda.html) and create a virtual environment. The steps are as follows:
 
 First, open the user's current working directory, and use the command
 
@@ -301,11 +301,11 @@ time instance cases.
 
 ### The computation is slow
 
-Two modes of computation are supported by the tool for reachable sets. One mode is to compute the reachable set of evolved states using the entire initial set in a set propagation manner, while the other mode is to compute the reachable set of evolved states based on the boundary of the initial state set.
+The tool supports two modes for reachable set computation. In the first mode, the reachable set of the evolved states is computed by propagating the entire initial set forward in time. In the second mode, the reachable set is computed by propagating only the boundary of the initial state set.
 
-The computation may be slow for several reasons such as large computational time intervals, small steps, high Taylor expansion orders, or a large number of state variables.
+The computation may become time-consuming due to several factors, including a long time horizon, small integration step sizes, high-order Taylor expansions, or a large number of state variables.
 
-To accelerate the computations, experiments can be performed with a smaller computational time horizon, a smaller order of expansion (such as 2), and a larger time step. Then gradually increase the computational time horizon and order of expansion based on the results of this setting to achieve the desired set of reachable states at an acceptable time consumption.
+To accelerate the computation, one may first conduct experiments using a shorter time horizon, a lower expansion order (e.g., order 2), and a larger time step. Based on the results obtained under these coarse settings, the time horizon and expansion order can then be gradually increased to obtain the desired reachable set while maintaining acceptable computational cost.
 
 <!--Two modes of computation are supported by the tool for reachable sets. One mode is to compute the reachable set of
 evolved states using the entire initial set in a set propagation manner, while the other mode is to compute the
@@ -322,8 +322,7 @@ consumption.-->
 
 ### Controlling the wrapping effect
 
-To enhance the precision of the reachable set computation, one can split the boundaries of initial sets or increase the
-order of the Taylor expansion while reducing the step size.
+The precision of the reachable set computation can be enhanced by refining the boundary of the initial set through subdivision, or by increasing the Taylor expansion order in conjunction with a reduced step size.
 
 > Feel free to contact [dingjianqiang0x@gmail.com](mailto:dingjianqiang0x@gmail.com) if you find any
 > issues or bugs in this code, or you struggle to run it in any way.
@@ -348,7 +347,7 @@ details.
 
 ## Acknowledgement
 
-When developing this tool, we drew upon models used in other tools for calculating reachable sets, including Flow\*, CORA, and various others.
+When developing this tool, we drew upon models used in other tools for calculating reachable sets, including Flow\*, CORA, and others.
 
 <!--When creating this tool, reference was made to models utilized in other reachable set calculation tools such as Flow*,
 CORA, and others.-->
