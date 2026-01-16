@@ -10,34 +10,22 @@ Set-boundary based Reachability Analysis Toolbox in Python
 
 # Motivation
 
-Reachability analysis, which involves computing reachable state sets, plays a fundamental role in the temporal
-verification of nonlinear systems. Overly pessimistic over-approximations, however, render many temporal properties
-unverifiable in practice. This pessimism mainly arises due to the wrapping effect, which is the propagation and
-accumulation of over-approximation error through the iterative computation in the construction of reachable sets. As the
-extent of the wrapping effect correlates strongly with the volume of the initial set, techniques that partition the
-initial state space and independently compute reachable sets of those partitions are often used to reduce the wrapping
-effect, <a href="https://ieeexplore.ieee.org/document/7585104"><strong>especially for large initial sets or/and large
-time horizons</strong></a>.
-Such partitioning may, however, induce extensive demand on computation time and memory, often rendering the existing
-reachability analysis techniques not suitable for
-complex real-world applications. Not being forced to explore the full, i.g. exponential in the dimensionality, number of
-partitions could help such procedures tremendously. This is the theme of this tool, which implements the
-so-called <a href="http://lcs.ios.ac.cn/~xuebai/publication.html"><strong>'set-boundary based method'</strong></a> that
-explores means of computing
-the full reachable state space based on state-exploratory analysis of just a small sub-volume of the initial state set,
-namely a set enclosing its boundary. For theoretical analysis, please refer to
-<a href="https://ieeexplore.ieee.org/document/7585104"><strong>'Bai Xue, Arvind Easwaran, Nam-Joon Cho and Martin
-Fränzle.Reach-Avoid Verification for Nonlinear Systems Based on Boundary Analysis. IEEE Transactions on Automatic
-Control (IEEE TAC), vol. 62: 3518--3523, 2017.'</strong></a> and
-<a href="https://ieeexplore.ieee.org/document/9023360"><strong>'Bai Xue, Qiuye Wang, Shenghua Feng, and Naijun Zhan.
-Over-and underapproximating reach sets for perturbed delay differential equations. IEEE Transactions on Automatic
-Control (IEEE TAC), vol.66: 283--290,2020.'</strong></a>
+Reachability analysis, which computes sets of states reachable by a system over time, plays a fundamental role in the temporal verification of nonlinear systems. In practice, however, overly pessimistic over-approximations often render many temporal properties unverifiable. This pessimism mainly arises from the wrapping effect, namely the propagation and accumulation of over-approximation errors during the iterative construction of reachable sets.
+Since the severity of the wrapping effect strongly correlates with the volume of the initial set, partitioning-based techniques—where the initial state space is divided into smaller subsets and analyzed independently—are commonly employed to mitigate this effect, especially for large initial sets and long time horizons
+(<a href="https://ieeexplore.ieee.org/document/7585104"><strong>see here</strong></a>).
+Such partitioning, however, typically incurs substantial computational and memory overhead, often making existing reachability analysis techniques unsuitable for complex real-world applications. In particular, being forced to explore the full—often exponential in the system dimension—number of partitions severely limits scalability.
+Motivated by this challenge, this tool implements the so-called
+<a href="http://lcs.ios.ac.cn/~xuebai/publication.html"><strong>set-boundary–based method</strong></a>,
+which computes the full reachable state space by performing state-exploratory analysis on only a small sub-volume of the initial set, namely a set enclosing its boundary. By avoiding exhaustive exploration of the interior, this approach significantly improves scalability while preserving soundness.
+For theoretical foundations, please refer to
+<a href="https://ieeexplore.ieee.org/document/7585104"><strong>Bai Xue et al., “Reach-Avoid Verification for Nonlinear Systems Based on Boundary Analysis,” IEEE Transactions on Automatic Control, 2017</strong></a>, and
+<a href="https://ieeexplore.ieee.org/document/9023360"><strong>Bai Xue et al., “Over- and Under-Approximating Reach Sets for Perturbed Delay Differential Equations,” IEEE Transactions on Automatic Control, 2020</strong></a>.
 
-The set-boundary based method can be used to perform reachability analysis for systems modelled by
+The set-boundary–based method can be used to perform reachability analysis for systems modeled by:
 
-1. ordinary differential equations (subject to Lispchitz continuous perturbations)
-2. delay differential equations (subject to Lispchitz continuous perturbations)
-3. neural ordinary differential equations
+1. Ordinary differential equations (ODEs) with Lipschitz-continuous perturbations,
+2. Delay differential equations (DDEs) with Lipschitz-continuous perturbations,
+3. Neural ordinary differential equations (Neural ODEs).
 
 # Installation
 
