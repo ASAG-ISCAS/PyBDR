@@ -1,7 +1,7 @@
-# Conda environment to work on PyBDR from source:
-#   conda env create -f environment.yml
-#   conda activate pybdr
-name: pybdr
+# environment.yml plus the tools to test and package PyBDR:
+#   conda env create -f environment-dev.yml
+#   conda activate pybdr-dev
+name: pybdr-dev
 channels:
   - conda-forge
 dependencies:
@@ -12,8 +12,11 @@ dependencies:
   - cvxpy>=1.3
   - matplotlib-base>=3.7
   - plotly>=5
+  - pytest>=7
+  - python-build
+  - twine
+  - rattler-build
   - pip
   - pip:
-      # codac is not available on conda-forge yet
       - codac>=2.1
       - --editable .
