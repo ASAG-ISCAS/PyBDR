@@ -112,10 +112,9 @@ class Model:
             # calculate interval expressions
             if vm[0] is not None:
                 vx = np.asarray(vm[0](*[xs[i][j] for i in range(len(self.var_dims)) for j in range(self.var_dims[i])]))
-                inff = np.frompyfunc(lambda x: x.inf, 1, 1)
-                supf = np.frompyfunc(lambda x: x.sup, 1, 1)
-                lb[vm[1]] = inff(vx)
-                ub[vm[1]] = supf(vx)
+                # the bounds are 1-element arrays, convert explicitly (implicit conversion fails with numpy >= 2.5)
+                lb[vm[1]] = np.array([x.inf for x in vx.ravel()], dtype=float).ravel()
+                ub[vm[1]] = np.array([x.sup for x in vx.ravel()], dtype=float).ravel()
             # set remain constant values
             inv_mask = np.logical_not(vm[1])
             lb[inv_mask] = d[inv_mask].astype(dtype=float)
