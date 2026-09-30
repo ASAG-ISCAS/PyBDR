@@ -6,6 +6,15 @@ from matplotlib.patches import Polygon
 from pybdr.geometry import Geometry, Interval, Zonotope, Polytope
 
 
+def _finish(fig, ax, show: bool, save_file_name):
+    # save before showing, the figure is released once the window of plt.show() is closed
+    if save_file_name is not None:
+        fig.savefig(save_file_name, format="png")
+    if show:
+        plt.show()
+    return fig, ax
+
+
 def __3d_plot(objs, dims: list, width: int, height: int):
     # TODO
     raise NotImplementedError
@@ -67,7 +76,9 @@ def __2d_plot(
         ylim=None,
         c=None,
         filled=False,
-        init_set=None
+        init_set=None,
+        show=True,
+        save_file_name=None,
 ):
     assert len(dims) == 2
     px = 1 / plt.rcParams["figure.dpi"]
@@ -133,9 +144,7 @@ def __2d_plot(
     if ylim is not None:
         plt.ylim(ylim)
 
-    # plt.savefig("temp.jpg", dpi=300)
-
-    plt.show()
+    return _finish(fig, ax, show, save_file_name)
 
 
 def plot(
@@ -148,10 +157,19 @@ def plot(
         ylim=None,
         c=None,
         filled=False,
-        init_set=None
+        init_set=None,
+        show=True,
+        save_file_name=None,
 ):
+    """
+    plot geometries projected onto the given 2 dimensions
+
+    :param show: show the figure, set to False to only save it or to adjust it further
+    :param save_file_name: save the figure as png to this path
+    :return: matplotlib figure and axes
+    """
     if mod == "2d":
-        return __2d_plot(objs, dims, width, height, xlim, ylim, c, filled, init_set)
+        return __2d_plot(objs, dims, width, height, xlim, ylim, c, filled, init_set, show, save_file_name)
     elif mod == "3d":
         return __3d_plot(objs, dims, width, height)
     else:
@@ -201,10 +219,8 @@ def __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled, show
 
     if ylim is not None:
         plt.ylim(ylim)
-    if show:
-        plt.show()
-    if save_file_name is not None:
-        plt.savefig(save_file_name, format="png")
+
+    return _finish(fig, ax, show, save_file_name)
 
 
 def __3d_plot_cmp(collections, dims, width, height, cs):
