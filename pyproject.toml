@@ -37,11 +37,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+vis = [
+    "plotly>=5",
+]
 test = [
     "pytest>=7",
 ]
 dev = [
-    "pybdr[test]",
+    "pybdr[vis,test]",
     "build",
 ]
 
