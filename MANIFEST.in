@@ -1,19 +1,13 @@
-# Include documentation and license files
+# Files included in the source distribution in addition to the package itself
 include README.md
 include LICENSE.md
-include INSTALL.md
 include environment.yml
 
-# Include documentation images
-recursive-include doc *.png *.jpg *.jpeg *.gif *.svg
+# Tests (with their reference data) so that the source distribution can be tested
+graft test
 
-# Exclude unwanted files
-exclude .gitignore
-recursive-exclude * __pycache__
-recursive-exclude * *.py[co]
-recursive-exclude * *.so
-recursive-exclude * *.dylib
-
-# Exclude test and benchmark files from distribution
-recursive-exclude test *
-recursive-exclude benchmarks *
+# Not needed to build or test the package
+prune benchmarks
+prune doc
+prune scripts
+global-exclude __pycache__ *.py[cod] .DS_Store
