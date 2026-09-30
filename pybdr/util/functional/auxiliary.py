@@ -1,5 +1,4 @@
 import numbers
-import datetime
 import numpy as np
 from scipy.sparse import coo_matrix
 import time
@@ -111,21 +110,3 @@ def performance_counter(start: time.perf_counter_ns(), event: str, runs: int = 1
     end = time.perf_counter_ns()
     print(event + " cost: {}s".format(((end - start) / runs) * 1e-9))
     return end
-
-
-def time_stamp():
-    t = time.time()
-    return datetime.datetime.fromtimestamp(t).strftime("%Y%m%d_%H%M%S")
-
-
-def get_system():
-    import platform
-    this_platform = platform.platform().lower()
-    if 'windows' in this_platform:
-        return 'windows'
-    elif 'linux' in this_platform:
-        return 'linux'
-    elif 'macos' in this_platform:
-        return 'macos'
-    else:
-        raise NotImplementedError
