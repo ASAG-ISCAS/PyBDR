@@ -1,6 +1,8 @@
 # Files included in the source distribution in addition to the package itself
 include README.md
 include LICENSE.md
+include CHANGELOG.md
+include CITATION.cff
 include environment.yml
 
 # Tests (with their reference data) so that the source distribution can be tested

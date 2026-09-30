@@ -43,3 +43,29 @@ jobs:
         with:
           name: dist
           path: dist/
+
+  colab:
+    # same OS and Python as Google Colab, PyBDR installed with pip only
+    name: colab demo notebook
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install the built wheel
+        run: |
+          python -m pip install build
+          python -m build --wheel
+          python -m pip install "$(ls dist/*.whl)[vis]" nbclient ipykernel
+      # the install cell of the notebook is skipped because PyBDR is already installed
+      - name: Run the notebook
+        run: |
+          python - <<'PY'
+          import nbformat
+          from nbclient import NotebookClient
+          nb = nbformat.read("examples/colab_demo.ipynb", as_version=4)
+          # run from examples/ so that the installed package is imported, not the source tree
+          NotebookClient(nb, timeout=1200, kernel_name="python3",
+                         resources={"metadata": {"path": "examples"}}).execute()
+          PY

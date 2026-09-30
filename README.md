@@ -29,88 +29,50 @@ The set-boundary–based method can be used to perform reachability analysis for
 
 # Installation
 
-PyBDR is now available as an installable Python package. We **strongly recommend using Conda** for installation, as it automatically handles all system dependencies.
+PyBDR requires Python 3.11 or newer and runs on Linux, macOS and Windows. All dependencies are
+regular Python packages, no system library has to be installed.
 
-## Quick Start
-
-```bash
-# Create conda environment (i.e. pybdr here) with all dependencies
-conda env create -f environment.yml --name pybdr
-
-# Activate the environment
-conda activate pybdr
-
-# Install PyBDR
-pip install -e .
-```
-
-That's it! The `environment.yml` file automatically installs the required `cddlib` C library and all Python dependencies.
-
-## Alternative: Install in Existing Conda Environment
-
-If you already have a conda environment:
+## With pip
 
 ```bash
-# Activate your environment
-conda activate your_env_name
-
-# Install cddlib system dependency
-conda install -c conda-forge cddlib
-
-# Install PyBDR
-pip install -e .
+pip install "pybdr @ git+https://github.com/ASAG-ISCAS/PyBDR"
 ```
 
-## Detailed Instructions
+Optional extras:
 
-For detailed installation instructions and troubleshooting, please see **[INSTALL.md](INSTALL.md)**.
+- `pybdr[vis]` adds [plotly](https://plotly.com/python/) for interactive 3D plots.
+- `pybdr[test]` adds pytest to run the test suite.
 
-## Why Conda?
+## With conda
 
-PyBDR depends on `pypoman`, which requires the `cddlib` C library. Conda makes this dependency installation seamless. While pip-only installation is possible, it requires manual installation of system libraries and is not recommended.
+codac, the interval analysis library PyBDR uses, is not on conda-forge yet. The recipes in
+[conda-recipe/](conda-recipe/README.md) build conda packages of PyBDR and codac into a local channel,
+which can then be installed with:
 
-## Development Environment
-
-We recommend using PyCharm or VS Code as the IDE for development. To ensure a smoother installation and running of third-party libraries, we advise users to use [miniconda](https://docs.conda.io/en/latest/miniconda.html) and create a virtual environment. The steps for this process are as follows:
-
-First, open the user's current working directory, and use the command
-
-```shell
-conda create -n pybdr_lab
+```bash
+conda create -n pybdr -c file://$PWD/conda-channel -c conda-forge pybdr
 ```
 
-to initialize a virtual test environment called "pybdr_lab".
+## From source
 
-After the virtual environment has been created, the user needs to activate it before running any third-party libraries.
-This can be done using the command
+To work on PyBDR, create the conda environment, which installs PyBDR in editable mode:
 
-```shell
-conda activate pybdr_lab
+```bash
+git clone https://github.com/ASAG-ISCAS/PyBDR.git
+cd PyBDR
+conda env create -f environment-dev.yml   # environment.yml without the test and packaging tools
+conda activate pybdr-dev
+pytest -m "not slow"                      # the slow tests are long running demos
 ```
 
-By activating the virtual environment, the user ensures that any package installations and other commands will run
-within the virtual environment, rather than the system environment.
+or, without conda, `pip install -e ".[dev]"`.
 
-## Dependencies
+## Google Colab
 
-Now, the user can install the necessary third party libraries in this virtual environment using the following commands.
+Open the [demo notebook](examples/colab_demo.ipynb) in Colab with the button below, its first cell
+installs PyBDR.
 
-```shell
-conda install matplotlib
-conda install -c conda-forge numpy
-conda install -c conda-forge cvxpy
-conda install scipy
-conda install -c mosek mosek
-pip install pypoman
-conda install -c anaconda sympy
-pip install open3d
-```
-
-For the reason we may use Mosek as a solver for optimisation, we highly recommend you to apply for
-an official personal licence, the steps for which can be found
-at [this link](https://docs.mosek.com/10.0/licensing/index.html).
-
-# How to use [![Open All Collab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1H2PWSAgAzesNnbEFXo6Ii1HGEip9WHOY?usp=sharing)
+# How to use [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ASAG-ISCAS/PyBDR/blob/master/examples/colab_demo.ipynb)
 
 ## Computing Reachable Sets based on Boundary Analysis for Nonlinear Systems
 
@@ -132,53 +94,55 @@ $$
 
 ```python
 import numpy as np
-from pybdr.algorithm import ASB2008CDC, ASB2008CDC
+from pybdr.algorithm import ASB2008CDC
 from pybdr.util.functional import performance_counter, performance_counter_start
 from pybdr.geometry import Zonotope, Interval, Geometry
 from pybdr.geometry.operation import boundary, cvt2
 from pybdr.model import *
 from pybdr.util.visualization import plot
 
-# settings for the computation
-options = ASB2008CDC.Options()
-options.t_end = 6.74
-options.step = 0.005
-options.tensor_order = 3
-options.taylor_terms = 4
-options.u = Zonotope.zero(1, 1)
-options.u_trans = np.zeros(1)
+# reach_parallel starts worker processes, which requires this guard on macOS and Windows
+if __name__ == "__main__":
+    # settings for the computation
+    options = ASB2008CDC.Options()
+    options.t_end = 6.74
+    options.step = 0.005
+    options.tensor_order = 3
+    options.taylor_terms = 4
+    options.u = Zonotope.zero(1, 1)
+    options.u_trans = np.zeros(1)
 
-# settings for the using geometry
-Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
-Zonotope.ORDER = 50
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+    Zonotope.ORDER = 50
 
-z = Interval([1.23, 2.34], [1.57, 2.46])
-x0 = cvt2(z, Geometry.TYPE.ZONOTOPE)
-xs = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
+    z = Interval([1.23, 2.34], [1.57, 2.46])
+    x0 = cvt2(z, Geometry.TYPE.ZONOTOPE)
+    xs = boundary(z, 1, Geometry.TYPE.ZONOTOPE)
 
-this_time = performance_counter_start()
-ri_without_bound, rp_without_bound = ASB2008CDC.reach(vanderpol, [2, 1], options, x0)
-this_time = performance_counter(this_time, 'reach_without_bound')
+    this_time = performance_counter_start()
+    ri_without_bound, rp_without_bound = ASB2008CDC.reach(vanderpol, [2, 1], options, x0)
+    this_time = performance_counter(this_time, 'reach_without_bound')
 
-ri_with_bound, rp_with_bound = ASB2008CDC.reach_parallel(vanderpol, [2, 1], options, xs)
-this_time = performance_counter(this_time, 'reach_with_bound')
+    ri_with_bound, rp_with_bound = ASB2008CDC.reach_parallel(vanderpol, [2, 1], options, xs)
+    this_time = performance_counter(this_time, 'reach_with_bound')
 
-# visualize the results
-plot(ri_without_bound, [0, 1])
-plot(ri_with_bound, [0, 1])
+    # visualize the results
+    plot(ri_without_bound, [0, 1])
+    plot(ri_with_bound, [0, 1])
 ```
 
 |     With Boundary Analysis (BA)     |       No Boundary Analysis (NBA)       |
 | :---------------------------------: | :------------------------------------: |
-| ![](./doc/imgs/vanderpol_bound.png) | ![](./doc/imgs/vanderpol_no_bound.png) |
+| ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/vanderpol_bound.png) | ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/vanderpol_no_bound.png) |
 
 For large initial sets,
 
 |                                                         System                                                          |                                                                  Code                                                                   |   Reachable Sets (Orange-NBA,Blue-BA)   |
 | :---------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------: |
-|        [synchronous machine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/synchronous_machine.py)        | [benchmark_synchronous_machine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_synchronous_machine_cmp.py) |   ![](doc/imgs/sync_machine_cmp.png)    |
-| [Lotka Volterra model of 2 variables](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/lotka_volterra_2d.py) |   [benchmark_lotka_volterra_2d_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_lotka_volterra_2d_cmp.py)   | ![](doc/imgs/lotka_volterra_2d_cmp.png) |
-|                 [Jet engine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/jet_engine.py)                 |          [benchmark_jet_engine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_jet_engine_cmp.py)          |    ![](doc/imgs/jet_engine_cmp.png)     |
+|        [synchronous machine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/synchronous_machine.py)        | [benchmark_synchronous_machine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_synchronous_machine_cmp.py) |   ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/sync_machine_cmp.png)    |
+| [Lotka Volterra model of 2 variables](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/lotka_volterra_2d.py) |   [benchmark_lotka_volterra_2d_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_lotka_volterra_2d_cmp.py)   | ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/lotka_volterra_2d_cmp.png) |
+|                 [Jet engine](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/jet_engine.py)                 |          [benchmark_jet_engine_cmp.py](https://github.com/ASAG-ISCAS/PyBDR/blob/master/benchmarks/benchmark_jet_engine_cmp.py)          |    ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/jet_engine_cmp.png)     |
 
 For large time horizons, i.e. consider
 the system [Brusselator](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/model/brusselator.py)
@@ -188,10 +152,10 @@ the system [Brusselator](https://github.com/ASAG-ISCAS/PyBDR/blob/master/pybdr/m
 
 | Time instance | With Boundary Analysis                |        Without Boundary Analysi        |
 | :-----------: | ------------------------------------- | :------------------------------------: |
-|     t=5.4     | ![](doc/imgs/brusselator_ba_t5.4.png) | ![](doc/imgs/brusselator_nba_t5.4.png) |
-|     t=5.7     | ![](doc/imgs/brusselator_ba_t5.7.png) | ![](doc/imgs/brusselator_nba_t5.7.png) |
-|     t=6.0     | ![](doc/imgs/brusselator_ba_t6.png)   |  ![](doc/imgs/brusselator_nba_t6.png)  |
-|     t=6.1     | ![](doc/imgs/brusselator_ba_t6.1.png) |      **Set Explosion Occurred!**       |
+|     t=5.4     | ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/brusselator_ba_t5.4.png) | ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/brusselator_nba_t5.4.png) |
+|     t=5.7     | ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/brusselator_ba_t5.7.png) | ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/brusselator_nba_t5.7.png) |
+|     t=6.0     | ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/brusselator_ba_t6.png)   |  ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/brusselator_nba_t6.png)  |
+|     t=6.1     | ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/brusselator_ba_t6.1.png) |      **Set Explosion Occurred!**       |
 
 ## Computing Reachable Sets based on Boundary Analysis for Neural ODE
 
@@ -257,35 +221,37 @@ from pybdr.util.visualization import plot, plot_cmp
 from pybdr.geometry.operation import boundary, cvt2
 from pybdr.util.functional import performance_counter_start, performance_counter
 
-# settings for the computation
-options = ASB2008CDC.Options()
-options.t_end = 1
-options.step = 0.01
-options.tensor_order = 2
-options.taylor_terms = 2
+# reach_parallel starts worker processes, which requires this guard on macOS and Windows
+if __name__ == "__main__":
+    # settings for the computation
+    options = ASB2008CDC.Options()
+    options.t_end = 1
+    options.step = 0.01
+    options.tensor_order = 2
+    options.taylor_terms = 2
 
-options.u = Zonotope([0], np.diag([0]))
-options.u_trans = options.u.c
+    options.u = Zonotope([0], np.diag([0]))
+    options.u_trans = options.u.c
 
-# settings for the using geometry
-Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
-Zonotope.ORDER = 50
+    # settings for the using geometry
+    Zonotope.REDUCE_METHOD = Zonotope.REDUCE_METHOD.GIRARD
+    Zonotope.ORDER = 50
 
-z = Interval([0, -0.5], [1, 0.5])
-x0 = cvt2(z, Geometry.TYPE.ZONOTOPE)
-xs = boundary(z, 2, Geometry.TYPE.ZONOTOPE)
+    z = Interval([0, -0.5], [1, 0.5])
+    x0 = cvt2(z, Geometry.TYPE.ZONOTOPE)
+    xs = boundary(z, 2, Geometry.TYPE.ZONOTOPE)
 
-print(len(xs))
+    print(len(xs))
 
-this_time = performance_counter_start()
-ri_without_bound, rp_without_bound = ASB2008CDC.reach(neural_ode_spiral1, [2, 1], options, x0)
-this_time = performance_counter(this_time, "reach_without_bound")
+    this_time = performance_counter_start()
+    ri_without_bound, rp_without_bound = ASB2008CDC.reach(neural_ode_spiral1, [2, 1], options, x0)
+    this_time = performance_counter(this_time, "reach_without_bound")
 
-ri_with_bound, rp_with_bound = ASB2008CDC.reach_parallel(neural_ode_spiral1, [2, 1], options, xs)
-this_time = performance_counter(this_time, "reach_with_bound")
+    ri_with_bound, rp_with_bound = ASB2008CDC.reach_parallel(neural_ode_spiral1, [2, 1], options, xs)
+    this_time = performance_counter(this_time, "reach_with_bound")
 
-# visualize the results
-plot_cmp([ri_without_bound, ri_with_bound], [0, 1], cs=["#FF5722", "#303F9F"])
+    # visualize the results
+    plot_cmp([ri_without_bound, ri_with_bound], [0, 1], cs=["#FF5722", "#303F9F"])
 ```
 
 In the following table, we show the reachable computed with boundary analysis and without boundary analysis on different
@@ -293,9 +259,30 @@ time instance cases.
 
 | Time Instance |    With Boundary Analysis     |  Without Boundary Analysis   |
 | :-----------: | :---------------------------: | :--------------------------: |
-|     t=0.5     | ![](doc/imgs/Neural_BA05.png) | ![](doc/imgs/Neural_E05.png) |
-|     t=1.0     | ![](doc/imgs/Neural_BA1.png)  | ![](doc/imgs/Neural_E1.png)  |
-|     t=1.5     | ![](doc/imgs/Neural_BA15.png) |  **Set Explosion Occured!**  |
+|     t=0.5     | ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/Neural_BA05.png) | ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/Neural_E05.png) |
+|     t=1.0     | ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/Neural_BA1.png)  | ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/Neural_E1.png)  |
+|     t=1.5     | ![](https://raw.githubusercontent.com/ASAG-ISCAS/PyBDR/master/doc/imgs/Neural_BA15.png) |  **Set Explosion Occured!**  |
+
+## 3D Visualization
+
+Besides the 2D `plot` and `plot_cmp`, sets can be shown in 3D with `plot3d` (projection onto 3 state
+dimensions) and `plot_tube` (2 state dimensions over time). The interactive plotly backend works in
+Jupyter and Colab and needs `pip install "pybdr[vis]"`; `backend="matplotlib"` draws static figures.
+
+```python
+from pybdr.geometry import Geometry, Interval
+from pybdr.geometry.operation import boundary
+from pybdr.util.visualization import plot3d, plot_tube
+
+# reachable sets of the example above over time
+plot_tube(ri_without_bound[1:], [0, 1], step=options.step)
+
+# boxes covering the boundary of a cube, as a static figure
+cells = boundary(Interval([0, 0, 0], [1, 1, 1]), 0.25, Geometry.TYPE.INTERVAL)
+plot3d(cells, [0, 1, 2], backend="matplotlib", save_file_name="cells.png", show=False)
+```
+
+All plot functions accept `show=False` and `save_file_name` and return the figure for further changes.
 
 ## Frequently Asked Questions and Troubleshooting
 
@@ -319,6 +306,13 @@ order
 of expansion (such as 2), and a larger time step. Then gradually increase the computational time horizon and order of
 expansion based on the results of this setting to achieve the desired set of reachable states at an acceptable time
 consumption.-->
+
+### `reach_parallel` fails on macOS or Windows
+
+`reach_parallel` computes the cells of the boundary in worker processes. On macOS and Windows these
+processes import the main script again, so the script must put its computations under
+`if __name__ == "__main__":` as in the examples above. In Jupyter / Colab notebooks this is not needed
+for the models of `pybdr.model`; dynamics defined in the notebook itself can be used with `reach`.
 
 ### Controlling the wrapping effect
 
