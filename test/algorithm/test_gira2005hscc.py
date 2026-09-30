@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 from pybdr.geometry import Zonotope, Geometry, Interval
 from pybdr.geometry.operation import cvt2, boundary
@@ -5,6 +6,9 @@ from pybdr.dynamic_system import LinSys
 from pybdr.algorithm import GIRA2005HSCC
 from pybdr.util.visualization import plot, plot_cmp
 from pybdr.util.functional import performance_counter, performance_counter_start
+
+# long running reachability demos, run with: pytest -m slow
+pytestmark = pytest.mark.slow
 
 
 def test_reach_linear_zono_algo3_case_00():

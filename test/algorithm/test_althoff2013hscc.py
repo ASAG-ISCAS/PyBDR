@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 from pybdr.algorithm import ALTH2013HSCC
 from pybdr.dynamic_system import NonLinSys
@@ -6,6 +7,9 @@ from pybdr.geometry.operation import cvt2, boundary
 from pybdr.model import *
 from pybdr.util.visualization import plot, plot_cmp
 from pybdr.util.functional import performance_counter_start, performance_counter
+
+# long running reachability demos, run with: pytest -m slow
+pytestmark = pytest.mark.slow
 
 
 def test_case_0():

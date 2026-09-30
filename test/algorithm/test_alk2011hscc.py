@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 
 from pybdr.geometry import Zonotope, Geometry, Interval
@@ -5,6 +6,9 @@ from pybdr.dynamic_system import LinSys
 from pybdr.algorithm import ALK2011HSCC
 from pybdr.geometry.operation import cvt2, boundary
 from pybdr.util.visualization import plot, plot_cmp
+
+# long running reachability demos, run with: pytest -m slow
+pytestmark = pytest.mark.slow
 
 
 def test_case_0():

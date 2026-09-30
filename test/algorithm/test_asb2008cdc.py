@@ -1,3 +1,4 @@
+import pytest
 import matplotlib.pyplot as plt
 import numpy as np
 import sympy
@@ -8,6 +9,9 @@ from pybdr.geometry import Zonotope, Interval, Geometry
 from pybdr.geometry.operation import boundary, cvt2
 from pybdr.model import *
 from pybdr.util.visualization import plot, plot_cmp
+
+# long running reachability demos, run with: pytest -m slow
+pytestmark = pytest.mark.slow
 
 
 def test_case_00():

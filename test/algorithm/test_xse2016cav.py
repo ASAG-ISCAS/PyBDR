@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 
 from pybdr.algorithm import XSE2016CAV, ASB2008CDC
@@ -5,6 +6,9 @@ from pybdr.dynamic_system import NonLinSys
 from pybdr.geometry import Interval, Zonotope
 from pybdr.model import *
 from pybdr.util.visualization import plot
+
+# long running reachability demos, run with: pytest -m slow
+pytestmark = pytest.mark.slow
 
 
 def test_case_00():
