@@ -242,9 +242,8 @@ class Interval(Geometry.Base):
 
     def __matmul__(self, other):
         def _matmul_matrix(x: np.ndarray):
-            posx, negx = x, np.zeros_like(x, dtype=float)
-            posx[x < 0] = 0
-            negx[x < 0] = x[x < 0]
+            # split into positive and negative parts without modifying the given matrix
+            posx, negx = np.maximum(x, 0), np.minimum(x, 0)
             inf = self.inf @ posx + self.sup @ negx
             sup = self.sup @ posx + self.inf @ negx
             return Interval(inf, sup)
@@ -269,9 +268,8 @@ class Interval(Geometry.Base):
                 return np.sum(np.maximum(ll, rl), axis=lr)
 
             def posneg(m):
-                pos, neg = m, -m
-                pos[pos < 0] = 0
-                neg[neg < 0] = 0
+                # without modifying the bounds of the operands
+                pos, neg = np.maximum(m, 0), np.maximum(-m, 0)
                 return pos, neg
 
             (linfp, linfn), (lsupp, lsupn) = posneg(self.inf), posneg(self.sup)
@@ -289,9 +287,8 @@ class Interval(Geometry.Base):
 
     def __rmatmul__(self, other):
         def _rmm_matrix(x: np.ndarray):
-            posx, negx = x, np.zeros_like(x, dtype=float)
-            posx[x < 0] = 0
-            negx[x < 0] = x[x < 0]
+            # split into positive and negative parts without modifying the given matrix
+            posx, negx = np.maximum(x, 0), np.minimum(x, 0)
             inf = posx @ self.inf + negx @ self.sup
             sup = posx @ self.sup + negx @ self.inf
             return Interval(inf, sup)
