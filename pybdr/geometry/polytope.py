@@ -3,14 +3,69 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
-import pypoman.polyhedron
+from scipy.optimize import linprog
+from scipy.spatial import ConvexHull, HalfspaceIntersection
 
 import pybdr.util.functional.auxiliary as aux
-from scipy.spatial import ConvexHull
 from .geometry import Geometry
 
 if TYPE_CHECKING:
     from .zonotope import Zonotope
+
+
+def _unique_rows(x: np.ndarray, decimals: int = 10) -> np.ndarray:
+    """remove rows that coincide up to rounding, keeping the original values and order"""
+    scale = max(1.0, float(np.max(np.abs(x))))
+    _, idx = np.unique(np.round(x / scale, decimals), axis=0, return_index=True)
+    return x[np.sort(idx)]
+
+
+def chebyshev_center(a: np.ndarray, b: np.ndarray):
+    """
+    center and radius of the largest ball inscribed in {x | a x <= b}
+    """
+    n = a.shape[1]
+    norms = np.linalg.norm(a, axis=1)
+    # maximize r s.t. a_i x + ||a_i|| r <= b_i, r >= 0
+    res = linprog(
+        c=np.append(np.zeros(n), -1.0),
+        A_ub=np.hstack([a, norms[:, None]]),
+        b_ub=b,
+        bounds=[(None, None)] * n + [(0, None)],
+        method="highs",
+    )
+    if res.status == 2:
+        raise ValueError("polytope is empty")
+    if res.status == 3:
+        raise ValueError("polytope is unbounded")
+    if not res.success:
+        raise RuntimeError("chebyshev center computation failed: " + res.message)
+    return res.x[:n], res.x[n]
+
+
+def halfspaces_to_vertices(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """
+    vertices of the bounded, full-dimensional polytope {x | a x <= b}
+    """
+    c, r = chebyshev_center(a, b)
+    if r <= 1e-12 * max(1.0, float(np.max(np.abs(b)))):
+        raise ValueError("polytope has empty interior, vertices can not be enumerated")
+    if a.shape[1] == 1:
+        # qhull does not support 1-dimensional input, the polytope is an interval here
+        return np.array([[np.min(b[a[:, 0] > 0] / a[a[:, 0] > 0, 0])], [np.max(b[a[:, 0] < 0] / a[a[:, 0] < 0, 0])]])
+    with np.errstate(divide="ignore", invalid="ignore"):
+        vs = HalfspaceIntersection(np.hstack([a, -b[:, None]]), c).intersections
+    if not np.all(np.isfinite(vs)):
+        raise ValueError("polytope is unbounded")
+    return _unique_rows(vs)
+
+
+def vertices_to_halfspaces(vs: np.ndarray):
+    """
+    halfspace representation (a, b) with a x <= b of the convex hull of the given points
+    """
+    eq = _unique_rows(ConvexHull(vs).equations)
+    return eq[:, :-1], -eq[:, -1]
 
 
 class Polytope(Geometry.Base):
@@ -43,7 +98,7 @@ class Polytope(Geometry.Base):
         chebyshev center of this polytope
         """
         if self._c is None:
-            self._c = pypoman.polyhedron.compute_chebyshev_center(self._a, self._b)
+            self._c, _ = chebyshev_center(self._a, self._b)
         return self._c
 
     @property
@@ -61,7 +116,7 @@ class Polytope(Geometry.Base):
         get extreme vertices of this polytope defined as AX<=B
         """
         if self._vs is None:
-            self._vs = np.stack(pypoman.compute_polytope_vertices(self._a, self._b))
+            self._vs = halfspaces_to_vertices(self._a, self._b)
         return self._vs
 
     @property
@@ -83,11 +138,11 @@ class Polytope(Geometry.Base):
         def __contains_pts(pts: np.ndarray):
             assert pts.ndim == 1 or pts.ndim == 2
             if pts.ndim == 1:
-                if self.dim != pts.shape[0]:
+                if self.shape != pts.shape[0]:
                     return False
                 return self._a @ pts <= self._b
             elif pts.ndim == 2:
-                if self.dim != pts.shape[1]:
+                if self.shape != pts.shape[1]:
                     return np.full(pts.shape[0], False, dtype=bool)
                 return self._a[None, :, :] @ pts[:, :, None] <= self._b
             else:
@@ -151,7 +206,7 @@ class Polytope(Geometry.Base):
     def rand(dim: int):
         num_vs = np.random.randint(5, 50)
         vs = np.random.rand(num_vs, dim)
-        a, b = pypoman.compute_polytope_halfspaces(vs)
+        a, b = vertices_to_halfspaces(vs)
         return Polytope(a, b)
 
     # =============================================== public method
@@ -162,33 +217,17 @@ class Polytope(Geometry.Base):
         raise NotImplementedError
 
     def polygon(self, dims):
+        """
+        vertices of the projection onto the given 2 dimensions, in counterclockwise order
+        """
         assert len(dims) == 2
-        if self.shape == 2:
-            vs = self.vertices
-        else:
-
-            ineq = (self._a, self._b)
-            e = np.zeros((2, self.shape))
-            e[[0, 1], dims] = 1
-
-            f = np.zeros(2)
-            proj = (e, f)
-
-            vs = pypoman.projection.project_polytope(proj, ineq)
-        hull = ConvexHull(vs)
-        vs = np.asarray(vs)[hull.vertices, :]
-        return vs
+        # the projection of a polytope is the convex hull of its projected vertices
+        vs = self.vertices[:, dims]
+        return vs[ConvexHull(vs).vertices, :]
 
     def proj(self, dims):
-        ineq = (self._a, self._b)
-        e = np.zeros((len(dims), self.shape))
-        e[np.arange(len(dims)), dims] = 1
-
-        f = np.zeros(2)
-        proj = (e, f)
-
-        vs = pypoman.projection.project_polytope(proj, ineq)
-        hull = ConvexHull(vs)
-        vs = np.asarray(vs)[hull.vertices, :]
-        a, b = pypoman.compute_polytope_halfspaces(vs)
+        vs = self.vertices[:, dims]
+        if len(dims) == 1:
+            return Polytope(np.array([[1.0], [-1.0]]), np.array([vs.max(), -vs.min()]))
+        a, b = vertices_to_halfspaces(vs)
         return Polytope(a, b)
