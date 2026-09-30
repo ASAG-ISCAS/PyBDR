@@ -138,8 +138,6 @@ def test_reach_linear_zono_algo3_parallel_case_03():
     print(len(ri))
     print(len(ri_whole))
 
-    exit(False)
-
     ri.append([x0])
     ri_whole.append(x0)
 
