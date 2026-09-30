@@ -45,6 +45,9 @@ def _vertices(geo: Geometry.Base, dims) -> np.ndarray:
         box = geo.proj(dims)
         return np.array(list(itertools.product(*zip(box.inf, box.sup))), dtype=float)
     if geo.type == Geometry.TYPE.ZONOTOPE:
+        if len(dims) == 2:
+            # much faster than the general method, which matters for the thousands of sets of a tube
+            return geo.proj(dims).polygon()
         return _zonotope_vertices(geo.c[dims], geo.gen[dims, :])
     if geo.type == Geometry.TYPE.POLYTOPE:
         return geo.vertices[:, dims]

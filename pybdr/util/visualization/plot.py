@@ -32,7 +32,7 @@ def __2d_add_interval(ax, i: "Interval", dims, color, filled):
             closed=True,
             alpha=1,
             fill=filled,
-            linewidth=3,
+            linewidth=1,
             edgecolor=color,
             facecolor=color,
         )
@@ -46,7 +46,7 @@ def __2d_add_polytope(ax, p: "Polytope", dims, color, filled):
             closed=True,
             alpha=1,
             fill=filled,
-            linewidth=3,
+            linewidth=1,
             edgecolor=color,
             facecolor=color,
         )
@@ -122,10 +122,11 @@ def __2d_plot(
             if isinstance(geo, np.ndarray):
                 __2d_add_pts(ax, dims, geo, this_color)
             elif isinstance(geo, Geometry.Base):
+                # intervals and polytopes keep their fixed colors unless a color is given
                 if geo.type == Geometry.TYPE.INTERVAL:
-                    __2d_add_interval(ax, geo, dims, "black", filled)
+                    __2d_add_interval(ax, geo, dims, "black" if c is None else c, filled)
                 elif geo.type == Geometry.TYPE.POLYTOPE:
-                    __2d_add_polytope(ax, geo, dims, "blue", filled)
+                    __2d_add_polytope(ax, geo, dims, "blue" if c is None else c, filled)
                 elif geo.type == Geometry.TYPE.ZONOTOPE:
                     __2d_add_zonotope(ax, geo, dims, this_color, filled)
                 else:
@@ -198,10 +199,11 @@ def __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled, show
             if isinstance(geo, np.ndarray):
                 __2d_add_pts(ax, dims, geo, this_color)
             elif isinstance(geo, Geometry.Base):
+                # intervals and polytopes keep their fixed colors unless colors are given
                 if geo.type == Geometry.TYPE.INTERVAL:
-                    __2d_add_interval(ax, geo, dims, "black", filled)
+                    __2d_add_interval(ax, geo, dims, "black" if cs is None else this_color, filled)
                 elif geo.type == Geometry.TYPE.POLYTOPE:
-                    __2d_add_polytope(ax, geo, dims, "blue", filled)
+                    __2d_add_polytope(ax, geo, dims, "blue" if cs is None else this_color, filled)
                 elif geo.type == Geometry.TYPE.ZONOTOPE:
                     __2d_add_zonotope(ax, geo, dims, this_color, filled)
                 else:
