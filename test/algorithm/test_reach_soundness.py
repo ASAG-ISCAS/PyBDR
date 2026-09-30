@@ -73,3 +73,23 @@ def test_reach_parallel_on_boundary_contains_trajectories():
         k = next(i for i, x in enumerate(initial) if np.allclose(x.inf, cell.inf) and np.allclose(x.sup, cell.sup))
         for x0 in cell.inf + (cell.sup - cell.inf) * rng.uniform(size=(3, 2)):
             assert max_violation(simulate(x0, times), [r[k] for r in rp]) <= 1e-9
+
+
+def test_reach_parallel_with_local_dynamics():
+    # a local function can not be pickled, reach_parallel sends the dynamics as expressions instead
+    from sympy import Matrix
+
+    def local_vanderpol(x, u):
+        return Matrix([x[1], (1 - x[0] ** 2) * x[1] - x[0] + u[0]])
+
+    opt = options(t_end=0.2)
+    cells = [cvt2(c, Geometry.TYPE.ZONOTOPE) for c in boundary(X0, 0.2, Geometry.TYPE.INTERVAL)]
+    _, rp_local = ASB2008CDC.reach_parallel(local_vanderpol, [2, 1], opt, cells)
+    _, rp_model = ASB2008CDC.reach_parallel(vanderpol, [2, 1], opt, cells)
+
+    def key(z):
+        return tuple(np.round(z.c, 12))
+
+    for local, model in zip(rp_local, rp_model):
+        local, model = sorted(local, key=key), sorted(model, key=key)
+        assert all(np.allclose(a.c, b.c) and np.allclose(a.gen, b.gen) for a, b in zip(local, model))

@@ -12,6 +12,7 @@ from pybdr.geometry import Geometry, Zonotope, Interval
 from pybdr.geometry.operation import cvt2
 from typing import Callable
 from pybdr.model import Model
+from pybdr.model.model import SymbolicDynamics
 from functools import partial
 from .algorithm import Algorithm
 from .alk2011hscc import ALK2011HSCC
@@ -200,7 +201,8 @@ class ASB2008CDC:
         # init containers for storing the results
         ri = []
 
-        partial_reach = partial(cls.reach, dyn, dims, opts)
+        # the worker processes get the dynamics as expressions, which works for any function
+        partial_reach = partial(cls.reach, SymbolicDynamics(dyn, dims), dims, opts)
 
         with ProcessPoolExecutor() as executor:
             futures = [executor.submit(partial_reach, x) for x in xs]

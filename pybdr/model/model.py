@@ -6,6 +6,26 @@ import numpy as np
 from sympy import ImmutableDenseNDimArray, Matrix, derive_by_array, lambdify, symbols
 
 
+class SymbolicDynamics:
+    """
+    Picklable stand-in for a dynamics function, used by the parallel reachability algorithms: the function
+    is evaluated once with sympy symbols and the worker processes receive the resulting expressions. Worker
+    processes that are spawned (macOS, Windows) can not load functions defined in __main__, e.g. in a
+    notebook, or local functions.
+    """
+
+    def __init__(self, f: Callable[..., Matrix], dims):
+        signature = inspect.signature(f)
+        assert len(signature.parameters) == len(dims)
+        self._args = [symbols(f"{name}:{dim}") for name, dim in zip(signature.parameters, dims)]
+        self._expr = f(*self._args)
+        # Model reads the argument names of the dynamics
+        self.__signature__ = signature
+
+    def __call__(self, *args):
+        return self._expr.xreplace({s: v for syms, values in zip(self._args, args) for s, v in zip(syms, values)})
+
+
 @dataclass
 class Model:
     f: Callable[..., Matrix] = None
