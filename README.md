@@ -62,15 +62,19 @@ git clone https://github.com/ASAG-ISCAS/PyBDR.git
 cd PyBDR
 conda env create -f environment-dev.yml   # environment.yml without the test and packaging tools
 conda activate pybdr-dev
-pytest -m "not slow"                      # the slow tests are long running demos
+pytest -m "not slow"                      # the slow tests execute the example notebooks
 ```
 
-or, without conda, `pip install -e ".[dev]"`.
+or, without conda, `pip install -e ".[dev]"`. Before a commit, `python scripts/run_checks.py` runs the
+tests and all example notebooks and writes a report to `reports/summary.md`
+(see [examples/](examples/README.md)).
 
 ## Google Colab
 
 Open the [demo notebook](examples/colab_demo.ipynb) in Colab with the button below, its first cell
-installs PyBDR.
+installs PyBDR. It verifies whether a car changing lanes can hit obstacles, starting from a non-convex
+set of initial states. [examples/](examples/README.md) has a notebook for every algorithm, stored with its
+results so that they can be viewed on GitHub directly.
 
 # How to use [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ASAG-ISCAS/PyBDR/blob/master/examples/colab_demo.ipynb)
 
@@ -311,8 +315,8 @@ consumption.-->
 
 `reach_parallel` computes the cells of the boundary in worker processes. On macOS and Windows these
 processes import the main script again, so the script must put its computations under
-`if __name__ == "__main__":` as in the examples above. In Jupyter / Colab notebooks this is not needed
-for the models of `pybdr.model`; dynamics defined in the notebook itself can be used with `reach`.
+`if __name__ == "__main__":` as in the examples above. Notebooks (Jupyter, Colab) need no guard, and
+dynamics defined in a notebook work with `reach_parallel` as well.
 
 ### Controlling the wrapping effect
 

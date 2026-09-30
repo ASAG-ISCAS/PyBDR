@@ -16,6 +16,9 @@ dependencies:
   - python-build
   - twine
   - rattler-build
+  - nbformat
+  - nbclient
+  - ipykernel
   - pip
   - pip:
       - codac>=2.1

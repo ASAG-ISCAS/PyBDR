@@ -131,3 +131,6 @@ dmypy.json
 .DS_Store
 # local conda channel (conda-recipe/README.md)
 conda-channel/
+
+# reports of scripts/run_checks.py
+reports/

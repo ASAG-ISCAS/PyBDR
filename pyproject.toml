@@ -46,6 +46,10 @@ test = [
 dev = [
     "pybdr[vis,test]",
     "build",
+    # execute the example notebooks (scripts/run_checks.py)
+    "nbformat",
+    "nbclient",
+    "ipykernel",
 ]
 
 [project.urls]
@@ -66,7 +70,7 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 markers = [
-    "slow: long running reachability demos (skip with -m \"not slow\")",
+    "slow: executes the example notebooks, about 30 minutes (skip with -m \"not slow\")",
 ]
 
 [tool.black]
