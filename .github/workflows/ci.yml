@@ -57,7 +57,7 @@ jobs:
         run: |
           python -m pip install build
           python -m build --wheel
-          python -m pip install "$(ls dist/*.whl)[vis]" nbclient ipykernel
+          python -m pip install "$(ls dist/*.whl)" nbclient ipykernel
       # the install cell of the notebook is skipped because PyBDR is already installed
       - name: Run the notebook
         run: |
