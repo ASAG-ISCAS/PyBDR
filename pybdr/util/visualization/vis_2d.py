@@ -3,10 +3,10 @@ import numpy as np
 from matplotlib.patches import Polygon, Circle
 
 from pybdr.geometry import Geometry
-from .plot import _finish
+from .plot import _finish, _scale_axes
 
 
-def vis2d(r, dims: list, width=800, height=800, show=True, save_file_name=None):
+def vis2d(r, dims: list, width=800, height=800, show=True, save_file_name=None, aspect="auto"):
     assert len(dims) == 2
     px = 1 / plt.rcParams["figure.dpi"]
     fig, ax = plt.subplots(figsize=(width * px, height * px), layout="constrained")
@@ -24,12 +24,12 @@ def vis2d(r, dims: list, width=800, height=800, show=True, save_file_name=None):
         ax.add_patch(p)
 
     if len(r.tis) >= 0:
-        return vis2dGeo(r.tis, dims, width, height, show, save_file_name)
+        return vis2dGeo(r.tis, dims, width, height, show, save_file_name, aspect)
         for res in r.tis:
             for re in res:
                 vis_element(re)
     else:
-        return vis2dGeo(r.tps, dims, width, height, show, save_file_name)
+        return vis2dGeo(r.tps, dims, width, height, show, save_file_name, aspect)
         for res in r.tps:
             for re in res:
                 vis_element(re)
@@ -41,7 +41,7 @@ def vis2d(r, dims: list, width=800, height=800, show=True, save_file_name=None):
     return _finish(fig, ax, show, save_file_name)
 
 
-def vis2dGeo(geos: [Geometry.Base], dims: list, width=800, height=800, show=True, save_file_name=None):
+def vis2dGeo(geos: [Geometry.Base], dims: list, width=800, height=800, show=True, save_file_name=None, aspect="auto"):
     assert len(dims) == 2
     px = 1 / plt.rcParams["figure.dpi"]
     fig, ax = plt.subplots(figsize=(width * px, height * px), layout="constrained")
@@ -93,8 +93,7 @@ def vis2dGeo(geos: [Geometry.Base], dims: list, width=800, height=800, show=True
     for geo in geos:
         __add_patch(geo)
 
-    ax.autoscale_view()
-    ax.axis("equal")
+    _scale_axes(ax, aspect)
     ax.set_xlabel("x" + str(dims[0]))
     ax.set_ylabel("x" + str(dims[1]))
 
