@@ -43,31 +43,20 @@ Optional extras:
 - `pybdr[vis]` adds [plotly](https://plotly.com/python/) for interactive 3D plots.
 - `pybdr[test]` adds pytest to run the test suite.
 
-## With conda
-
-codac, the interval analysis library PyBDR uses, is not on conda-forge yet. The recipes in
-[conda-recipe/](conda-recipe/README.md) build conda packages of PyBDR and codac into a local channel,
-which can then be installed with:
-
-```bash
-conda create -n pybdr -c file://$PWD/conda-channel -c conda-forge pybdr
-```
-
 ## From source
 
-To work on PyBDR, create the conda environment, which installs PyBDR in editable mode:
+To work on PyBDR, install it in editable mode with the development tools, in a virtual environment
+with Python 3.11 or newer:
 
 ```bash
 git clone https://github.com/ASAG-ISCAS/PyBDR.git
 cd PyBDR
-conda env create -f environment-dev.yml   # environment.yml without the test and packaging tools
-conda activate pybdr-dev
-pytest -m "not slow"                      # the slow tests execute the example notebooks
+pip install -e ".[dev]"
+pytest -m "not slow"        # the slow tests execute the example notebooks
 ```
 
-or, without conda, `pip install -e ".[dev]"`. Before a commit, `python scripts/run_checks.py` runs the
-tests and all example notebooks and writes a report to `reports/summary.md`
-(see [examples/](examples/README.md)).
+Before a commit, `python scripts/run_checks.py` runs the tests and all example notebooks and writes a
+report to `reports/summary.md` (see [examples/](examples/README.md)).
 
 ## Google Colab
 
