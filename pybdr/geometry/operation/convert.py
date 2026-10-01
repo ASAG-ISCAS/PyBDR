@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import numpy as np
-import pypoman
-from scipy.spatial import ConvexHull
 import pybdr.util.functional.auxiliary as aux
 from pybdr.geometry import *
+from pybdr.geometry.polytope import vertices_to_halfspaces
 
 
 def _interval2interval(source: Interval):
@@ -72,15 +71,9 @@ def _vertices2interval(source: np.ndarray):
     return Interval(inf, sup)
 
 
-def _vertices2polytope_old(source: np.ndarray):
-    a, b = pypoman.compute_polytope_halfspaces(source)
-    return Polytope(a, b)
-
-
 def _vertices2polytope(source: np.ndarray):
-    convex_hull = ConvexHull(source)
-    eq = convex_hull.equations
-    return Polytope(eq[:, :-1], -eq[:, -1])
+    a, b = vertices_to_halfspaces(source)
+    return Polytope(a, b)
 
 
 def _vertices2zonotope(source: np.ndarray):
@@ -154,35 +147,5 @@ def cvt2(src, target: Geometry.TYPE):
         return _cvt_from_vertices(src, target)
     elif isinstance(src, Geometry.Base):
         return _cvt_from_geometry(src, target)
-    else:
-        raise NotImplementedError
-
-
-def cvt2_old(src, target: Geometry.TYPE):
-    if src is None:
-        return src
-    elif isinstance(src, np.ndarray) and target == Geometry.TYPE.INTERVAL:
-        return _vertices2interval(src)
-    elif isinstance(src, np.ndarray) and target == Geometry.TYPE.POLYTOPE:
-        return _vertices2polytope(src)
-    elif isinstance(src, Geometry.Base):
-        if src.type == target:
-            return src
-        elif src.type == Geometry.TYPE.INTERVAL and target == Geometry.TYPE.ZONOTOPE:
-            return _interval2zonotope(src)
-        elif src.type == Geometry.TYPE.INTERVAL and target == Geometry.TYPE.POLYTOPE:
-            return _interval2polytope(src)
-        elif src.type == Geometry.TYPE.ZONOTOPE and target == Geometry.TYPE.INTERVAL:
-            return _zonotope2interval(src)
-        elif src.type == Geometry.TYPE.ZONOTOPE and target == Geometry.TYPE.POLYTOPE:
-            return _zonotope2polytope(src)
-        elif (
-                src.type == Geometry.TYPE.ZONOTOPE and target == Geometry.TYPE.POLY_ZONOTOPE
-        ):
-            return _zonotope2polyzonotope(src)
-        elif (
-                src.type == Geometry.TYPE.POLY_ZONOTOPE and target == Geometry.TYPE.ZONOTOPE
-        ):
-            return _polyzonotope2zonotope(src)
     else:
         raise NotImplementedError

@@ -1,14 +1,15 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pybdr"
-version = "1.0.4"
+dynamic = ["version"]
 description = "Set-boundary based Reachability Analysis Toolbox in Python"
 readme = "README.md"
-requires-python = ">=3.8"
-license = {file = "LICENSE.md"}
+requires-python = ">=3.11"
+license = "GPL-3.0-only"
+license-files = ["LICENSE.md"]
 authors = [
     {name = "ASAG-ISCAS"}
 ]
@@ -17,38 +18,38 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Mathematics",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 dependencies = [
-    "numpy>=1.20.0",
-    "scipy>=1.7.0",
-    "pypoman>=0.5.4",
-    "cvxpy>=1.1.0",
-    "matplotlib>=3.3.0",
-    "codac>=2.0.0.dev20",  # Allows pre-release versions
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "sympy>=1.12",
+    "cvxpy>=1.3",
+    "matplotlib>=3.7",
+    "codac>=2.1",
 ]
 
 [project.optional-dependencies]
-dev = [
-    "pytest>=6.0",
-    "pytest-cov>=2.12",
-    "black>=21.0",
-    "flake8>=3.9",
-    "mypy>=0.910",
+vis = [
+    "plotly>=5",
 ]
 test = [
-    "pytest>=6.0",
-    "pytest-cov>=2.12",
+    "pytest>=7",
+]
+dev = [
+    "pybdr[vis,test]",
+    "build",
+    # execute the example notebooks (scripts/run_checks.py)
+    "nbformat",
+    "nbclient",
+    "ipykernel",
 ]
 
 [project.urls]
@@ -57,38 +58,27 @@ Documentation = "https://asag-iscas.github.io/docs.pybdr/"
 Repository = "https://github.com/ASAG-ISCAS/PyBDR"
 Issues = "https://github.com/ASAG-ISCAS/PyBDR/issues"
 
+[tool.setuptools.dynamic]
+version = {attr = "pybdr.__version__"}
+
 [tool.setuptools.packages.find]
-where = ["."]
 include = ["pybdr*"]
-exclude = ["test*", "benchmarks*", "doc*"]
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --cov=pybdr --cov-report=html --cov-report=term"
+markers = [
+    "slow: executes the example notebooks, about 30 minutes (skip with -m \"not slow\")",
+]
 
 [tool.black]
 line-length = 120
-target-version = ['py38', 'py39', 'py310', 'py311']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-)/
-'''
+target-version = ["py311", "py312", "py313"]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false

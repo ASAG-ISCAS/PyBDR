@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use PyBDR, please cite it as below."
+title: "PyBDR: Set-boundary based Reachability Analysis Toolbox in Python"
+type: software
+version: 1.1.0
+license: GPL-3.0-only
+repository-code: "https://github.com/ASAG-ISCAS/PyBDR"
+url: "https://asag-iscas.github.io/docs.pybdr/"
+authors:
+  - family-names: Ding
+    given-names: Jianqiang
+  - family-names: Wu
+    given-names: Taoran
+  - family-names: Liang
+    given-names: Zhen
+  - family-names: Xue
+    given-names: Bai
+preferred-citation:
+  type: conference-paper
+  title: "PyBDR: Set-Boundary Based Reachability Analysis Toolkit in Python"
+  authors:
+    - family-names: Ding
+      given-names: Jianqiang
+    - family-names: Wu
+      given-names: Taoran
+    - family-names: Liang
+      given-names: Zhen
+    - family-names: Xue
+      given-names: Bai
+  collection-title: "International Symposium on Formal Methods"
+  publisher:
+    name: Springer
+  start: 140
+  end: 157
+  year: 2024

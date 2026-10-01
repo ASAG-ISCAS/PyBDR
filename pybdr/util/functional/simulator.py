@@ -23,7 +23,7 @@ class Simulator:
         # assert x.ndim == 2
         if sys.type == "nonlinear":
             return x + cls._evaluate_nonlinear(sys, x, u) * step
-        elif sys.type == "linear_simple":
+        elif sys.type == "linear":
             return x + sys.evaluate(x, u) * step
         else:
             raise NotImplementedError
@@ -34,7 +34,7 @@ class Simulator:
             x = x if isinstance(x, np.ndarray) else np.asarray(x).reshape(-1)  # must 1d at present
             u = u if isinstance(u, np.ndarray) else np.asarray(u).reshape(-1)  # must 1d at present
             return x, u
-        elif sys.type == "linear_simple":
+        elif sys.type == "linear":
             x = x if isinstance(x, np.ndarray) else np.atleast_2d(x)
             u = u if isinstance(u, np.ndarray) else np.atleast_2d(u)
             assert x.ndim <= 2  # single init point or multiple points

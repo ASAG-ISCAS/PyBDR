@@ -81,7 +81,7 @@ class XSE2016CAV:
 
             cost = c @ x
             prob = cp.Problem(cp.Minimize(cost), constraints)
-            prob.solve(solver=cp.GLPK)
+            prob.solve(solver=cp.SCIPY)  # HiGHS through scipy, always available
             assert prob.status == "optimal"  # ensure valid solution for LP problem
             bj.append(x.value[-1])
         bu = np.min(bj)
@@ -101,7 +101,7 @@ class XSE2016CAV:
 
         cost = c @ x
         prob = cp.Problem(cp.Minimize(cost), constraints)
-        prob.solve(solver=cp.GLPK)
+        prob.solve(solver=cp.SCIPY)  # HiGHS through scipy, always available
         assert prob.status == "optimal"  # ensure valid solution for LP
         return x.value[-1]  # which is d
 

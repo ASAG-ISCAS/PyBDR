@@ -6,6 +6,26 @@ import numpy as np
 from sympy import ImmutableDenseNDimArray, Matrix, derive_by_array, lambdify, symbols
 
 
+class SymbolicDynamics:
+    """
+    Picklable stand-in for a dynamics function, used by the parallel reachability algorithms: the function
+    is evaluated once with sympy symbols and the worker processes receive the resulting expressions. Worker
+    processes that are spawned (macOS, Windows) can not load functions defined in __main__, e.g. in a
+    notebook, or local functions.
+    """
+
+    def __init__(self, f: Callable[..., Matrix], dims):
+        signature = inspect.signature(f)
+        assert len(signature.parameters) == len(dims)
+        self._args = [symbols(f"{name}:{dim}") for name, dim in zip(signature.parameters, dims)]
+        self._expr = f(*self._args)
+        # Model reads the argument names of the dynamics
+        self.__signature__ = signature
+
+    def __call__(self, *args):
+        return self._expr.xreplace({s: v for syms, values in zip(self._args, args) for s, v in zip(syms, values)})
+
+
 @dataclass
 class Model:
     f: Callable[..., Matrix] = None
@@ -112,10 +132,9 @@ class Model:
             # calculate interval expressions
             if vm[0] is not None:
                 vx = np.asarray(vm[0](*[xs[i][j] for i in range(len(self.var_dims)) for j in range(self.var_dims[i])]))
-                inff = np.frompyfunc(lambda x: x.inf, 1, 1)
-                supf = np.frompyfunc(lambda x: x.sup, 1, 1)
-                lb[vm[1]] = inff(vx)
-                ub[vm[1]] = supf(vx)
+                # the bounds are 1-element arrays, convert explicitly (implicit conversion fails with numpy >= 2.5)
+                lb[vm[1]] = np.array([x.inf for x in vx.ravel()], dtype=float).ravel()
+                ub[vm[1]] = np.array([x.sup for x in vx.ravel()], dtype=float).ravel()
             # set remain constant values
             inv_mask = np.logical_not(vm[1])
             lb[inv_mask] = d[inv_mask].astype(dtype=float)

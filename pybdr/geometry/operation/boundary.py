@@ -3,7 +3,7 @@ from itertools import chain
 import numpy as np
 
 from pybdr.geometry import Geometry, Interval, Polytope, Zonotope
-from pybdr.util.functional import RealPaver
+from pybdr.util.functional.codac_wrapper import polytope_boundary
 
 from .convert import cvt2
 
@@ -38,67 +38,8 @@ def _interval2zonotope(src: Interval, r: float):
     return [cvt2(interval, Geometry.TYPE.ZONOTOPE) for interval in bd_intervals]
 
 
-# def _polytope2interval(src: Polytope, r: float):
-#     def f(x):
-#         z = Interval.zeros(src.a.shape[0])
-#         for i in range(src.a.shape[0]):
-#             for j in range(src.a.shape[1]):
-#                 z[i] += src.a[i, j] * x[j]
-#             z[i] -= src.b[i]
-#
-#         ind0 = np.logical_and(z.inf <= 0, z.sup >= 0)
-#         ind1 = z.inf > 0
-#         sum = np.sum(ind0)
-#         return 0 < sum and np.sum(ind1) <= 0
-#
-#     lb = np.min(src.vertices, axis=0) - r
-#     ub = np.max(src.vertices, axis=0) + r
-#     boxes = CSPSolver.solve(f, lb, ub, r)
-#     return boxes
-
-
 def _polytope2interval(src: Polytope, r: float):
-    # using realpaver to get the boundary
-    realpaver = RealPaver()
-    num_const, num_var = src.a.shape
-
-    # fix bugs when part of the boundary parallel to some axis，make it slightly tilted
-    def refine_const(arr: np.array, tol: float):
-        ind = np.where((np.abs(arr)) <= tol)
-        arr[ind] += tol
-        return arr
-
-    mat_a = refine_const(src.a, 1e-14)
-    vec_b = refine_const(
-        src.b, 1e-14
-    )  # 1e-14 may vary for different problem, need to refine # TODO
-
-    #  get the domain of the variables
-    bound_vs = src.vertices
-    bound_inf = np.min(bound_vs, axis=0) - 100 * r
-    bound_sup = np.max(bound_vs, axis=0) + 100 * r
-
-    # set variables
-    for idx in range(num_var):
-        realpaver.add_variable("x" + str(idx), bound_inf[idx], bound_sup[idx], "[", "]")
-
-    # set constraints
-    for idx_const in range(num_const):
-        this_const = ""
-        for idx_var in range(num_var):
-            this_const += (
-                "{:.20e}".format(mat_a[idx_const, idx_var]) + "*x" + str(idx_var) + "+"
-            )
-        this_const = this_const[:-1] + "<=" + "{:.20e}".format(vec_b[idx_const])
-        realpaver.add_constraint(this_const)
-
-    realpaver.set_branch(precision=r)
-    boxes = realpaver.solve()
-    bound_boxes = []
-    for b in boxes:
-        if b[0] == "OUTER":
-            bound_boxes.append((b[2]))
-    return bound_boxes
+    return polytope_boundary(src.a, src.b, r)
 
 
 def _polytope2polytope(src: Polytope, r: float):

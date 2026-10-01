@@ -6,6 +6,28 @@ from matplotlib.patches import Polygon
 from pybdr.geometry import Geometry, Interval, Zonotope, Polytope
 
 
+def _scale_axes(ax, aspect: str):
+    """
+    "auto": the axes adapt to the data and fill the figure, "equal": same scale on both axes (true shapes)
+    """
+    if aspect == "equal":
+        ax.axis("equal")
+    elif aspect == "auto":
+        ax.autoscale_view()
+        ax.margins(0.05)
+    else:
+        raise ValueError(f"unknown aspect {aspect!r}, use 'auto' or 'equal'")
+
+
+def _finish(fig, ax, show: bool, save_file_name):
+    # save before showing, the figure is released once the window of plt.show() is closed
+    if save_file_name is not None:
+        fig.savefig(save_file_name, format="png")
+    if show:
+        plt.show()
+    return fig, ax
+
+
 def __3d_plot(objs, dims: list, width: int, height: int):
     # TODO
     raise NotImplementedError
@@ -23,7 +45,7 @@ def __2d_add_interval(ax, i: "Interval", dims, color, filled):
             closed=True,
             alpha=1,
             fill=filled,
-            linewidth=3,
+            linewidth=1,
             edgecolor=color,
             facecolor=color,
         )
@@ -37,7 +59,7 @@ def __2d_add_polytope(ax, p: "Polytope", dims, color, filled):
             closed=True,
             alpha=1,
             fill=filled,
-            linewidth=3,
+            linewidth=1,
             edgecolor=color,
             facecolor=color,
         )
@@ -67,7 +89,10 @@ def __2d_plot(
         ylim=None,
         c=None,
         filled=False,
-        init_set=None
+        init_set=None,
+        show=True,
+        save_file_name=None,
+        aspect="auto",
 ):
     assert len(dims) == 2
     px = 1 / plt.rcParams["figure.dpi"]
@@ -111,10 +136,11 @@ def __2d_plot(
             if isinstance(geo, np.ndarray):
                 __2d_add_pts(ax, dims, geo, this_color)
             elif isinstance(geo, Geometry.Base):
+                # intervals and polytopes keep their fixed colors unless a color is given
                 if geo.type == Geometry.TYPE.INTERVAL:
-                    __2d_add_interval(ax, geo, dims, "black", filled)
+                    __2d_add_interval(ax, geo, dims, "black" if c is None else c, filled)
                 elif geo.type == Geometry.TYPE.POLYTOPE:
-                    __2d_add_polytope(ax, geo, dims, "blue", filled)
+                    __2d_add_polytope(ax, geo, dims, "blue" if c is None else c, filled)
                 elif geo.type == Geometry.TYPE.ZONOTOPE:
                     __2d_add_zonotope(ax, geo, dims, this_color, filled)
                 else:
@@ -122,8 +148,7 @@ def __2d_plot(
             else:
                 raise NotImplementedError
 
-    # ax.autoscale_view()
-    ax.axis("equal")
+    _scale_axes(ax, aspect)
     ax.set_xlabel("x" + str(dims[0]))
     ax.set_ylabel("x" + str(dims[1]))
 
@@ -133,9 +158,7 @@ def __2d_plot(
     if ylim is not None:
         plt.ylim(ylim)
 
-    # plt.savefig("temp.jpg", dpi=300)
-
-    plt.show()
+    return _finish(fig, ax, show, save_file_name)
 
 
 def plot(
@@ -148,17 +171,28 @@ def plot(
         ylim=None,
         c=None,
         filled=False,
-        init_set=None
+        init_set=None,
+        show=True,
+        save_file_name=None,
+        aspect="auto",
 ):
+    """
+    plot geometries projected onto the given 2 dimensions
+
+    :param show: show the figure, set to False to only save it or to adjust it further
+    :param save_file_name: save the figure as png to this path
+    :param aspect: "auto" adapts the axes to the data, "equal" uses the same scale on both axes
+    :return: matplotlib figure and axes
+    """
     if mod == "2d":
-        return __2d_plot(objs, dims, width, height, xlim, ylim, c, filled, init_set)
+        return __2d_plot(objs, dims, width, height, xlim, ylim, c, filled, init_set, show, save_file_name, aspect)
     elif mod == "3d":
         return __3d_plot(objs, dims, width, height)
     else:
         raise Exception("unsupported visualization mode")
 
 
-def __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled, show, save_file_name):
+def __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled, show, save_file_name, aspect):
     assert len(dims) == 2
     if cs is not None:
         assert len(collections) == len(cs)
@@ -180,10 +214,11 @@ def __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled, show
             if isinstance(geo, np.ndarray):
                 __2d_add_pts(ax, dims, geo, this_color)
             elif isinstance(geo, Geometry.Base):
+                # intervals and polytopes keep their fixed colors unless colors are given
                 if geo.type == Geometry.TYPE.INTERVAL:
-                    __2d_add_interval(ax, geo, dims, "black", filled)
+                    __2d_add_interval(ax, geo, dims, "black" if cs is None else this_color, filled)
                 elif geo.type == Geometry.TYPE.POLYTOPE:
-                    __2d_add_polytope(ax, geo, dims, "blue", filled)
+                    __2d_add_polytope(ax, geo, dims, "blue" if cs is None else this_color, filled)
                 elif geo.type == Geometry.TYPE.ZONOTOPE:
                     __2d_add_zonotope(ax, geo, dims, this_color, filled)
                 else:
@@ -191,8 +226,7 @@ def __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled, show
             else:
                 raise NotImplementedError
 
-    # ax.autoscale_view()
-    ax.axis("equal")
+    _scale_axes(ax, aspect)
     ax.set_xlabel("x" + str(dims[0]))
     ax.set_ylabel("x" + str(dims[1]))
 
@@ -201,10 +235,8 @@ def __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled, show
 
     if ylim is not None:
         plt.ylim(ylim)
-    if show:
-        plt.show()
-    if save_file_name is not None:
-        plt.savefig(save_file_name, format="png")
+
+    return _finish(fig, ax, show, save_file_name)
 
 
 def __3d_plot_cmp(collections, dims, width, height, cs):
@@ -223,10 +255,11 @@ def plot_cmp(
         cs=None,
         filled=False,
         show=True,
-        save_file_name=None
+        save_file_name=None,
+        aspect="auto",
 ):
     if mod == "2d":
-        return __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled, show, save_file_name)
+        return __2d_plot_cmp(collections, dims, width, height, xlim, ylim, cs, filled, show, save_file_name, aspect)
     elif mod == "3d":
         return __3d_plot_cmp(collections, dims, width, height, cs)
     else:

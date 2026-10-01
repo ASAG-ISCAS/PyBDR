@@ -19,6 +19,7 @@ from functools import partial
 
 from scipy.special import factorial
 from pybdr.model import Model
+from pybdr.model.model import SymbolicDynamics
 from pybdr.dynamic_system import NonLinSys
 from pybdr.geometry import Geometry, Zonotope, Interval
 from pybdr.geometry.operation import cvt2
@@ -341,7 +342,8 @@ class ALTH2013HSCC:
         # init container for storing the results
         rc = []
 
-        partial_reach = partial(cls.reach, dyn, dims, opts)
+        # the worker processes get the dynamics as expressions, which works for any function
+        partial_reach = partial(cls.reach, SymbolicDynamics(dyn, dims), dims, opts)
 
         with ProcessPoolExecutor() as executor:
             futures = [executor.submit(partial_reach, x) for x in xs]
